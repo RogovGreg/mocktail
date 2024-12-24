@@ -10,7 +10,6 @@ obj/
 ## Visual Studio files
 .vs/
 .idea/
-.vscode/
 
 ## Logs
 *.log
