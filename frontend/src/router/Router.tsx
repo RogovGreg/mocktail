@@ -1,11 +1,14 @@
 import { createBrowserRouter, Navigate } from "react-router";
-import { LoginServiceRoutesList } from "./routes";
+import { LoginServiceRoutesList } from "./routes.ts";
 import { RouterProvider } from "react-router-dom";
-import { ERoutes } from "./routes-list";
+import { ERoutes } from "./routes-list.ts";
+import { TRouteObjectList } from "./types.ts";
+
 
 const router = createBrowserRouter([
   // Public routes
-  ...LoginServiceRoutesList.map(({ path, Component }) => ({
+  // @ts-ignore
+  ...LoginServiceRoutesList.map<TRouteObjectList>(({ path, Component }) => ({
     path,
 
     element: (
@@ -14,7 +17,9 @@ const router = createBrowserRouter([
   })),
 
   /* eslint-disable sort-keys */
+  // @ts-ignore
   { path: '/', element: <Navigate to={ERoutes.Login} /> },
+  // @ts-ignore
   { path: '*', element: <Navigate to={ERoutes.PageNotFound} /> },
   /* eslint-enable sort-keys */
 ]);

@@ -1,5 +1,5 @@
 import { Button, Form, Input, message } from "antd"
-import { LoginCardStyled } from "./styled"
+import { LoginCardStyled } from "./styled.ts"
 
 type TLoginFormValues = {
   login: string;

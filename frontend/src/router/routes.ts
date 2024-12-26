@@ -1,6 +1,6 @@
-import { HomePage, LoginPage, PageNotFoundPage } from "../pages";
-import { ERoutes } from "./routes-list";
-import { TRouteObjectList } from "./types";
+import { HomePage, LoginPage, PageNotFoundPage } from "../pages/index.ts";
+import { ERoutes } from "./routes-list.ts";
+import { TRouteObjectList } from "./types.ts";
 
 export const LoginServiceRoutesList: TRouteObjectList = [
   {

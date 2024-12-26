@@ -1,4 +1,4 @@
-import { ERoutes } from "./routes-list"
+import { ERoutes } from "./routes-list.ts"
 
 export type TRouteObject = Readonly<{
   Component: React.FC,

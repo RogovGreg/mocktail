@@ -30,6 +30,7 @@
     "@types/node": "22.10.2",
     "@types/react": "19.0.1",
     "@types/react-dom": "19.0.2",
+    "@types/rollup": "0.51.4",
     "@vitejs/plugin-react": "4.3.4",
     "eslint": "8.46.0",
     "eslint-config-airbnb": "19.0.4",
@@ -42,7 +43,7 @@
     "globals": "15.13.0",
     "rollup": "4.29.1",
     "typescript": "5.7.2",
-    "vite": "6.0.3",
+    "vite": "6.0.6",
     "vite-plugin-svgr": "4.3.0",
     "vite-tsconfig-paths": "5.1.4"
   }
