@@ -18,7 +18,7 @@ app.MapGet("/check-availability", () =>
 {
     return Results.Json(new
     {
-        service = "Auth",
+        service = "Content",
         timestamp = DateTime.UtcNow.ToString("o")
     });
 });

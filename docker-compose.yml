@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+  backend:
+    build:
+      context: services/Backend
+      dockerfile: Dockerfile
+    container_name: backend
+
+  content:
+    build:
+      context: services/Content
+      dockerfile: Dockerfile
+    container_name: content
+
+  generator:
+    build:
+      context: services/Generator
+      dockerfile: Dockerfile
+    container_name: generator
+
+  auth:
+    build:
+      context: services/Auth
+      dockerfile: Dockerfile
+    container_name: auth
+
+  gateway:
+    build:
+      context: services/Gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    depends_on:
+      - backend
+      - content
+      - generator
+      - auth
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    depends_on:
+      - gateway

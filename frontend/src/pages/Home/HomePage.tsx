@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const SERVICES = ["auth", "backend", "content", "gateway", "generator"];
+const SERVICES = ["auth", "backend", "content"];
 
 export const HomePage = () => {
   const [responses, setResponses] = useState<Record<string, string>>({});
