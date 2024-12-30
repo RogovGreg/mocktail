@@ -1,0 +1,49 @@
+{
+    "Routes": [
+      {
+        "DownstreamPathTemplate": "/",
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [{ "Host": "auth", "Port": 80 }],
+        "UpstreamPathTemplate": "/v1/auth",
+        "UpstreamHttpMethod": ["GET", "POST"]
+      },
+      {
+        "DownstreamPathTemplate": "/{everything}",
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [{ "Host": "auth", "Port": 80 }],
+        "UpstreamPathTemplate": "/v1/auth/{everything}",
+        "UpstreamHttpMethod": ["GET", "POST", "DELETE"]
+      },
+      {
+        "DownstreamPathTemplate": "/",
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [{ "Host": "backend", "Port": 80 }],
+        "UpstreamPathTemplate": "/v1/backend",
+        "UpstreamHttpMethod": ["GET", "POST"]
+      },
+      {
+        "DownstreamPathTemplate": "/{everything}",
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [{ "Host": "backend", "Port": 80 }],
+        "UpstreamPathTemplate": "/v1/backend/{everything}",
+        "UpstreamHttpMethod": ["GET", "POST", "DELETE"]
+      },
+      {
+        "DownstreamPathTemplate": "/",
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [{ "Host": "content", "Port": 80 }],
+        "UpstreamPathTemplate": "/v1/content",
+        "UpstreamHttpMethod": ["GET", "POST"]
+      },
+      {
+        "DownstreamPathTemplate": "/{everything}",
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [{ "Host": "content", "Port": 80 }],
+        "UpstreamPathTemplate": "/v1/content/{everything}",
+        "UpstreamHttpMethod": ["GET", "POST"]
+      }
+    ],
+    "GlobalConfiguration": {
+      "BaseUrl": "http://gateway:8080"
+    }
+  }

@@ -1,33 +1,19 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Ocelot.DependencyInjection;
+using Ocelot.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Add Ocelot
+builder.Services.AddOcelot();
+
+// Add configuration from ocelot.json
+builder.Configuration.AddJsonFile("ocelot.json");
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
-app.MapGet("/", () => "`Gateway` service is alive");
-
-app.MapGet("/check-availability", () =>
-{
-    return Results.Json(new
-    {
-        service = "Auth",
-        timestamp = DateTime.UtcNow.ToString("o")
-    });
-});
-
-app.Urls.Add("http://*:80");
+// Use Ocelot middleware
+await app.UseOcelot();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

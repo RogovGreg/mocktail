@@ -1,0 +1,37 @@
+version: "3.8"
+services:
+  backend:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5001:80"
+
+  content:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5002:80"
+
+  generator:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5003:80"
+
+  auth:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5005:80"
+
+  gateway:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5000:8080"
+
+  frontend:
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "80:80"

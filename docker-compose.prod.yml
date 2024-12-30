@@ -1,56 +1,26 @@
 version: '3.8'
 services:
-  auth:
-    build:
-      context: services/Auth
-      dockerfile: Dockerfile
-    container_name: auth
-    ports:
-      - "5000:80"
 
   backend:
-    build:
-      context: services/Backend
-      dockerfile: Dockerfile
-    container_name: backend
-    ports:
-      - "5001:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
 
   content:
-    build:
-      context: services/Content
-      dockerfile: Dockerfile
-    container_name: content
-    ports:
-      - "5002:80"
-  
-  gateway:
-    build:
-      context: services/Gateway
-      dockerfile: Dockerfile
-    container_name: gateway
-    ports:
-      - "5003:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
 
   generator:
-    build:
-      context: services/Generator
-      dockerfile: Dockerfile
-    container_name: generator
-    ports:
-      - "5004:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  auth:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  gateway:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      target: production
-    container_name: frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - auth
-      - backend
-      - content
-      - gateway
-      - generator
+    environment:
+      - NODE_ENV=production
