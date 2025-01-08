@@ -12,18 +12,26 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.MapGet("/", () => "`Auth` service is alive");
+app.UseHttpsRedirection();
 
-app.MapGet("/check-availability", () =>
+var summaries = new[]
 {
-    return Results.Json(new
-    {
-        service = "auth-service",
-        timestamp = DateTime.UtcNow.ToString("o")
-    });
-});
+    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+};
 
-app.Urls.Add("http://*:80");
+app.MapGet("/weatherforecast", () =>
+{
+    var forecast =  Enumerable.Range(1, 5).Select(index =>
+        new WeatherForecast
+        (
+            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Random.Shared.Next(-20, 55),
+            summaries[Random.Shared.Next(summaries.Length)]
+        ))
+        .ToArray();
+    return forecast;
+})
+.WithName("GetWeatherForecast");
 
 app.Run();
 
