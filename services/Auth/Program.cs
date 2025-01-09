@@ -17,13 +17,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddIdentity<User, IdentityRole>()
+builder.Services.AddIdentityApiEndpoints<User>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
-
-// Creating basic API endpoints like /register /login etc.
-// builder.Services.AddIdentityApiEndpoints<User>()
-//     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // TODO Uncomment JWT
 // builder.Services.AddAuthentication(options =>
@@ -57,7 +53,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // Setting up API endpoints
-// app.MapIdentityApi<User>();
+app.MapIdentityApi<User>();
 
 app.UseRouting();
 
