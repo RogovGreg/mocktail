@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 
-export const LoginCardStyled = styled.div`
+export const SignUpCardStyled = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
