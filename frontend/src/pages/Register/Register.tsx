@@ -1,20 +1,20 @@
 import { Button, Form, Input, message } from "antd"
-import { SignUpCardStyled } from "./styled.ts"
+import { RegisterCardStyled } from "./styled.ts"
 
-type TSignUpFormValues = Readonly<{
+type TRegisterFormValues = Readonly<{
   login: string;
   password: string;
   confirmPassword: string;
 }>;
 
-export const SignUpPage = () => {
-  const [form] = Form.useForm<TSignUpFormValues>();
+export const RegisterPage = () => {
+  const [form] = Form.useForm<TRegisterFormValues>();
 
-  const onFormSubmit = async (values: TSignUpFormValues) => {
+  const onFormSubmit = async (values: TRegisterFormValues) => {
     const { confirmPassword, ...restFields } = values;
 
     try {
-      const response = await fetch('/api/v1/sign-up', {
+      const response = await fetch('/api/v1/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -23,31 +23,31 @@ export const SignUpPage = () => {
       });
       
       if (response.ok) {
-        message.success('Sign Up successful!');
+        message.success('Register successful!');
       } else {
         message.error('Invalid credentials');
       }
     } catch (error) {
-      message.error('Sign Up failed. Please try again.');
+      message.error('Register failed. Please try again.');
     }
   };
 
-  return (<SignUpCardStyled>
-    <h1>Sign Up</h1>
+  return (<RegisterCardStyled>
+    <h1>Register</h1>
     <Form
       form={form}
-      name="signUpForm"
-      id="signUpForm"
+      name="registerForm"
+      id="registerForm"
       onFinish={onFormSubmit}
       layout="vertical"
     >
       <Form.Item
         label="Login"
         name="login"
-        rules={[{ required: true, message: 'Please input your login!' }]}
+        rules={[{ required: true, message: 'Please input your email!' }]}
       >
         <Input
-          placeholder="Make up a login"
+          placeholder="Input an email"
           prefix={
             <svg style={{ color: 'rgba(0,0,0,.25)' }} width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M5 21C5 17.134 8.13401 14 12 14C15.866 14 19 17.134 19 21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -58,7 +58,44 @@ export const SignUpPage = () => {
       <Form.Item
         label="Password"
         name="password"
-        rules={[{ required: true, message: 'Please input your password!' }]}
+        rules={[
+          { required: true, message: 'Please input your password!' },
+          {
+            validator(_, value) {
+              if (!value) {
+                return Promise.reject(new Error('Password is required!'));
+              }
+      
+              const errors: string[] = [];
+              const minLength = 8;
+              if (value.length < minLength) {
+                errors.push(`at least ${minLength} characters long`);
+              }
+              if (!/[A-Z]/.test(value)) {
+                errors.push('one uppercase letter');
+              }
+              if (!/[a-z]/.test(value)) {
+                errors.push('one lowercase letter');
+              }
+              if (!/\d/.test(value)) {
+                errors.push('one number');
+              }
+              if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+                errors.push('one special character');
+              }
+      
+              if (errors.length > 0) {
+                return Promise.reject(
+                  new Error(
+                    `Password must contain ${errors.join(', ')}`
+                  )
+                );
+              }
+      
+              return Promise.resolve();
+            }
+          }
+        ]}
       >
         <Input.Password 
           placeholder="Make up a password"
@@ -108,11 +145,11 @@ export const SignUpPage = () => {
       </Form.Item>
     </Form>
     <Button
-      form="signUpForm"
+      form="registerForm"
       htmlType="submit"
       type="primary"
     >
-      Sign Up
+      Submit
     </Button>
-  </SignUpCardStyled>)
+  </RegisterCardStyled>)
 }

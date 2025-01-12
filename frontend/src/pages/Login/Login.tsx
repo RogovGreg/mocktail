@@ -72,6 +72,6 @@ export const LoginPage = () => {
         />
       </Form.Item>
     </Form>
-    <Button type="primary" form="loginForm" htmlType="submit">Sign In</Button>
+    <Button type="primary" form="loginForm" htmlType="submit">Submit</Button>
   </LoginCardStyled>)
 }
