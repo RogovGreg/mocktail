@@ -7,7 +7,7 @@ export const HomePage = () => {
 
   const checkService = async (service: string) => {
     try {
-      const response = await fetch(`/api/${service}/check-availability`);
+      const response = await fetch(`/api/v1/${service}/check-availability`);
       if (!response.ok) {
         throw new Error(`Error from ${service}: ${response.statusText}`);
       }
