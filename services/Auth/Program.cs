@@ -63,7 +63,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/", () => "`Auth` service is alive");
+app.MapGet("/", () => "`Auth` service is alive").RequireAuthorization();
 
 app.MapGet("/check-availability", () =>
 {
@@ -72,7 +72,7 @@ app.MapGet("/check-availability", () =>
         service = "auth-service",
         timestamp = DateTime.UtcNow.ToString("o")
     });
-});
+}).RequireAuthorization();
 
 app.Urls.Add("http://*:80");
 
