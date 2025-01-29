@@ -5,7 +5,7 @@ TODO Add some basic instructions here
 ## Project local start
 
 ```
-docker compose -f ./docker-compose.yml -f ./docker-compose.override.yml up -d --build
+ ./run.sh
 ```
 
 ## DB migartion
