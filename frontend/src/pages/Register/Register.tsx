@@ -14,7 +14,7 @@ export const RegisterPage = () => {
     const { confirmPassword, ...restFields } = values;
 
     try {
-      const response = await fetch('/api/v1/register', {
+      const response = await fetch('/api/v1/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -42,8 +42,8 @@ export const RegisterPage = () => {
       layout="vertical"
     >
       <Form.Item
-        label="Login"
-        name="login"
+        label="Email"
+        name="email"
         rules={[{ required: true, message: 'Please input your email!' }]}
       >
         <Input
