@@ -1,5 +1,6 @@
 import { Button, Form, Input, message } from "antd"
 import { LoginCardStyled } from "./styled.ts"
+import { storeTokens } from "../../utils/auth"
 
 type TLoginFormValues = Readonly<{
   login: string;
@@ -11,7 +12,6 @@ export const LoginPage = () => {
 
   const onFormSubmit = async (values: TLoginFormValues) => {
     try {
-      // TODO Change this path to be just /login ?
       const response = await fetch('/api/v1/auth/login', {
         method: 'POST',
         headers: {
@@ -21,6 +21,8 @@ export const LoginPage = () => {
       });
       
       if (response.ok) {
+        const tokens = await response.json();
+        storeTokens(tokens);
         message.success('Login successful!');
       } else {
         message.error('Invalid credentials');
