@@ -8,77 +8,142 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-// Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Configure database first
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? throw new InvalidOperationException("Connection string not found");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddIdentityApiEndpoints<User>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+// Configure Identity before Authentication and Authorization
+builder.Services.AddIdentity<User, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = false;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
 
-// TODO Uncomment JWT
-// builder.Services.AddAuthentication(options =>
-// {
-//     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-// })
-// .AddJwtBearer(options =>
-// {
-//     options.TokenValidationParameters = new TokenValidationParameters
-//     {
-//         ValidateIssuer = true,
-//         ValidateAudience = true,
-//         ValidateLifetime = true,
-//         ValidateIssuerSigningKey = true,
-//         ValidIssuer = builder.Configuration["Jwt:Issuer"],
-//         ValidAudience = builder.Configuration["Jwt:Audience"],
-//         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-//     };
-// });
+// Configure Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not found")))
+    };
+});
 
-builder.Services.AddControllers();
+// Configure Authorization
+builder.Services.AddAuthorization();
+
+// Add other services
+builder.Services.AddScoped<JwtTokenService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    // app.UseDeveloperExceptionPage(); TODO Whats this?
-}
+// // Configure middleware pipeline
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseDeveloperExceptionPage();
+// }
 
-// Setting up API endpoints
-app.MapIdentityApi<User>();
-
-app.UseRouting();
-
+// Order matters for middleware
 app.UseHttpsRedirection();
-app.UseAuthentication();
+app.UseAuthentication(); // Must come before UseAuthorization
 app.UseAuthorization();
 
-app.MapControllers();
+// Configure endpoints
+app.MapPost("/login", async (
+    LoginRequest request,
+    UserManager<User> userManager,
+    JwtTokenService tokenService) =>
+{
+    var user = await userManager.FindByNameAsync(request.Email);
+    if (user == null || !await userManager.CheckPasswordAsync(user, request.Password))
+    {
+        return Results.Unauthorized();
+    }
 
-app.MapGet("/", () => "`Auth` service is alive").RequireAuthorization();
+    var (accessToken, refreshToken) = await tokenService.GenerateTokens(user);
+    
+    return Results.Ok(new
+    {
+        AccessToken = accessToken,
+        RefreshToken = refreshToken,
+        TokenType = "Bearer",
+        ExpiresIn = 900 // 15 minutes in seconds
+    });
+});
 
+app.MapPost("/register", async (
+    RegisterRequest request,
+    UserManager<User> userManager) =>
+{
+    var user = new User { UserName = request.Email, Email = request.Email };
+    var result = await userManager.CreateAsync(user, request.Password);
+
+    if (!result.Succeeded)
+    {
+        return Results.BadRequest(result.Errors);
+    }
+
+    return Results.Ok();
+});
+
+app.MapPost("/refresh-token", async (
+    RefreshTokenRequest request,
+    UserManager<User> userManager,
+    JwtTokenService tokenService) =>
+{
+    var user = await userManager.FindByNameAsync(request.Email);
+    if (user == null)
+    {
+        return Results.Unauthorized();
+    }
+
+    if (!await tokenService.ValidateRefreshToken(user, request.RefreshToken))
+    {
+        return Results.Unauthorized();
+    }
+
+    var (accessToken, refreshToken) = await tokenService.GenerateTokens(user);
+    
+    return Results.Ok(new
+    {
+        AccessToken = accessToken,
+        RefreshToken = refreshToken,
+        TokenType = "Bearer",
+        ExpiresIn = 900
+    });
+});
+
+// Health check endpoint
 app.MapGet("/check-availability", () =>
 {
-    return Results.Json(new
+    return Results.Ok(new
     {
         service = "auth-service",
         timestamp = DateTime.UtcNow.ToString("o")
     });
-}).RequireAuthorization();
+});
 
 app.Urls.Add("http://*:80");
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+// Request DTOs
+public record RegisterRequest(string Email, string Password);
+public record LoginRequest(string Email, string Password);
+public record RefreshTokenRequest(string Email, string RefreshToken);
