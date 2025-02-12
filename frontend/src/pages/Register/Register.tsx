@@ -1,5 +1,7 @@
 import { Button, Form, Input, message } from "antd"
 import { RegisterCardStyled } from "./styled.ts"
+import { Link } from "react-router";
+import { ERoutes } from "#src/router/routes-list.ts";
 
 type TRegisterFormValues = Readonly<{
   login: string;
@@ -151,5 +153,8 @@ export const RegisterPage = () => {
     >
       Submit
     </Button>
+    <div>
+      <span>Already have an account? <Link to={ERoutes.Login}>Login now!</Link></span>
+    </div>
   </RegisterCardStyled>)
 }

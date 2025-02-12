@@ -1,5 +1,7 @@
 import { Button, Form, Input, message } from "antd"
 import { LoginCardStyled } from "./styled.ts"
+import { Link } from "react-router";
+import { ERoutes } from "#src/router/routes-list.ts";
 
 type TLoginFormValues = Readonly<{
   login: string;
@@ -74,5 +76,8 @@ export const LoginPage = () => {
       </Form.Item>
     </Form>
     <Button type="primary" form="loginForm" htmlType="submit">Submit</Button>
+    <div>
+      <span>Have no account? <Link to={ERoutes.Register}>Sign up now!</Link></span>
+    </div>
   </LoginCardStyled>)
 }
