@@ -17,9 +17,9 @@ public class JwtTokenService
         _userManager = userManager;
     }
 
-    public async Task<(string accessToken, string refreshToken)> GenerateTokens(User user)
+    public async Task<(string accessToken, string refreshToken, string expires)> GenerateTokens(User user)
     {
-        var accessToken = await GenerateJwtToken(user);
+        var (accessToken, expires) = await GenerateJwtToken(user);
         var refreshToken = GenerateRefreshToken();
 
         // Update user with new refresh token
@@ -27,10 +27,10 @@ public class JwtTokenService
         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Refresh token valid for 7 days
         await _userManager.UpdateAsync(user);
 
-        return (accessToken, refreshToken);
+        return (accessToken, refreshToken, expires);
     }
 
-    private async Task<string> GenerateJwtToken(User user)
+    private async Task<(string, string)> GenerateJwtToken(User user)
     {
         var claims = new List<Claim>
         {
@@ -50,13 +50,13 @@ public class JwtTokenService
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_config["Jwt:ExpirationMinutes"])),
+            expires: DateTime.UtcNow.AddHours(Convert.ToDouble(_config["Jwt:ExpirationHours"])).ToUniversalTime(),
             signingCredentials: creds
         );
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return (new JwtSecurityTokenHandler().WriteToken(token), new DateTimeOffset(token.ValidTo.ToUniversalTime()).ToUnixTimeMilliseconds().ToString());
     }
-
+ 
     private string GenerateRefreshToken()
     {
         var randomNumber = new byte[64];
