@@ -12,4 +12,5 @@ FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY ocelot.json ./
+COPY ["appsettings.json", "ocelot.json", "./"]
 ENTRYPOINT ["dotnet", "Gateway.dll"]
