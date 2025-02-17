@@ -3,35 +3,52 @@ services:
   backend:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
     ports:
       - "5001:80"
+    volumes:
+      - ./services/Backend:/app
 
   content:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
     ports:
       - "5002:80"
+    volumes:
+      - ./services/Content:/app
 
   generator:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
     ports:
       - "5003:80"
+    volumes:
+      - ./services/Generator:/app
 
   auth:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
     ports:
       - "5005:80"
+    volumes:
+      - ./services/Auth:/app
 
   gateway:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
     ports:
       - "5000:8080"
+    volumes:
+      - ./services/Gateway:/app
 
   frontend:
     environment:
       - NODE_ENV=development
     ports:
-      - "80:80"
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app

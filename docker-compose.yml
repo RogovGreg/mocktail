@@ -16,24 +16,28 @@ services:
       context: services/Backend
       dockerfile: Dockerfile
     container_name: backend
+    command: dotnet watch run
 
   content:
     build:
       context: services/Content
       dockerfile: Dockerfile
     container_name: content
+    command: dotnet watch run
 
   generator:
     build:
       context: services/Generator
       dockerfile: Dockerfile
     container_name: generator
+    command: dotnet watch run
 
   auth:
     build:
       context: services/Auth
       dockerfile: Dockerfile
     container_name: auth
+    command: dotnet watch run
 
   gateway:
     build:
@@ -45,6 +49,7 @@ services:
       - content
       - generator
       - auth
+    command: dotnet watch run
 
   frontend:
     build:
@@ -53,3 +58,4 @@ services:
     container_name: frontend
     depends_on:
       - gateway
+    command: npm run dev
