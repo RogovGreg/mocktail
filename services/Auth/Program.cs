@@ -73,17 +73,17 @@ app.MapPost("/login", async (
     var user = await userManager.FindByNameAsync(request.Email);
     if (user == null || !await userManager.CheckPasswordAsync(user, request.Password))
     {
-        return Results.Unauthorized();
+        return Results.NotFound();
     }
 
-    var (accessToken, refreshToken) = await tokenService.GenerateTokens(user);
+    var (accessToken, refreshToken, expires) = await tokenService.GenerateTokens(user);
     
     return Results.Ok(new
     {
         AccessToken = accessToken,
         RefreshToken = refreshToken,
         TokenType = "Bearer",
-        ExpiresIn = 900 // 15 minutes in seconds
+        ExpiresIn = expires
     });
 });
 
@@ -110,7 +110,7 @@ app.MapPost("/refresh-token", async (
     var user = await userManager.FindByNameAsync(request.Email);
     if (user == null)
     {
-        return Results.Unauthorized();
+        return Results.NotFound();
     }
 
     if (!await tokenService.ValidateRefreshToken(user, request.RefreshToken))
@@ -118,14 +118,14 @@ app.MapPost("/refresh-token", async (
         return Results.Unauthorized();
     }
 
-    var (accessToken, refreshToken) = await tokenService.GenerateTokens(user);
+    var (accessToken, refreshToken, expires) = await tokenService.GenerateTokens(user);
     
     return Results.Ok(new
     {
         AccessToken = accessToken,
         RefreshToken = refreshToken,
         TokenType = "Bearer",
-        ExpiresIn = 900
+        ExpiresIn = expires
     });
 });
 
@@ -137,7 +137,7 @@ app.MapGet("/check-availability", () =>
         service = "auth-service",
         timestamp = DateTime.UtcNow.ToString("o")
     });
-});
+}).RequireAuthorization();
 
 app.Urls.Add("http://*:80");
 
