@@ -66,6 +66,7 @@ app.UseAuthorization();
 
 // Configure endpoints
 app.MapPost("/login", async (
+    HttpContext context,
     LoginRequest request,
     UserManager<User> userManager,
     JwtTokenService tokenService) =>
@@ -78,10 +79,17 @@ app.MapPost("/login", async (
 
     var (accessToken, refreshToken, expires) = await tokenService.GenerateTokens(user);
     
+    context.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = false,   // true, if we use HTTPS
+        SameSite = SameSiteMode.Strict,
+        Expires = DateTimeOffset.UtcNow.AddDays(7),
+    });
+
     return Results.Ok(new
     {
         AccessToken = accessToken,
-        RefreshToken = refreshToken,
         TokenType = "Bearer",
         ExpiresIn = expires
     });
@@ -103,6 +111,7 @@ app.MapPost("/register", async (
 });
 
 app.MapPost("/refresh-token", async (
+    HttpContext context,
     RefreshTokenRequest request,
     UserManager<User> userManager,
     JwtTokenService tokenService) =>
@@ -113,17 +122,23 @@ app.MapPost("/refresh-token", async (
         return Results.NotFound();
     }
 
-    if (!await tokenService.ValidateRefreshToken(user, request.RefreshToken))
+    var refreshToken = context.Request.Cookies["refreshToken"];
+    if (string.IsNullOrEmpty(refreshToken))
     {
         return Results.Unauthorized();
     }
 
-    var (accessToken, refreshToken, expires) = await tokenService.GenerateTokens(user);
+    if (!await tokenService.ValidateRefreshToken(user, refreshToken))
+    {
+        return Results.Unauthorized();
+    }
+
+    var (accessToken, newRefreshToken, expires) = await tokenService.GenerateTokens(user);
     
     return Results.Ok(new
     {
         AccessToken = accessToken,
-        RefreshToken = refreshToken,
+        RefreshToken = newRefreshToken,
         TokenType = "Bearer",
         ExpiresIn = expires
     });
@@ -146,4 +161,4 @@ app.Run();
 // Request DTOs
 public record RegisterRequest(string Email, string Password);
 public record LoginRequest(string Email, string Password);
-public record RefreshTokenRequest(string Email, string RefreshToken);
+public record RefreshTokenRequest(string Email);
