@@ -28,6 +28,8 @@ services:
       context: services/Generator
       dockerfile: Dockerfile
     container_name: generator
+    env_file:
+    - .env
 
   auth:
     build:
