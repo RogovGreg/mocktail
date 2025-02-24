@@ -8,13 +8,11 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure database first
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? throw new InvalidOperationException("Connection string not found");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Configure Identity before Authentication and Authorization
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
@@ -24,7 +22,6 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// Configure Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -41,109 +38,25 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not found")))
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not found"))
+        )
     };
 });
 
-// Configure Authorization
 builder.Services.AddAuthorization();
-
-// Add other services
 builder.Services.AddScoped<JwtTokenService>();
 
 var app = builder.Build();
 
-// // Configure middleware pipeline
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseDeveloperExceptionPage();
-// }
-
-// Order matters for middleware
+// Middleware
 app.UseHttpsRedirection();
-app.UseAuthentication(); // Must come before UseAuthorization
+app.UseAuthentication();
 app.UseAuthorization();
 
-// Configure endpoints
-app.MapPost("/login", async (
-    LoginRequest request,
-    UserManager<User> userManager,
-    JwtTokenService tokenService) =>
-{
-    var user = await userManager.FindByNameAsync(request.Email);
-    if (user == null || !await userManager.CheckPasswordAsync(user, request.Password))
-    {
-        return Results.NotFound();
-    }
-
-    var (accessToken, refreshToken, expires) = await tokenService.GenerateTokens(user);
-    
-    return Results.Ok(new
-    {
-        AccessToken = accessToken,
-        RefreshToken = refreshToken,
-        TokenType = "Bearer",
-        ExpiresIn = expires
-    });
-});
-
-app.MapPost("/register", async (
-    RegisterRequest request,
-    UserManager<User> userManager) =>
-{
-    var user = new User { UserName = request.Email, Email = request.Email };
-    var result = await userManager.CreateAsync(user, request.Password);
-
-    if (!result.Succeeded)
-    {
-        return Results.BadRequest(result.Errors);
-    }
-
-    return Results.Ok();
-});
-
-app.MapPost("/refresh-token", async (
-    RefreshTokenRequest request,
-    UserManager<User> userManager,
-    JwtTokenService tokenService) =>
-{
-    var user = await userManager.FindByNameAsync(request.Email);
-    if (user == null)
-    {
-        return Results.NotFound();
-    }
-
-    if (!await tokenService.ValidateRefreshToken(user, request.RefreshToken))
-    {
-        return Results.Unauthorized();
-    }
-
-    var (accessToken, refreshToken, expires) = await tokenService.GenerateTokens(user);
-    
-    return Results.Ok(new
-    {
-        AccessToken = accessToken,
-        RefreshToken = refreshToken,
-        TokenType = "Bearer",
-        ExpiresIn = expires
-    });
-});
-
-// Health check endpoint
-app.MapGet("/check-availability", () =>
-{
-    return Results.Ok(new
-    {
-        service = "auth-service",
-        timestamp = DateTime.UtcNow.ToString("o")
-    });
-}).RequireAuthorization();
+// Routes
+app.MapPost("/login", AuthHandlers.LoginHandler);
+app.MapPost("/register", AuthHandlers.RegisterHandler);
+app.MapPost("/refresh-token", AuthHandlers.RefreshTokenHandler);
 
 app.Urls.Add("http://*:80");
-
 app.Run();
-
-// Request DTOs
-public record RegisterRequest(string Email, string Password);
-public record LoginRequest(string Email, string Password);
-public record RefreshTokenRequest(string Email, string RefreshToken);
