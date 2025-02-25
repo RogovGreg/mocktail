@@ -1,13 +1,15 @@
 import { useState } from "react";
 
 const SERVICES = ["auth", "backend", "content"];
+const PROTOCOL = "http";
+const HOST = "localhost";
 
 export const HomePage = () => {
   const [responses, setResponses] = useState<Record<string, string>>({});
 
   const checkService = async (service: string) => {
     try {
-      const response = await fetch(`/api/v1/${service}/check-availability`);
+      const response = await fetch(`${PROTOCOL}://${HOST}/api/v1/${service}/check-availability`);
       if (!response.ok) {
         throw new Error(`Error from ${service}: ${response.statusText}`);
       }
