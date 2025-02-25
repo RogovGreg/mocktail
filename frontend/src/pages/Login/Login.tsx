@@ -1,8 +1,7 @@
-import { Button, Form, Input, message } from "antd"
+import { Button, Form, Input } from "antd"
 import { LoginCardStyled } from "./styled.ts"
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ERoutes } from "#src/router/routes-list.ts";
-import { storeTokens } from "../../utils/auth"
 
 type TLoginFormValues = Readonly<{
   login: string;
@@ -12,26 +11,36 @@ type TLoginFormValues = Readonly<{
 export const LoginPage = () => {
   const [form] = Form.useForm<TLoginFormValues>();
 
+  const navigate = useNavigate();
+
   const onFormSubmit = async (values: TLoginFormValues) => {
-    try {
-      const response = await fetch('/api/v1/auth/login', {
+    // try {
+    console.log('> onFormSubmit - 1', values);
+
+      await fetch('/api/v1/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(values),
-      });
+      }).then((response => {
+        console.log('> onFormSubmit - 2', response);
+        if (response.ok) {
+          console.log('> onFormSubmit - 3');
+          navigate(ERoutes.HomePage);
+        }
+      }));
       
-      if (response.ok) {
-        const tokens = await response.json();
-        storeTokens(tokens);
-        message.success('Login successful!');
-      } else {
-        message.error('Invalid credentials');
-      }
-    } catch (error) {
-      message.error('Login failed. Please try again.');
-    }
+      // if (response.ok) {
+      //   const tokens = await response.json();
+      //   storeTokens(tokens);
+      //   message.success('Login successful!');
+      // } else {
+      //   message.error('Invalid credentials');
+      // }
+    // } catch (error) {
+    //   message.error('Login failed. Please try again.');
+    // }
   };
 
 

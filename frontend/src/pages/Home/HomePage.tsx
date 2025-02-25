@@ -1,9 +1,13 @@
+import { ERoutes } from "#src/router";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 
 const SERVICES = ["auth", "backend", "content"];
 
 export const HomePage = () => {
   const [responses, setResponses] = useState<Record<string, string>>({});
+
+  const navigate = useNavigate();
 
   const checkService = async (service: string) => {
     try {
@@ -42,6 +46,29 @@ export const HomePage = () => {
             Check {service}
           </button>
         ))}
+      </div>
+      <div style={{ marginBottom: "20px" }}>
+      <button
+        onClick={async () => {
+          await fetch('/api/v1/auth/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }).then((response => {
+            if (response.ok) {
+              navigate(ERoutes.Login);
+            }
+          }))
+        }}
+        style={{
+          margin: "5px",
+          padding: "10px 15px",
+          cursor: "pointer",
+        }}
+      >
+        Logout
+      </button>
       </div>
       <div>
         <h2>Responses</h2>

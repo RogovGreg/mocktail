@@ -144,6 +144,18 @@ app.MapPost("/refresh-token", async (
     });
 });
 
+app.MapPost("/logout", (HttpContext context) =>
+{
+    context.Response.Cookies.Delete("refreshToken", new CookieOptions
+    {
+        HttpOnly = true,
+        // Secure = true,
+        SameSite = SameSiteMode.Strict
+    });
+
+    return Results.Ok(new { Message = "Logged out successfully" });
+});
+
 // Health check endpoint
 app.MapGet("/check-availability", () =>
 {
