@@ -45,7 +45,7 @@ export const LoginPage = () => {
 
 
   return (<LoginCardStyled>
-    <h1>Sign In</h1>
+  <h1>Sign In</h1>
     <Form
       form={form}
       name="loginForm"
