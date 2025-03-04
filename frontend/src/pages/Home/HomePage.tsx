@@ -1,5 +1,7 @@
+import { AuthContext } from "#src/global-contexts";
 import { ERoutes } from "#src/router";
-import { useState } from "react";
+
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 
 const SERVICES = ["auth", "backend", "content"];
@@ -9,20 +11,34 @@ const HOST = "localhost";
 export const HomePage = () => {
   const [responses, setResponses] = useState<Record<string, string>>({});
 
+  const test = useContext(AuthContext);
+  console.log('>> ', test)
+
   const navigate = useNavigate();
 
   const checkService = async (service: string) => {
     try {
-      const response = await fetch(`${PROTOCOL}://${HOST}/api/v1/${service}/check-availability`);
+      console.log('> checkService', service);
+      const response = await fetch(`${PROTOCOL}://${HOST}/api/v1/${service}/check-availability`, {
+        method: 'GET',
+        credentials: service === 'backend' ? 'omit' : 'include',
+        headers: {
+          Authorization: `${sessionStorage.getItem('tokenType')} ${sessionStorage.getItem('accessToken')}`
+        }
+      });
+      
       if (!response.ok) {
         throw new Error(`Error from ${service}: ${response.statusText}`);
       }
-
+      
       const data = await response.json();
-      setResponses((prev) => ({
+      
+      setResponses(prev => ({
         ...prev,
-        [service]: `Service: ${data.service}, Time: ${data.timestamp}`,
+        [service]: `Service: ${data.service}, Time: ${data.timestamp}`
       }));
+      
+
     } catch (error: any) {
       setResponses((prev) => ({
         ...prev,

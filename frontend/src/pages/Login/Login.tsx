@@ -2,6 +2,7 @@ import { Button, Form, Input } from "antd"
 import { LoginCardStyled } from "./styled.ts"
 import { Link, useNavigate } from "react-router";
 import { ERoutes } from "#src/router/routes-list.ts";
+import axios from "axios";
 
 type TLoginFormValues = Readonly<{
   login: string;
@@ -17,16 +18,18 @@ export const LoginPage = () => {
     // try {
     console.log('> onFormSubmit - 1', values);
 
-      await fetch('/api/v1/auth/login', {
-        method: 'POST',
+      await axios.post('/api/v1/auth/login', values, {
         headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      }).then((response => {
-        console.log('> onFormSubmit - 2', response);
-        if (response.ok) {
-          console.log('> onFormSubmit - 3');
+          'Content-Type': 'application/json',}
+        }
+      ).then((response => {
+        const { accessToken, tokenType } = response.data;
+
+        sessionStorage.setItem('accessToken', accessToken);
+        sessionStorage.setItem('tokenType', tokenType);
+        console.log('> onFormSubmit - 2', {accessToken, tokenType});
+
+        if (response.status === 200) {
           navigate(ERoutes.HomePage);
         }
       }));

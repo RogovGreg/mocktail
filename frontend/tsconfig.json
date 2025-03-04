@@ -24,7 +24,8 @@
       "#pages/*": ["src/pages/*"],
       "#routes": ["src/routes-list.ts"],
       "#src": ["src"],
-      "#src/*": ["src/*"]
+      "#src/*": ["src/*"],
+      "#global-contexts": ["src/global-contexts/index.ts"],
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,
