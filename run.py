@@ -87,9 +87,12 @@ def main():
     
     while True:
         print()
-        command = input("Waiting for further commands (migrate/quit): ").strip().lower()
+        command = input("Waiting for further commands (migrate/restart/quit): ").strip().lower()
         if command == "migrate":
             run_migrations()
+        elif command == "restart":
+            stop_docker()
+            start_docker()
         elif command == "quit":
             stop_docker()
             break
