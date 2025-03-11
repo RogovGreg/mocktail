@@ -1,9 +1,9 @@
-import { createBrowserRouter, Navigate } from "react-router";
-import { LoginServiceRoutesList } from "./routes.ts";
-import { RouterProvider } from "react-router-dom";
-import { ERoutes } from "./routes-list.ts";
-import { TRouteObjectList } from "./types.ts";
+import { createBrowserRouter, Navigate } from 'react-router';
+import { RouterProvider } from 'react-router-dom';
 
+import { LoginServiceRoutesList } from './routes.ts';
+import { ERoutes } from './routes-list.ts';
+import { TRouteObjectList } from './types.ts';
 
 const router = createBrowserRouter([
   // Public routes
@@ -11,9 +11,7 @@ const router = createBrowserRouter([
   ...LoginServiceRoutesList.map<TRouteObjectList>(({ path, Component }) => ({
     path,
 
-    element: (
-        <Component />
-    ),
+    element: <Component />,
   })),
 
   /* eslint-disable sort-keys */

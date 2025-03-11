@@ -2,7 +2,7 @@ export type TAuthAccessToken = Readonly<{
   value: string | null;
   expiresIn: string | null;
   type: string | null;
-}>
+}>;
 
 export type TAuthContextValue = Readonly<{
   accessToken: TAuthAccessToken | null;

@@ -32,6 +32,7 @@
     "@types/react": "19.0.1",
     "@types/react-dom": "19.0.2",
     "@types/rollup": "0.51.4",
+    "@typescript-eslint/eslint-plugin": "6.2.1",
     "@vitejs/plugin-react": "4.3.4",
     "eslint": "8.46.0",
     "eslint-config-airbnb": "19.0.4",

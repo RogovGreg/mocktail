@@ -20,6 +20,8 @@
     "noUnusedParameters": true,
     "preserveSymlinks": true,
     "paths": {
+      "#api": ["src/api"],
+      "#api/*": ["src/api/*"],
       "#pages": ["src/pages"],
       "#pages/*": ["src/pages/*"],
       "#routes": ["src/routes-list.ts"],

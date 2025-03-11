@@ -3,4 +3,5 @@ export enum ERoutes {
   Login = '/login',
   PageNotFound = '/page-not-found',
   Register = '/register',
+  RegisterSuccess = '/register/success',
 }

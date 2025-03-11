@@ -1,5 +1,8 @@
-import React from "react";
-import { TAuthContextValue } from "./types";
-import { AUTH_CONTEXT_DEFAULT_VALUE } from "./constants";
+import React from 'react';
 
-export const AuthContext = React.createContext<TAuthContextValue>(AUTH_CONTEXT_DEFAULT_VALUE);
+import { AUTH_CONTEXT_DEFAULT_VALUE } from './constants';
+import { TAuthContextValue } from './types';
+
+export const AuthContext = React.createContext<TAuthContextValue>(
+  AUTH_CONTEXT_DEFAULT_VALUE,
+);
