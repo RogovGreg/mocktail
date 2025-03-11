@@ -1,11 +1,21 @@
-import { HomePage, LoginPage, PageNotFoundPage, RegisterPage } from "../pages/index.ts";
-import { ERoutes } from "./routes-list.ts";
-import { TRouteObjectList } from "./types.ts";
+import { ERoutes } from './routes-list.ts';
+import { TRouteObjectList } from './types.ts';
+import {
+  HomePage,
+  LoginPage,
+  PageNotFoundPage,
+  RegisterPage,
+  RegisterSuccessNotificationPage,
+} from '../pages/index.ts';
 
 export const LoginServiceRoutesList: TRouteObjectList = [
   {
     Component: RegisterPage,
     path: ERoutes.Register,
+  },
+  {
+    Component: RegisterSuccessNotificationPage,
+    path: ERoutes.RegisterSuccess,
   },
   {
     Component: LoginPage,
@@ -19,4 +29,4 @@ export const LoginServiceRoutesList: TRouteObjectList = [
     Component: HomePage,
     path: ERoutes.HomePage,
   },
-]
+];
