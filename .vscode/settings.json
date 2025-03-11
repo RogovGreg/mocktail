@@ -1,4 +1,12 @@
 {
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+  "eslint.workingDirectories": [
+    {
+      "directory": "./frontend",
+    }
+  ],
   "cSpell.words": [
     "Mocktail"
   ]
