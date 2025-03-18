@@ -84,7 +84,7 @@ def start_docker():
             "-f",
             "./docker-compose.yml",
             "-f",
-            "./docker-compose.override.yml",
+            "./docker-compose.dev.yml",
             "up",
             "-d",
             "--build",

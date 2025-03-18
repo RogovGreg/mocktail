@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   backend:
     environment:
@@ -19,10 +18,14 @@ services:
       - "5003:80"
 
   auth:
+    build:
+      dockerfile: Docker/Dockerfile.dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "5005:80"
+    volumes:
+      - ./services/Auth:/src
 
   gateway:
     environment:
