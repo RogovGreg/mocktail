@@ -13,19 +13,19 @@ services:
   backend:
     build:
       context: services/Backend
-      dockerfile: Dockerfile
+      dockerfile: Dokcer/Dockerfile
     container_name: backend
 
   content:
     build:
       context: services/Content
-      dockerfile: Dockerfile
+      dockerfile: Dokcer/Dockerfile
     container_name: content
 
   generator:
     build:
       context: services/Generator
-      dockerfile: Dockerfile
+      dockerfile: Dokcer/Dockerfile
     container_name: generator
     env_file:
       - .env

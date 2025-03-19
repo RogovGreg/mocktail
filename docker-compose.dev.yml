@@ -1,21 +1,33 @@
 services:
   backend:
+    build:
+      dockerfile: Docker/Dockerfile.dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "5001:80"
+    volumes:
+      - ./services/Backend:/src
 
   content:
+    build:
+      dockerfile: Docker/Dockerfile.dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "5002:80"
+    volumes:
+      - ./services/Content:/src
 
   generator:
+    build:
+      dockerfile: Docker/Dockerfile.dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "5003:80"
+    volumes:
+      - ./services/Generator:/src
 
   auth:
     build:
