@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -14,28 +13,30 @@ services:
   backend:
     build:
       context: services/Backend
-      dockerfile: Dockerfile
+      dockerfile: Dokcer/Dockerfile
     container_name: backend
 
   content:
     build:
       context: services/Content
-      dockerfile: Dockerfile
+      dockerfile: Dokcer/Dockerfile
     container_name: content
 
   generator:
     build:
       context: services/Generator
-      dockerfile: Dockerfile
+      dockerfile: Dokcer/Dockerfile
     container_name: generator
     env_file:
-    - .env
+      - .env
 
   auth:
     build:
       context: services/Auth
-      dockerfile: Dockerfile
+      dockerfile: Dokcer/Dockerfile
     container_name: auth
+    depends_on:
+      - mssql
 
   gateway:
     build:
