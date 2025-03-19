@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router';
 import { Button, Form, Input } from 'antd';
+import { StatusCodes } from 'http-status-codes';
 
 import { AuthService } from '#api';
 import { ERoutes } from '#src/router/routes-list.ts';
@@ -17,7 +18,7 @@ export const RegisterPage = () => {
     const { confirmPassword, ...restFields } = values;
 
     await AuthService.register(restFields).then(response => {
-      if (response.status === 200) {
+      if (response.status === StatusCodes.OK) {
         navigate(ERoutes.RegisterSuccess);
       }
     });

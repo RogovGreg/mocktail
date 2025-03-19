@@ -1,47 +1,38 @@
+import { useContext } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Button, Form, Input } from 'antd';
+import { StatusCodes } from 'http-status-codes';
 
-import { AuthService } from '#api';
+import { AuthService, updateApiAuthorization } from '#api';
+import { AuthContext } from '#src/global-contexts/index.ts';
 import { ERoutes } from '#src/router/routes-list.ts';
 
 import { LoginCardStyled } from './styled.ts';
-
-type TLoginFormValues = Readonly<{
-  login: string;
-  password: string;
-}>;
+import { TLoginFormValues } from './types.ts';
 
 export const LoginPage = () => {
   const [form] = Form.useForm<TLoginFormValues>();
 
+  const { updateAccessToken } = useContext(AuthContext);
+
   const navigate = useNavigate();
 
   const onFormSubmit = async (values: TLoginFormValues) => {
-    // try {
     console.log('> onFormSubmit - 1', values);
 
     await AuthService.login(values).then(response => {
-      const { accessToken, tokenType } = response.data;
+      if (response.status === StatusCodes.OK && updateAccessToken) {
+        const { accessToken, tokenType, expiresIn } = response.data;
+        console.log('> onFormSubmit - 2', { accessToken, tokenType });
 
-      sessionStorage.setItem('accessToken', accessToken);
-      sessionStorage.setItem('tokenType', tokenType);
-      console.log('> onFormSubmit - 2', { accessToken, tokenType });
-
-      if (response.status === 200) {
+        updateAccessToken({
+          expiresIn,
+          type: tokenType,
+          value: accessToken,
+        });
         navigate(ERoutes.HomePage);
       }
     });
-
-    // if (response.ok) {
-    //   const tokens = await response.json();
-    //   storeTokens(tokens);
-    //   message.success('Login successful!');
-    // } else {
-    //   message.error('Invalid credentials');
-    // }
-    // } catch (error) {
-    //   message.error('Login failed. Please try again.');
-    // }
   };
 
   return (
@@ -57,7 +48,7 @@ export const LoginPage = () => {
         <Form.Item
           label='Email'
           name='email'
-          rules={[{ required: true, message: 'Please input your email!' }]}
+          rules={[{ message: 'Please input your email!', required: true }]}
         >
           <Input
             placeholder='Enter your email'
@@ -84,7 +75,7 @@ export const LoginPage = () => {
         <Form.Item
           label='Password'
           name='password'
-          rules={[{ required: true, message: 'Please input your password!' }]}
+          rules={[{ message: 'Please input your password!', required: true }]}
         >
           <Input.Password
             placeholder='input password'

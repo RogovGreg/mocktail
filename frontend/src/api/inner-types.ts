@@ -1,8 +1,8 @@
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export type TAuthorizationParameters = Readonly<{
-  tokenType: string;
-  accessToken: string;
+  tokenType?: string;
+  accessToken?: string;
 }>;
 
 export type TApiMethodResponse<

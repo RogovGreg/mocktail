@@ -1,8 +1,8 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import { StatusCodes } from 'http-status-codes';
 
 import { AuthService } from '#api';
-import { AuthContext } from '#src/global-contexts';
 import { ERoutes } from '#src/router';
 
 const SERVICES = ['auth', 'backend', 'content'];
@@ -12,22 +12,18 @@ const HOST = 'localhost';
 export const HomePage = () => {
   const [responses, setResponses] = useState<Record<string, string>>({});
 
-  const test = useContext(AuthContext);
-  console.log('>> ', test);
-
   const navigate = useNavigate();
 
   const checkService = async (service: string) => {
     try {
-      console.log('> checkService', service);
       const response = await fetch(
         `${PROTOCOL}://${HOST}/api/v1/${service}/check-availability`,
         {
-          method: 'GET',
           credentials: service === 'backend' ? 'omit' : 'include',
           headers: {
             Authorization: `${sessionStorage.getItem('tokenType')} ${sessionStorage.getItem('accessToken')}`,
           },
+          method: 'GET',
         },
       );
 
@@ -60,9 +56,9 @@ export const HomePage = () => {
             key={service}
             onClick={() => checkService(service)}
             style={{
+              cursor: 'pointer',
               margin: '5px',
               padding: '10px 15px',
-              cursor: 'pointer',
             }}
           >
             Check {service}
@@ -74,7 +70,7 @@ export const HomePage = () => {
           type='button'
           onClick={async () => {
             await AuthService.logout().then(response => {
-              if (response.status === 200) {
+              if (response.status === StatusCodes.OK) {
                 navigate(ERoutes.Login);
               }
             });
