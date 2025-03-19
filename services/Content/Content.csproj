@@ -8,6 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.61.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Shared/Shared.csproj" />
   </ItemGroup>
 
 </Project>
