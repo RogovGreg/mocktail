@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router';
 import { Button, Form, Input } from 'antd';
 import { StatusCodes } from 'http-status-codes';
 
-import { AuthService, updateApiAuthorization } from '#api';
+import { AuthService } from '#api';
 import { AuthContext } from '#src/global-contexts/index.ts';
 import { ERoutes } from '#src/router/routes-list.ts';
 
@@ -106,7 +106,7 @@ export const LoginPage = () => {
         </Form.Item>
       </Form>
       <Button type='primary' form='loginForm' htmlType='submit'>
-        Submit 3
+        Submit 4
       </Button>
       <div>
         <span>

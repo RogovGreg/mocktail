@@ -1,25 +1,48 @@
-import { createBrowserRouter, Navigate } from 'react-router';
+import { createBrowserRouter, Navigate, RouteObject } from 'react-router';
 import { RouterProvider } from 'react-router-dom';
 
-import { LoginServiceRoutesList } from './routes.ts';
+import { ProtectedRoute } from './ProtectedRoute.tsx';
+import { PublicRoute } from './PublicRoute.tsx';
+import { ProtectedRoutesList, PublicRoutesList } from './routes.ts';
 import { ERoutes } from './routes-list.ts';
-import { TRouteObjectList } from './types.ts';
 
 const router = createBrowserRouter([
-  // Public routes
-  // @ts-ignore
-  ...LoginServiceRoutesList.map<TRouteObjectList>(({ path, Component }) => ({
-    path,
+  ...PublicRoutesList.map<RouteObject>(routeObject => {
+    const { path, Component } = routeObject;
 
-    element: <Component />,
-  })),
+    return {
+      path,
 
-  /* eslint-disable sort-keys */
-  // @ts-ignore
-  { path: '/', element: <Navigate to={ERoutes.Login} /> },
-  // @ts-ignore
-  { path: '*', element: <Navigate to={ERoutes.PageNotFound} /> },
-  /* eslint-enable sort-keys */
+      element: (
+        <PublicRoute>
+          <Component />
+        </PublicRoute>
+      ),
+    };
+  }),
+
+  ...ProtectedRoutesList.map<RouteObject>(routeObject => {
+    const { path, Component } = routeObject;
+
+    return {
+      path,
+
+      element: (
+        <ProtectedRoute>
+          <Component />
+        </ProtectedRoute>
+      ),
+    };
+  }),
+
+  {
+    element: <Navigate to={ERoutes.Login} />,
+    path: '/',
+  },
+  {
+    element: <Navigate to={ERoutes.PageNotFound} />,
+    path: '*',
+  },
 ]);
 
 export const Router = () => <RouterProvider router={router} />;

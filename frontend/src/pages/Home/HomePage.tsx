@@ -50,6 +50,17 @@ export const HomePage = () => {
     <div style={{ padding: '20px' }}>
       <h1>Check Service Availability</h1>
       <div style={{ marginBottom: '20px' }}>
+        <button
+          type='button'
+          onClick={() => AuthService.checkAvailability()}
+          style={{
+            cursor: 'pointer',
+            margin: '5px',
+            padding: '10px 15px',
+          }}
+        >
+          New Check Auth Service
+        </button>
         {SERVICES.map(service => (
           <button
             type='button'

@@ -16,6 +16,8 @@ export const updateApiAuthorization = (
   if (authorizationParameters) {
     const { tokenType, accessToken } = authorizationParameters;
 
+    console.log('> updateApiAuthorization: ', `${tokenType} ${accessToken}`);
+
     axiosInstance.defaults.headers.common.Authorization = `${tokenType} ${accessToken}`;
   } else {
     delete axiosInstance.defaults.headers.common.Authorization;

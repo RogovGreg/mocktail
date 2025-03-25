@@ -8,7 +8,7 @@ import {
   RegisterSuccessNotificationPage,
 } from '../pages/index.ts';
 
-export const LoginServiceRoutesList: TRouteObjectList = [
+export const PublicRoutesList: TRouteObjectList = [
   {
     Component: RegisterPage,
     path: ERoutes.Register,
@@ -25,8 +25,18 @@ export const LoginServiceRoutesList: TRouteObjectList = [
     Component: PageNotFoundPage,
     path: ERoutes.PageNotFound,
   },
+];
+
+export const PUBLIC_ROUTES_PATHS_LIST: Array<ERoutes> = PublicRoutesList.map(
+  routeObject => routeObject.path,
+);
+
+export const ProtectedRoutesList: TRouteObjectList = [
   {
     Component: HomePage,
     path: ERoutes.HomePage,
   },
 ];
+
+export const PROTECTED_ROUTES_PATHS_LIST: Array<ERoutes> =
+  ProtectedRoutesList.map(routeObject => routeObject.path);

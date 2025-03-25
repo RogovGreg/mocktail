@@ -16,6 +16,8 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
     TAuthContextValue['isAuthorized']
   >(AUTH_CONTEXT_DEFAULT_VALUE.isAuthorized);
 
+  console.log('> AuthContextProvider states', { accessToken, isAuthorized });
+
   useEffect(() => {
     if (accessToken?.value && !isAuthorized) {
       setIsAuthorized(true);
@@ -25,6 +27,10 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
   }, [accessToken, isAuthorized]);
 
   useEffect(() => {
+    console.log('> AuthContextProvider updateApiAuthorization', {
+      accessToken: accessToken?.value || undefined,
+      tokenType: accessToken?.type || undefined,
+    });
     updateApiAuthorization({
       accessToken: accessToken?.value || undefined,
       tokenType: accessToken?.type || undefined,
