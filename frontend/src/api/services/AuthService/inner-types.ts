@@ -4,4 +4,5 @@ export enum EAuthServiceEndpoint {
   Logout = 'auth/logout',
   RefreshToken = 'auth/refresh-token',
   Register = 'auth/register',
+  CheckStatus = 'auth/check-status',
 }

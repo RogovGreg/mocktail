@@ -1,49 +1,49 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { StatusCodes } from 'http-status-codes';
 
-import { AuthService } from '#api';
+import { AuthService, BackendService, ContentService } from '#api';
+import { AuthContext } from '#src/global-contexts';
 import { ERoutes } from '#src/router';
 
-const SERVICES = ['auth', 'backend', 'content'];
-const PROTOCOL = 'http';
-const HOST = 'localhost';
+import {
+  EApiServices,
+  TAvailabilityLog,
+  TCheckServiceResponseHandler,
+  TCheckServiceResponseHandler2,
+} from './types';
 
 export const HomePage = () => {
-  const [responses, setResponses] = useState<Record<string, string>>({});
+  const { updateIsAuthorized } = useContext(AuthContext);
+
+  const [responses, setResponses] = useState<TAvailabilityLog>([]);
 
   const navigate = useNavigate();
 
-  const checkService = async (service: string) => {
-    try {
-      const response = await fetch(
-        `${PROTOCOL}://${HOST}/api/v1/${service}/check-availability`,
-        {
-          credentials: service === 'backend' ? 'omit' : 'include',
-          headers: {
-            Authorization: `${sessionStorage.getItem('tokenType')} ${sessionStorage.getItem('accessToken')}`,
-          },
-          method: 'GET',
-        },
-      );
+  const checkServiceResponseSuccessHandler: TCheckServiceResponseHandler = (
+    response,
+    service,
+  ) => {
+    setResponses([
+      ...responses,
+      {
+        message: `service is available at ${response.data.timestamp}`,
+        service,
+      },
+    ]);
+  };
 
-      if (!response.ok) {
-        throw new Error(`Error from ${service}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      setResponses(prev => ({
-        ...prev,
-        [service]: `Service: ${data.service}, Time: ${data.timestamp}`,
-      }));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      setResponses(prev => ({
-        ...prev,
-        [service]: `Error: ${error.message}`,
-      }));
-    }
+  const checkServiceResponseFailureHandler: TCheckServiceResponseHandler2 = (
+    error,
+    service,
+  ) => {
+    setResponses([
+      ...responses,
+      {
+        message: `service is not available with status - ${error.status}`,
+        service,
+      },
+    ]);
   };
 
   return (
@@ -52,39 +52,89 @@ export const HomePage = () => {
       <div style={{ marginBottom: '20px' }}>
         <button
           type='button'
-          onClick={() => AuthService.checkAvailability()}
+          onClick={() =>
+            AuthService.checkAvailability().then(
+              response =>
+                checkServiceResponseSuccessHandler(response, EApiServices.Auth),
+              error =>
+                checkServiceResponseFailureHandler(error, EApiServices.Auth),
+            )
+          }
           style={{
             cursor: 'pointer',
             margin: '5px',
             padding: '10px 15px',
           }}
         >
-          New Check Auth Service
+          Check Auth Service
         </button>
-        {SERVICES.map(service => (
-          <button
-            type='button'
-            key={service}
-            onClick={() => checkService(service)}
-            style={{
-              cursor: 'pointer',
-              margin: '5px',
-              padding: '10px 15px',
-            }}
-          >
-            Check {service}
-          </button>
-        ))}
+        <button
+          type='button'
+          onClick={() =>
+            BackendService.checkAvailability().then(
+              response =>
+                checkServiceResponseSuccessHandler(
+                  response,
+                  EApiServices.Backend,
+                ),
+              error =>
+                checkServiceResponseFailureHandler(error, EApiServices.Backend),
+            )
+          }
+          style={{
+            cursor: 'pointer',
+            margin: '5px',
+            padding: '10px 15px',
+          }}
+        >
+          Check Backend Service
+        </button>
+        <button
+          type='button'
+          onClick={() =>
+            ContentService.checkAvailability().then(
+              response =>
+                checkServiceResponseSuccessHandler(
+                  response,
+                  EApiServices.Content,
+                ),
+              error =>
+                checkServiceResponseFailureHandler(error, EApiServices.Content),
+            )
+          }
+          style={{
+            cursor: 'pointer',
+            margin: '5px',
+            padding: '10px 15px',
+          }}
+        >
+          Check Content Service
+        </button>
       </div>
       <div style={{ marginBottom: '20px' }}>
         <button
           type='button'
+          onClick={() => AuthService.checkStatus()}
+          style={{
+            cursor: 'pointer',
+            margin: '5px',
+            padding: '10px 15px',
+          }}
+        >
+          Check Status
+        </button>
+        <button
+          type='button'
           onClick={async () => {
-            await AuthService.logout().then(response => {
-              if (response.status === StatusCodes.OK) {
-                navigate(ERoutes.Login);
-              }
-            });
+            if (updateIsAuthorized) {
+              await AuthService.logout().then(response => {
+                if (response.status === StatusCodes.OK) {
+                  updateIsAuthorized(false);
+
+                  navigate(ERoutes.Login);
+                }
+              });
+            }
           }}
           style={{
             cursor: 'pointer',
@@ -98,11 +148,15 @@ export const HomePage = () => {
       <div>
         <h2>Responses</h2>
         <ul>
-          {Object.entries(responses).map(([service, response]) => (
-            <li key={service}>
-              <strong>{service}:</strong> {response}
-            </li>
-          ))}
+          {responses.map(response => {
+            const { service, message } = response;
+            return (
+              <li key={`${service}: ${message}`} style={{ textAlign: 'left' }}>
+                <strong>{service}: </strong>
+                <span>{message}</span>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>

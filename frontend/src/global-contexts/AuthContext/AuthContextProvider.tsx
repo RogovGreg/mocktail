@@ -9,14 +9,16 @@ import { TAuthContextValue } from './types';
 export const AuthContextProvider: FC<PropsWithChildren> = props => {
   const { children } = props;
 
+  useEffect(() => {
+    console.log('> AuthContextProvider didMount');
+  }, []);
+
   const [accessToken, setAccessToken] = useState<
     TAuthContextValue['accessToken']
   >(AUTH_CONTEXT_DEFAULT_VALUE.accessToken);
   const [isAuthorized, setIsAuthorized] = useState<
     TAuthContextValue['isAuthorized']
   >(AUTH_CONTEXT_DEFAULT_VALUE.isAuthorized);
-
-  console.log('> AuthContextProvider states', { accessToken, isAuthorized });
 
   useEffect(() => {
     if (accessToken?.value && !isAuthorized) {
@@ -27,10 +29,6 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
   }, [accessToken, isAuthorized]);
 
   useEffect(() => {
-    console.log('> AuthContextProvider updateApiAuthorization', {
-      accessToken: accessToken?.value || undefined,
-      tokenType: accessToken?.type || undefined,
-    });
     updateApiAuthorization({
       accessToken: accessToken?.value || undefined,
       tokenType: accessToken?.type || undefined,

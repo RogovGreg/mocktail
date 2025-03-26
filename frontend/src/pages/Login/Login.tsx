@@ -18,12 +18,9 @@ export const LoginPage = () => {
   const navigate = useNavigate();
 
   const onFormSubmit = async (values: TLoginFormValues) => {
-    console.log('> onFormSubmit - 1', values);
-
     await AuthService.login(values).then(response => {
       if (response.status === StatusCodes.OK && updateAccessToken) {
         const { accessToken, tokenType, expiresIn } = response.data;
-        console.log('> onFormSubmit - 2', { accessToken, tokenType });
 
         updateAccessToken({
           expiresIn,
@@ -106,7 +103,7 @@ export const LoginPage = () => {
         </Form.Item>
       </Form>
       <Button type='primary' form='loginForm' htmlType='submit'>
-        Submit 4
+        Submit
       </Button>
       <div>
         <span>

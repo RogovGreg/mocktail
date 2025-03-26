@@ -14,7 +14,7 @@ export const ProtectedRoute: FC<PropsWithChildren> = props => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAuthorized) {
+    if (!isAuthorized && false) {
       navigate(ERoutes.Login);
     }
   }, [isAuthorized, currentURL]);

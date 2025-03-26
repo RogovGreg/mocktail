@@ -4,6 +4,10 @@ import { EAuthServiceEndpoint } from './inner-types';
 import { TAuthService } from './types';
 
 export const AuthService: TAuthService = {
+  checkAvailability: options =>
+    axiosInstance.get(EAuthServiceEndpoint.CheckAvailability, options),
+  checkStatus: options =>
+    axiosInstance.get(EAuthServiceEndpoint.CheckStatus, options),
   login: (requestBody, options) =>
     axiosInstance.post(EAuthServiceEndpoint.Login, requestBody, options),
   logout: options =>
@@ -12,6 +16,4 @@ export const AuthService: TAuthService = {
     axiosInstance.post(EAuthServiceEndpoint.RefreshToken, undefined, options),
   register: (requestBody, options) =>
     axiosInstance.post(EAuthServiceEndpoint.Register, requestBody, options),
-  checkAvailability: options =>
-    axiosInstance.get(EAuthServiceEndpoint.CheckAvailability, options),
 };

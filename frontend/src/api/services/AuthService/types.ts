@@ -4,6 +4,8 @@ import {
   TApiMethodWithPayload,
 } from '#src/api/inner-types';
 
+import { TCheckServiceAvailability } from '../types';
+
 export type TLoginPassword = {
   login: string;
   password: string;
@@ -14,15 +16,6 @@ export type TAuthTokenData = Readonly<{
   expiresIn: string;
   tokenType: string;
 }>;
-
-export type TAuthMethodCheckAvailabilityResponseData = Readonly<{
-  service: string;
-  timestamp: string;
-}>;
-export type TAuthMethodCheckAvailabilityResponse =
-  TApiMethodResponse<TAuthMethodCheckAvailabilityResponseData>;
-export type TAuthMethodCheckAvailability =
-  TApiMethod<TAuthMethodCheckAvailabilityResponseData>;
 
 export type TAuthMethodLoginRequestBody = Readonly<TLoginPassword>;
 export type TAuthMethodLoginResponseData = TAuthTokenData;
@@ -50,8 +43,11 @@ export type TAuthMethodRegisterResponse = TApiMethodResponse<
 >;
 export type TAuthMethodRegister = TApiMethodWithPayload<TLoginPassword>;
 
+export type TAuthCheckStatus = TApiMethod;
+
 export type TAuthService = Readonly<{
-  checkAvailability: TAuthMethodCheckAvailability;
+  checkAvailability: TCheckServiceAvailability;
+  checkStatus: TAuthCheckStatus;
   login: TAuthMethodLogin;
   logout: TAuthMethodLogout;
   refreshToken: TAuthMethodRefreshToken;

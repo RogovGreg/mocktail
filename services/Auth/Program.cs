@@ -156,6 +156,15 @@ app.MapPost("/logout", (HttpContext context) =>
     return Results.Ok(new { Message = "Logged out successfully" });
 });
 
+app.MapGet("/check-status", (HttpContext context) =>
+{
+    if (context.User?.Identity?.IsAuthenticated == true)
+    {
+        return Results.Ok();
+    }
+    return Results.Unauthorized();
+}).RequireAuthorization();
+
 // Health check endpoint
 app.MapGet("/check-availability", () =>
 {
