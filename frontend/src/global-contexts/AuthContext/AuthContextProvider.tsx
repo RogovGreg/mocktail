@@ -9,9 +9,7 @@ import { TAuthContextValue } from './types';
 export const AuthContextProvider: FC<PropsWithChildren> = props => {
   const { children } = props;
 
-  useEffect(() => {
-    console.log('> AuthContextProvider didMount');
-  }, []);
+  console.log('> AuthContextProvider - RENDER');
 
   const [accessToken, setAccessToken] = useState<
     TAuthContextValue['accessToken']
@@ -19,6 +17,8 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
   const [isAuthorized, setIsAuthorized] = useState<
     TAuthContextValue['isAuthorized']
   >(AUTH_CONTEXT_DEFAULT_VALUE.isAuthorized);
+  const [authorizedUserData, setAuthorizedUserData] =
+    useState<TAuthContextValue['authorizedUserData']>(null);
 
   useEffect(() => {
     if (accessToken?.value && !isAuthorized) {
@@ -52,13 +52,20 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
   const contextValue = useMemo<TAuthContextValue>(
     () => ({
       accessToken,
+      authorizedUserData,
       isAuthorized,
       updateAccessToken,
+      updateAuthorizedUserData: setAuthorizedUserData,
       updateIsAuthorized,
-
-      authorizedUserData: null,
     }),
-    [accessToken, isAuthorized, updateAccessToken, updateIsAuthorized],
+    [
+      accessToken,
+      authorizedUserData,
+      isAuthorized,
+      setAuthorizedUserData,
+      updateAccessToken,
+      updateIsAuthorized,
+    ],
   );
 
   return (

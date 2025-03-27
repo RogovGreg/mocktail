@@ -82,7 +82,7 @@ app.MapPost("/login", async (
     context.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
     {
         HttpOnly = true,
-        Secure = false,   // true, if we use HTTPS
+        Secure = false, // true, if we use HTTPS
         SameSite = SameSiteMode.Strict,
         Expires = DateTimeOffset.UtcNow.AddDays(7),
     });
@@ -91,7 +91,8 @@ app.MapPost("/login", async (
     {
         AccessToken = accessToken,
         TokenType = "Bearer",
-        ExpiresIn = expires
+        ExpiresIn = expires,
+        UserEmail = user.Email
     });
 });
 
@@ -155,6 +156,30 @@ app.MapPost("/logout", (HttpContext context) =>
 
     return Results.Ok(new { Message = "Logged out successfully" });
 });
+
+app.MapGet("/profile", async (HttpContext context, UserManager<User> userManager) =>
+{
+    if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
+    {
+        return Results.Unauthorized();
+    }
+    
+    var userName = context.User.Identity.Name;
+    
+    var user = await userManager.FindByNameAsync(userName);
+    if (user == null)
+    {
+        return Results.NotFound();
+    }
+    
+    return Results.Ok(new 
+    {
+        user.Id,
+        user.UserName,
+        user.Email,
+    });
+}).RequireAuthorization();
+
 
 app.MapGet("/check-status", (HttpContext context) =>
 {

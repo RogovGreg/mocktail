@@ -17,8 +17,13 @@ export type TAuthTokenData = Readonly<{
   tokenType: string;
 }>;
 
+export type TUserProfile = Readonly<{
+  email: string;
+}>;
+
 export type TAuthMethodLoginRequestBody = Readonly<TLoginPassword>;
-export type TAuthMethodLoginResponseData = TAuthTokenData;
+export type TAuthMethodLoginResponseData = TAuthTokenData &
+  Readonly<{ userEmail: string }>;
 export type TAuthMethodLoginResponse = TApiMethodResponse<
   TAuthMethodLoginResponseData,
   TAuthMethodLoginRequestBody
@@ -29,6 +34,11 @@ export type TAuthMethodLogin = TApiMethodWithPayload<
 >;
 
 export type TAuthMethodLogout = TApiMethod;
+
+export type TAuthGetProfileResponseData = TUserProfile;
+export type TAuthGetProfileResponse =
+  TApiMethodResponse<TAuthGetProfileResponseData>;
+export type TAuthGetProfile = TApiMethod<TAuthGetProfileResponseData>;
 
 export type TAuthMethodRefreshTokenResponseData = TAuthTokenData;
 export type TAuthMethodRefreshTokenResponse =
@@ -48,6 +58,7 @@ export type TAuthCheckStatus = TApiMethod;
 export type TAuthService = Readonly<{
   checkAvailability: TCheckServiceAvailability;
   checkStatus: TAuthCheckStatus;
+  getProfile: TAuthGetProfile;
   login: TAuthMethodLogin;
   logout: TAuthMethodLogout;
   refreshToken: TAuthMethodRefreshToken;

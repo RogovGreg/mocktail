@@ -4,6 +4,10 @@ export type TAuthAccessToken = Readonly<{
   type: string | null;
 }>;
 
+export type TAuthorizedUser = Readonly<{
+  email: string | null;
+}>;
+
 export type TAuthContextValue = Readonly<{
   accessToken: TAuthAccessToken | null;
   updateAccessToken: null | ((parameter: TAuthAccessToken) => void);
@@ -11,5 +15,8 @@ export type TAuthContextValue = Readonly<{
   isAuthorized: boolean;
   updateIsAuthorized: null | ((parameter: boolean) => void);
 
-  authorizedUserData: null;
+  authorizedUserData: TAuthorizedUser | null;
+  updateAuthorizedUserData:
+    | null
+    | ((parameter: TAuthorizedUser | null) => void);
 }>;

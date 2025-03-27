@@ -8,4 +8,5 @@ export const AUTH_CONTEXT_DEFAULT_VALUE: TAuthContextValue = {
   updateIsAuthorized: null,
 
   authorizedUserData: null,
+  updateAuthorizedUserData: null,
 };

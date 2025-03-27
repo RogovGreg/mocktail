@@ -3,11 +3,11 @@ import { RouterProvider } from 'react-router-dom';
 
 import { ProtectedRoute } from './ProtectedRoute.tsx';
 import { PublicRoute } from './PublicRoute.tsx';
-import { ProtectedRoutesList, PublicRoutesList } from './routes.ts';
+import { ProtectedRoutesList, PUBLIC_ROUTES_LIST } from './routes.ts';
 import { ERoutes } from './routes-list.ts';
 
 const router = createBrowserRouter([
-  ...PublicRoutesList.map<RouteObject>(routeObject => {
+  ...PUBLIC_ROUTES_LIST.map<RouteObject>(routeObject => {
     const { path, Component } = routeObject;
 
     return {

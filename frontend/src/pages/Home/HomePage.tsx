@@ -125,6 +125,17 @@ export const HomePage = () => {
         </button>
         <button
           type='button'
+          onClick={() => AuthService.getProfile()}
+          style={{
+            cursor: 'pointer',
+            margin: '5px',
+            padding: '10px 15px',
+          }}
+        >
+          Get Profile
+        </button>
+        <button
+          type='button'
           onClick={async () => {
             if (updateIsAuthorized) {
               await AuthService.logout().then(response => {

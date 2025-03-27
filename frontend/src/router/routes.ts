@@ -8,7 +8,7 @@ import {
   RegisterSuccessNotificationPage,
 } from '../pages/index.ts';
 
-export const PublicRoutesList: TRouteObjectList = [
+export const PUBLIC_ROUTES_LIST: TRouteObjectList = [
   {
     Component: RegisterPage,
     path: ERoutes.Register,
@@ -27,7 +27,7 @@ export const PublicRoutesList: TRouteObjectList = [
   },
 ];
 
-export const PUBLIC_ROUTES_PATHS_LIST: Array<ERoutes> = PublicRoutesList.map(
+export const PUBLIC_ROUTES_PATHS_LIST: Array<ERoutes> = PUBLIC_ROUTES_LIST.map(
   routeObject => routeObject.path,
 );
 

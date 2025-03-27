@@ -13,20 +13,27 @@ import { TLoginFormValues } from './types.ts';
 export const LoginPage = () => {
   const [form] = Form.useForm<TLoginFormValues>();
 
-  const { updateAccessToken } = useContext(AuthContext);
+  const { updateAccessToken, updateAuthorizedUserData } =
+    useContext(AuthContext);
 
   const navigate = useNavigate();
 
   const onFormSubmit = async (values: TLoginFormValues) => {
     await AuthService.login(values).then(response => {
-      if (response.status === StatusCodes.OK && updateAccessToken) {
-        const { accessToken, tokenType, expiresIn } = response.data;
+      if (
+        response.status === StatusCodes.OK &&
+        updateAccessToken &&
+        updateAuthorizedUserData
+      ) {
+        const { accessToken, tokenType, expiresIn, userEmail } = response.data;
 
         updateAccessToken({
           expiresIn,
           type: tokenType,
           value: accessToken,
         });
+        updateAuthorizedUserData({ email: userEmail });
+
         navigate(ERoutes.HomePage);
       }
     });
@@ -103,7 +110,7 @@ export const LoginPage = () => {
         </Form.Item>
       </Form>
       <Button type='primary' form='loginForm' htmlType='submit'>
-        Submit
+        Submit 3
       </Button>
       <div>
         <span>

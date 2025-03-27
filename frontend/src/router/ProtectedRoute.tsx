@@ -13,8 +13,9 @@ export const ProtectedRoute: FC<PropsWithChildren> = props => {
   const { pathname: currentURL } = useLocation();
   const navigate = useNavigate();
 
+  // TODO: Put the logic for all authorisation redirects to one place
   useEffect(() => {
-    if (!isAuthorized && false) {
+    if (!isAuthorized) {
       navigate(ERoutes.Login);
     }
   }, [isAuthorized, currentURL]);
