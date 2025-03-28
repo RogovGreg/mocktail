@@ -15,8 +15,8 @@ export const AuthService: TAuthService = {
   logout: options =>
     axiosInstance.post(EAuthServiceEndpoint.Logout, undefined, options),
 
-  refreshToken: options =>
-    axiosInstance.post(EAuthServiceEndpoint.RefreshToken, undefined, options),
+  refreshToken: (requestBody, options) =>
+    axiosInstance.post(EAuthServiceEndpoint.RefreshToken, requestBody, options),
   register: (requestBody, options) =>
     axiosInstance.post(EAuthServiceEndpoint.Register, requestBody, options),
 };

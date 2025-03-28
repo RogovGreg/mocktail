@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { StatusCodes } from 'http-status-codes';
 
 import { AuthService, BackendService, ContentService } from '#api';
+import { AUTHORIZED_USER_ID_FIELD_NAME } from '#common-constants';
 import { AuthContext } from '#src/global-contexts';
 import { ERoutes } from '#src/router';
 
@@ -136,11 +137,27 @@ export const HomePage = () => {
         </button>
         <button
           type='button'
+          onClick={() =>
+            AuthService.refreshToken({
+              UserId: 'afcdc5cd-5392-4bf6-b64d-c69ca1962b6e',
+            })
+          }
+          style={{
+            cursor: 'pointer',
+            margin: '5px',
+            padding: '10px 15px',
+          }}
+        >
+          Refresh Token
+        </button>
+        <button
+          type='button'
           onClick={async () => {
             if (updateIsAuthorized) {
               await AuthService.logout().then(response => {
                 if (response.status === StatusCodes.OK) {
                   updateIsAuthorized(false);
+                  sessionStorage.removeItem(AUTHORIZED_USER_ID_FIELD_NAME);
 
                   navigate(ERoutes.Login);
                 }

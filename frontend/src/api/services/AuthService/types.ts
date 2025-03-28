@@ -6,24 +6,32 @@ import {
 
 import { TCheckServiceAvailability } from '../types';
 
-export type TLoginPassword = {
-  login: string;
-  password: string;
-};
+// ================= Common Types =======================
+
+export type TLoginPassword = Readonly<{
+  login: string | null;
+  password: string | null;
+}>;
 
 export type TAuthTokenData = Readonly<{
-  accessToken: string;
-  expiresIn: string;
-  tokenType: string;
+  accessToken: string | null;
+  expiresIn: string | null;
+  tokenType: string | null;
 }>;
 
 export type TUserProfile = Readonly<{
-  email: string;
+  email: string | null;
+  id: string | null;
+  userName: string | null;
 }>;
 
-export type TAuthMethodLoginRequestBody = Readonly<TLoginPassword>;
-export type TAuthMethodLoginResponseData = TAuthTokenData &
-  Readonly<{ userEmail: string }>;
+// ================= LOGIN =======================
+
+export type TAuthMethodLoginRequestBody = TLoginPassword;
+export type TAuthMethodLoginResponseData = Readonly<{
+  accessToken: TAuthTokenData;
+  authorizedUser: TUserProfile;
+}>;
 export type TAuthMethodLoginResponse = TApiMethodResponse<
   TAuthMethodLoginResponseData,
   TAuthMethodLoginRequestBody
@@ -33,6 +41,8 @@ export type TAuthMethodLogin = TApiMethodWithPayload<
   TAuthMethodLoginResponseData
 >;
 
+// ================= LOGOUT =======================
+
 export type TAuthMethodLogout = TApiMethod;
 
 export type TAuthGetProfileResponseData = TUserProfile;
@@ -40,20 +50,30 @@ export type TAuthGetProfileResponse =
   TApiMethodResponse<TAuthGetProfileResponseData>;
 export type TAuthGetProfile = TApiMethod<TAuthGetProfileResponseData>;
 
+// ================= REFRESH TOKEN =======================
+
 export type TAuthMethodRefreshTokenResponseData = TAuthTokenData;
 export type TAuthMethodRefreshTokenResponse =
   TApiMethodResponse<TAuthMethodRefreshTokenResponseData>;
-export type TAuthMethodRefreshToken =
-  TApiMethod<TAuthMethodRefreshTokenResponseData>;
+export type TAuthMethodRefreshToken = TApiMethodWithPayload<
+  { UserId: string },
+  TAuthMethodRefreshTokenResponseData
+>;
 
-export type TAuthMethodRegisterRequestBody = Readonly<TLoginPassword>;
+// ================= REGISTER =======================
+
+export type TAuthMethodRegisterRequestBody = TLoginPassword;
 export type TAuthMethodRegisterResponse = TApiMethodResponse<
   void,
   TAuthMethodRegisterRequestBody
 >;
 export type TAuthMethodRegister = TApiMethodWithPayload<TLoginPassword>;
 
+// ================= CHECK STATUS =======================
+
 export type TAuthCheckStatus = TApiMethod;
+
+// ======================================================
 
 export type TAuthService = Readonly<{
   checkAvailability: TCheckServiceAvailability;

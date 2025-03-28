@@ -1,11 +1,9 @@
+import { TUserProfile } from '#api';
+
 export type TAuthAccessToken = Readonly<{
   value: string | null;
   expiresIn: string | null;
   type: string | null;
-}>;
-
-export type TAuthorizedUser = Readonly<{
-  email: string | null;
 }>;
 
 export type TAuthContextValue = Readonly<{
@@ -15,8 +13,6 @@ export type TAuthContextValue = Readonly<{
   isAuthorized: boolean;
   updateIsAuthorized: null | ((parameter: boolean) => void);
 
-  authorizedUserData: TAuthorizedUser | null;
-  updateAuthorizedUserData:
-    | null
-    | ((parameter: TAuthorizedUser | null) => void);
+  authorizedUserData: TUserProfile | null;
+  updateAuthorizedUserData: null | ((parameter: TUserProfile | null) => void);
 }>;

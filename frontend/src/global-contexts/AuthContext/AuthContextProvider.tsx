@@ -1,6 +1,8 @@
 import { FC, PropsWithChildren, useEffect, useMemo, useState } from 'react';
+import { StatusCodes } from 'http-status-codes';
 
-import { updateApiAuthorization } from '#api';
+import { AuthService, updateApiAuthorization } from '#api';
+import { AUTHORIZED_USER_ID_FIELD_NAME } from '#common-constants';
 
 import { AuthContext } from './AuthContext';
 import { AUTH_CONTEXT_DEFAULT_VALUE } from './constants';
@@ -8,8 +10,6 @@ import { TAuthContextValue } from './types';
 
 export const AuthContextProvider: FC<PropsWithChildren> = props => {
   const { children } = props;
-
-  console.log('> AuthContextProvider - RENDER');
 
   const [accessToken, setAccessToken] = useState<
     TAuthContextValue['accessToken']
@@ -19,6 +19,31 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
   >(AUTH_CONTEXT_DEFAULT_VALUE.isAuthorized);
   const [authorizedUserData, setAuthorizedUserData] =
     useState<TAuthContextValue['authorizedUserData']>(null);
+
+  console.log('> AuthContextProvider - RENDER. isAuthorized', isAuthorized);
+
+  useEffect(() => {
+    const authorizedUserID: string | null = sessionStorage.getItem(
+      AUTHORIZED_USER_ID_FIELD_NAME,
+    );
+
+    if (authorizedUserID) {
+      AuthService.refreshToken({
+        UserId: authorizedUserID,
+      }).then(response => {
+        if (response.status === StatusCodes.OK) {
+          const { tokenType, accessToken, expiresIn } = response.data;
+
+          setAccessToken({
+            expiresIn,
+            type: tokenType,
+            value: accessToken,
+          });
+          setIsAuthorized(true);
+        }
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (accessToken?.value && !isAuthorized) {

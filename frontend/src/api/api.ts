@@ -20,7 +20,8 @@ axiosInstance.interceptors.response.use(undefined, error => {
     error.status === StatusCodes.UNAUTHORIZED &&
     PROTECTED_ROUTES_PATHS_LIST.includes(window.location.pathname as ERoutes)
   ) {
-    window.location.pathname = ERoutes.Login;
+    console.log('> REDIRECT TO /login');
+    // window.location.pathname = ERoutes.Login;
   }
 
   return Promise.reject(error);
@@ -32,7 +33,9 @@ export const updateApiAuthorization = (
   if (authorizationParameters) {
     const { tokenType, accessToken } = authorizationParameters;
 
-    axiosInstance.defaults.headers.common.Authorization = `${tokenType} ${accessToken}`;
+    if (tokenType && accessToken) {
+      axiosInstance.defaults.headers.common.Authorization = `${tokenType} ${accessToken}`;
+    }
   } else {
     delete axiosInstance.defaults.headers.common.Authorization;
   }

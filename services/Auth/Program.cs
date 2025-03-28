@@ -89,10 +89,18 @@ app.MapPost("/login", async (
 
     return Results.Ok(new
     {
-        AccessToken = accessToken,
-        TokenType = "Bearer",
-        ExpiresIn = expires,
-        UserEmail = user.Email
+        AccessToken = new
+        {
+            AccessToken = accessToken,
+            ExpiresIn = expires,
+            TokenType = "Bearer"
+        },
+        AuthorizedUser = new
+        {
+            UserName = user.UserName,
+            Email = user.Email,
+            ID = user.Id
+        }
     });
 });
 
@@ -111,13 +119,47 @@ app.MapPost("/register", async (
     return Results.Ok();
 });
 
+// app.MapPost("/refresh-token", async (
+//     HttpContext context,
+//     RefreshTokenRequest request,
+//     UserManager<User> userManager,
+//     JwtTokenService tokenService) =>
+// {
+//     var user = await userManager.FindByNameAsync(request.Email);
+//     if (user == null)
+//     {
+//         return Results.NotFound();
+//     }
+
+//     var refreshToken = context.Request.Cookies["refreshToken"];
+//     if (string.IsNullOrEmpty(refreshToken))
+//     {
+//         return Results.Unauthorized();
+//     }
+
+//     if (!await tokenService.ValidateRefreshToken(user, refreshToken))
+//     {
+//         return Results.Unauthorized();
+//     }
+
+//     var (accessToken, newRefreshToken, expires) = await tokenService.GenerateTokens(user);
+    
+//     return Results.Ok(new
+//     {
+//         AccessToken = accessToken,
+//         RefreshToken = newRefreshToken,
+//         TokenType = "Bearer",
+//         ExpiresIn = expires
+//     });
+// });
+
 app.MapPost("/refresh-token", async (
     HttpContext context,
     RefreshTokenRequest request,
     UserManager<User> userManager,
     JwtTokenService tokenService) =>
 {
-    var user = await userManager.FindByNameAsync(request.Email);
+    var user = await userManager.FindByIdAsync(request.UserId);
     if (user == null)
     {
         return Results.NotFound();
@@ -126,24 +168,31 @@ app.MapPost("/refresh-token", async (
     var refreshToken = context.Request.Cookies["refreshToken"];
     if (string.IsNullOrEmpty(refreshToken))
     {
-        return Results.Unauthorized();
+        return Results.Json(new { Message = "`refreshToken` is null or empty" }, statusCode: 401);
     }
 
     if (!await tokenService.ValidateRefreshToken(user, refreshToken))
     {
-        return Results.Unauthorized();
+        return Results.Json(new { Message = "`refreshToken` is invalid" }, statusCode: 401);
     }
 
     var (accessToken, newRefreshToken, expires) = await tokenService.GenerateTokens(user);
+
+    context.Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = false, // true, if we use HTTPS
+        SameSite = SameSiteMode.Strict,
+        Expires = DateTimeOffset.UtcNow.AddDays(7),
+    });
     
     return Results.Ok(new
     {
         AccessToken = accessToken,
-        RefreshToken = newRefreshToken,
         TokenType = "Bearer",
         ExpiresIn = expires
     });
-});
+}).AllowAnonymous();
 
 app.MapPost("/logout", (HttpContext context) =>
 {
@@ -207,4 +256,5 @@ app.Run();
 // Request DTOs
 public record RegisterRequest(string Email, string Password);
 public record LoginRequest(string Email, string Password);
-public record RefreshTokenRequest(string Email);
+// public record RefreshTokenRequest(string Email);
+public record RefreshTokenRequest(string UserId);

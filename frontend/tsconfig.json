@@ -24,6 +24,7 @@
       "#api/*": ["src/api/*"],
       "#pages": ["src/pages"],
       "#pages/*": ["src/pages/*"],
+      "#common-constants": ["src/common-constants/index.ts"],
       "#routes": ["src/routes-list.ts"],
       "#src": ["src"],
       "#src/*": ["src/*"],

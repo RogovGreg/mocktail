@@ -4,6 +4,7 @@ import { Button, Form, Input } from 'antd';
 import { StatusCodes } from 'http-status-codes';
 
 import { AuthService } from '#api';
+import { AUTHORIZED_USER_ID_FIELD_NAME } from '#common-constants';
 import { AuthContext } from '#src/global-contexts/index.ts';
 import { ERoutes } from '#src/router/routes-list.ts';
 
@@ -25,14 +26,25 @@ export const LoginPage = () => {
         updateAccessToken &&
         updateAuthorizedUserData
       ) {
-        const { accessToken, tokenType, expiresIn, userEmail } = response.data;
+        const {
+          accessToken: { tokenType, accessToken, expiresIn },
+          authorizedUser,
+        } = response.data;
+        const { id: authorizedUserID } = authorizedUser;
 
         updateAccessToken({
           expiresIn,
           type: tokenType,
           value: accessToken,
         });
-        updateAuthorizedUserData({ email: userEmail });
+        updateAuthorizedUserData(authorizedUser);
+
+        if (authorizedUserID) {
+          sessionStorage.setItem(
+            AUTHORIZED_USER_ID_FIELD_NAME,
+            authorizedUserID,
+          );
+        }
 
         navigate(ERoutes.HomePage);
       }
