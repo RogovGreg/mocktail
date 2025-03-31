@@ -21,14 +21,14 @@ axiosInstance.interceptors.response.use(undefined, error => {
     PROTECTED_ROUTES_PATHS_LIST.includes(window.location.pathname as ERoutes)
   ) {
     console.log('> REDIRECT TO /login');
-    // window.location.pathname = ERoutes.Login;
+    window.location.pathname = ERoutes.Login;
   }
 
   return Promise.reject(error);
 });
 
 export const updateApiAuthorization = (
-  authorizationParameters?: TAuthorizationParameters,
+  authorizationParameters?: TAuthorizationParameters | null,
 ): void => {
   if (authorizationParameters) {
     const { tokenType, accessToken } = authorizationParameters;

@@ -122,7 +122,7 @@ export const LoginPage = () => {
         </Form.Item>
       </Form>
       <Button type='primary' form='loginForm' htmlType='submit'>
-        Submit 3
+        Submit 1
       </Button>
       <div>
         <span>

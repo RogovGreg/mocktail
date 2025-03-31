@@ -4,4 +4,5 @@ export enum ERoutes {
   PageNotFound = '/page-not-found',
   Register = '/register',
   RegisterSuccess = '/register/success',
+  WaitingPage = '/waiting',
 }

@@ -15,7 +15,8 @@ import {
 } from './types';
 
 export const HomePage = () => {
-  const { updateIsAuthorized } = useContext(AuthContext);
+  const { updateIsAuthorized, updateAccessToken, updateAuthorizedUserData } =
+    useContext(AuthContext);
 
   const [responses, setResponses] = useState<TAvailabilityLog>([]);
 
@@ -153,10 +154,21 @@ export const HomePage = () => {
         <button
           type='button'
           onClick={async () => {
-            if (updateIsAuthorized) {
+            if (
+              updateIsAuthorized &&
+              updateAccessToken &&
+              updateAuthorizedUserData
+            ) {
               await AuthService.logout().then(response => {
                 if (response.status === StatusCodes.OK) {
                   updateIsAuthorized(false);
+                  updateAccessToken({
+                    expiresIn: null,
+                    type: null,
+                    value: null,
+                  });
+                  updateAuthorizedUserData(null);
+
                   sessionStorage.removeItem(AUTHORIZED_USER_ID_FIELD_NAME);
 
                   navigate(ERoutes.Login);

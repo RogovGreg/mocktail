@@ -6,6 +6,7 @@ import {
   PageNotFoundPage,
   RegisterPage,
   RegisterSuccessNotificationPage,
+  WaitingPage,
 } from '../pages/index.ts';
 
 export const PUBLIC_ROUTES_LIST: TRouteObjectList = [
@@ -24,6 +25,10 @@ export const PUBLIC_ROUTES_LIST: TRouteObjectList = [
   {
     Component: PageNotFoundPage,
     path: ERoutes.PageNotFound,
+  },
+  {
+    Component: WaitingPage,
+    path: ERoutes.WaitingPage,
   },
 ];
 

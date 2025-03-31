@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate, RouteObject } from 'react-router';
 import { RouterProvider } from 'react-router-dom';
 
+import { AuthContextProvider } from '#src/global-contexts/index.ts';
+
 import { ProtectedRoute } from './ProtectedRoute.tsx';
 import { PublicRoute } from './PublicRoute.tsx';
 import { ProtectedRoutesList, PUBLIC_ROUTES_LIST } from './routes.ts';
@@ -14,9 +16,11 @@ const router = createBrowserRouter([
       path,
 
       element: (
-        <PublicRoute>
-          <Component />
-        </PublicRoute>
+        <AuthContextProvider>
+          <PublicRoute>
+            <Component />
+          </PublicRoute>
+        </AuthContextProvider>
       ),
     };
   }),
@@ -28,9 +32,11 @@ const router = createBrowserRouter([
       path,
 
       element: (
-        <ProtectedRoute>
-          <Component />
-        </ProtectedRoute>
+        <AuthContextProvider>
+          <ProtectedRoute>
+            <Component />
+          </ProtectedRoute>
+        </AuthContextProvider>
       ),
     };
   }),
