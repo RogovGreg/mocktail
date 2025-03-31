@@ -15,6 +15,13 @@ public class OpenAIIntegration
         PropertyNameCaseInsensitive = true
     };
 
+    private static string makeOpenAIRequest(string prompt)
+    {
+        ChatCompletion completion = client.CompleteChat(prompt);
+        var response = completion.Content[0].Text;
+        return response;
+    }
+
     public static async Task<IResult> Prompt(HttpContext context)
     {
         try
@@ -27,8 +34,7 @@ public class OpenAIIntegration
 
             logger.LogInformation("[LLM Prompt]: {Prompt}", request.Prompt);
 
-            ChatCompletion completion = client.CompleteChat(request.Prompt);
-            var response = completion.Content[0].Text;
+            var response = makeOpenAIRequest(request.Prompt);
             logger.LogInformation("[LLM Response]: {Response}", response);
 
             return Results.Json(new { response });
