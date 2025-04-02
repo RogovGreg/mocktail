@@ -1,7 +1,7 @@
 services:
   backend:
     build:
-      dockerfile: Docker/Dockerfile.dev
+      dockerfile: Backend/Docker/Dockerfile.dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
@@ -11,7 +11,7 @@ services:
 
   content:
     build:
-      dockerfile: Docker/Dockerfile.dev
+      dockerfile: Content/Docker/Dockerfile.dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
