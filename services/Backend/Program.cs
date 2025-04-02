@@ -1,5 +1,6 @@
 using Grpc.Net.Client;
-using Shared.Protos;
+using Content.Protos;
+using Microsoft.AspNetCore.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 

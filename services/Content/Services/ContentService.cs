@@ -3,7 +3,7 @@ using Grpc.Core;
 
 namespace Content.Services;
 
-public class ContentService : ContentService.ContentServiceBase
+public class ContentService : Protos.ContentService.ContentServiceBase
 {
     private readonly ILogger<ContentService> _logger;
     private readonly List<ContentItem> _contentItems = new(); // In-memory storage for demo
@@ -13,7 +13,7 @@ public class ContentService : ContentService.ContentServiceBase
         _logger = logger;
     }
 
-    public override Task<ListContentResponse> ListContent(ListContentRequest request, ServerContext context)
+    public override Task<ListContentResponse> ListContent(ListContentRequest request, ServerCallContext context)
     {
         _logger.LogInformation("Listing content for user: {UserId}", request.UserId);
         
@@ -27,7 +27,7 @@ public class ContentService : ContentService.ContentServiceBase
         });
     }
 
-    public override Task<CreateContentResponse> CreateContent(CreateContentRequest request, ServerContext context)
+    public override Task<CreateContentResponse> CreateContent(CreateContentRequest request, ServerCallContext context)
     {
         _logger.LogInformation("Creating content for user: {UserId}", request.UserId);
 

@@ -14,20 +14,20 @@ services:
 
   backend:
     build:
-      context: services/Backend
-      dockerfile: Dokcer/Dockerfile
+      context: services
+      dockerfile: Backend/Docker/Dockerfile
     container_name: backend
 
   content:
     build:
-      context: services/Content
-      dockerfile: Dokcer/Dockerfile
+      context: services
+      dockerfile: Content/Docker/Dockerfile
     container_name: content
 
   generator:
     build:
       context: services/Generator
-      dockerfile: Dokcer/Dockerfile
+      dockerfile: /Docker/Dockerfile
     container_name: generator
     env_file:
       - .env
@@ -35,7 +35,7 @@ services:
   auth:
     build:
       context: services/Auth
-      dockerfile: Dokcer/Dockerfile
+      dockerfile: Docker/Dockerfile
     container_name: auth
     depends_on:
       - mssql

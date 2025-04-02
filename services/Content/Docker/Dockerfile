@@ -1,16 +1,20 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS base
+WORKDIR /app
+EXPOSE 8080
+
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-COPY ["Content.csproj", "Content/"]
-COPY ["../Shared/Shared.csproj", "Shared/"]
-RUN dotnet restore "Content/Content.csproj"
+# Copy the Shared directory first
+COPY Shared ./Shared/
 
-COPY . Content/
-COPY ../Shared/. Shared/
-WORKDIR "/src/Content"
+COPY Content/Content.csproj .
+RUN dotnet restore
+
+COPY Content/ .
 RUN dotnet publish -c Release -o /app/publish
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+FROM base AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "Content.dll"]
