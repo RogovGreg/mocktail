@@ -16,7 +16,7 @@ public class ContentService : Protos.ContentService.ContentServiceBase
     public override Task<ListContentResponse> ListContent(ListContentRequest request, ServerCallContext context)
     {
         _logger.LogInformation("Listing content for user: {UserId}", request.UserId);
-        
+
         var items = string.IsNullOrEmpty(request.UserId)
             ? _contentItems
             : _contentItems.Where(x => x.UserId == request.UserId).ToList();
@@ -46,4 +46,4 @@ public class ContentService : Protos.ContentService.ContentServiceBase
             Item = newItem
         });
     }
-} 
+}
