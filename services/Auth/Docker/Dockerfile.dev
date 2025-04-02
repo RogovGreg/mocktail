@@ -1,0 +1,9 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS runtime
+WORKDIR /src
+
+COPY Auth.csproj .
+RUN dotnet restore
+
+COPY . .
+
+CMD ["dotnet", "watch", "run", "--project" , "Auth.csproj",  "--urls", "https://*:443;http://*:80"]
