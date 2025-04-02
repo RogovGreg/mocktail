@@ -1,9 +1,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS runtime
 WORKDIR /src
 
-COPY Backend.csproj .
+# Copy the Shared directory first
+COPY Shared ./Shared/
+
+# Copy the project file and restore dependencies
+COPY Backend/Backend.csproj .
 RUN dotnet restore
 
-COPY . .
+# Copy the rest of the source code
+COPY Backend/ .
 
 CMD ["dotnet", "watch", "run", "--project" , "Backend.csproj",  "--urls", "https://*:443;http://*:80"]
