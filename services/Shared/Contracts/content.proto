@@ -31,4 +31,4 @@ message CreateContentRequest {
 
 message CreateContentResponse {
   ContentItem item = 1;
-} 
+}
