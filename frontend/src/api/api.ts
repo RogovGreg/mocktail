@@ -20,7 +20,6 @@ axiosInstance.interceptors.response.use(undefined, error => {
     error.status === StatusCodes.UNAUTHORIZED &&
     PROTECTED_ROUTES_PATHS_LIST.includes(window.location.pathname as ERoutes)
   ) {
-    console.log('> REDIRECT TO /login');
     window.location.pathname = ERoutes.Login;
   }
 

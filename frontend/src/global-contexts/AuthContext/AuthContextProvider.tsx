@@ -16,7 +16,7 @@ import {
   POLLING_AUTH_STATUS_INTERVAL,
 } from '#common-constants';
 import { ERoutes } from '#src/router';
-import { PUBLIC_ROUTES_PATHS_LIST } from '#src/router/routes';
+import { PROTECTED_ROUTES_PATHS_LIST } from '#src/router/routes';
 
 import { AuthContext } from './AuthContext';
 import { AUTH_CONTEXT_DEFAULT_VALUE } from './constants';
@@ -40,8 +40,6 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
 
   const refreshTokenTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pollingStatusIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  console.log('> AuthContextProvider - RENDER. isAuthorized', isAuthorized);
 
   const refreshTokenAction = useCallback(() => {
     const authorizedUserID: string | null = sessionStorage.getItem(
@@ -82,10 +80,15 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
           setAccessToken(AUTH_CONTEXT_DEFAULT_VALUE.accessToken);
           setAuthorizedUserData(AUTH_CONTEXT_DEFAULT_VALUE.authorizedUserData);
 
-          if (PUBLIC_ROUTES_PATHS_LIST.includes(currentURL as ERoutes)) {
+          if (PROTECTED_ROUTES_PATHS_LIST.includes(currentURL as ERoutes)) {
             navigate(ERoutes.Login);
           }
         });
+    } else if (
+      currentURL !== ERoutes.Login &&
+      currentURL !== ERoutes.Register
+    ) {
+      navigate(ERoutes.Login);
     }
   }, [refreshTokenTimeoutRef.current, currentURL]);
 

@@ -41,6 +41,10 @@ export const ProtectedRoutesList: TRouteObjectList = [
     Component: HomePage,
     path: ERoutes.HomePage,
   },
+  {
+    Component: WaitingPage,
+    path: ERoutes.WaitingDemoPage,
+  },
 ];
 
 export const PROTECTED_ROUTES_PATHS_LIST: Array<ERoutes> =

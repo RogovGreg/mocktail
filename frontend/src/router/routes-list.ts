@@ -5,4 +5,6 @@ export enum ERoutes {
   Register = '/register',
   RegisterSuccess = '/register/success',
   WaitingPage = '/waiting',
+
+  WaitingDemoPage = '/waiting/demo',
 }

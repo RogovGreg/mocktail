@@ -138,18 +138,14 @@ export const HomePage = () => {
         </button>
         <button
           type='button'
-          onClick={() =>
-            AuthService.refreshToken({
-              UserId: 'afcdc5cd-5392-4bf6-b64d-c69ca1962b6e',
-            })
-          }
+          onClick={() => navigate(ERoutes.WaitingDemoPage)}
           style={{
             cursor: 'pointer',
             margin: '5px',
             padding: '10px 15px',
           }}
         >
-          Refresh Token
+          To Demo Waiting Page
         </button>
         <button
           type='button'

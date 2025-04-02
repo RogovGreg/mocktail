@@ -42,7 +42,7 @@ const router = createBrowserRouter([
   }),
 
   {
-    element: <Navigate to={ERoutes.Login} />,
+    element: <Navigate to={ERoutes.WaitingPage} />,
     path: '/',
   },
   {

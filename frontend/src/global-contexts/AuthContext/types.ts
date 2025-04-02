@@ -10,7 +10,7 @@ export type TAuthContextValue = Readonly<{
   accessToken: TAuthAccessToken | null;
   updateAccessToken: null | ((parameter: TAuthAccessToken) => void);
 
-  isAuthorized: boolean;
+  isAuthorized: boolean | null;
   updateIsAuthorized: null | ((parameter: boolean) => void);
 
   authorizedUserData: TUserProfile | null;
