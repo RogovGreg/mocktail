@@ -21,7 +21,7 @@ public static class AuthHandlers
         context.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
         {
             HttpOnly = true,
-            Secure = false, // true, if we use HTTPS
+            Secure = false,
             SameSite = SameSiteMode.Strict,
             Expires = DateTimeOffset.UtcNow.AddDays(7),
         });
@@ -100,7 +100,7 @@ public static class AuthHandlers
         context.Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
         {
             HttpOnly = true,
-            Secure = false, // true, if we use HTTPS
+            Secure = false,
             SameSite = SameSiteMode.Strict,
             Expires = DateTimeOffset.UtcNow.AddDays(7),
         });
@@ -160,5 +160,4 @@ public static class AuthHandlers
 
 public record RegisterRequest(string Email, string Password);
 public record LoginRequest(string Email, string Password);
-
 public record RefreshTokenRequest(string UserId);
