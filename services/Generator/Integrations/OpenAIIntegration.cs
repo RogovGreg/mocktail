@@ -56,7 +56,7 @@ public class OpenAIIntegration
             }
 
             string Prompt =
-                $"Generate {request.amount} JSON objects that match the following schema: \n```{request.jsonSchema}\n"
+                $"Generate {request.amount} JSON objects that match the following schema: \n```{request.jsonSchema}```\n"
                 + "The response should be a JSON array of objects, do not add any explanation text. \n";
 
             logger.LogInformation("[LLM Prompt]: {Prompt}", Prompt);
