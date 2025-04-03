@@ -20,11 +20,15 @@
     "noUnusedParameters": true,
     "preserveSymlinks": true,
     "paths": {
+      "#api": ["src/api"],
+      "#api/*": ["src/api/*"],
       "#pages": ["src/pages"],
       "#pages/*": ["src/pages/*"],
+      "#common-constants": ["src/common-constants/index.ts"],
       "#routes": ["src/routes-list.ts"],
       "#src": ["src"],
-      "#src/*": ["src/*"]
+      "#src/*": ["src/*"],
+      "#global-contexts": ["src/global-contexts/index.ts"],
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,

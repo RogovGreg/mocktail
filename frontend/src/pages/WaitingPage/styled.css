@@ -1,0 +1,51 @@
+.loader {
+  width: 35px;
+  height: 80px;
+  position: relative;
+}
+
+.loader::before {
+  content: "";
+  position: absolute;
+  inset: -18px calc(50% - 2px) 8px;
+  z-index: 2;
+  background: black;   
+  transform-origin: bottom;
+  transform: rotate(8deg);
+}
+.loader::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 3px 5px;
+  border-top: 1px solid #bbb6aa;
+  border-bottom: 4px solid #bbb6aa;
+  background:
+    linear-gradient(OrangeRed 0 0) bottom no-repeat content-box,
+    rgba(228, 224, 215, 0.8);
+  animation: l1 1.5s infinite linear;
+}
+
+
+@keyframes l1 {
+  0% {
+    background-size: 100% 100%;
+  }
+  100% {
+    background-size: 100% 5%;
+  }
+}
+
+.loader .lemon {
+  position: absolute;
+  top: -13px;
+  left: -14px; 
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f4d03f;
+  border: 2px solid #e2c113;
+  box-shadow: 0 0 0 3px #fff inset;
+  transform: rotate(25deg);
+}

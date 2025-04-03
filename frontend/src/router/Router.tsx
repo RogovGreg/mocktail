@@ -1,27 +1,54 @@
-import { createBrowserRouter, Navigate } from "react-router";
-import { LoginServiceRoutesList } from "./routes.ts";
-import { RouterProvider } from "react-router-dom";
-import { ERoutes } from "./routes-list.ts";
-import { TRouteObjectList } from "./types.ts";
+import { createBrowserRouter, Navigate, RouteObject } from 'react-router';
+import { RouterProvider } from 'react-router-dom';
 
+import { AuthContextProvider } from '#src/global-contexts/index.ts';
+
+import { ProtectedRoute } from './ProtectedRoute.tsx';
+import { PublicRoute } from './PublicRoute.tsx';
+import { ProtectedRoutesList, PUBLIC_ROUTES_LIST } from './routes.ts';
+import { ERoutes } from './routes-list.ts';
 
 const router = createBrowserRouter([
-  // Public routes
-  // @ts-ignore
-  ...LoginServiceRoutesList.map<TRouteObjectList>(({ path, Component }) => ({
-    path,
+  ...PUBLIC_ROUTES_LIST.map<RouteObject>(routeObject => {
+    const { path, Component } = routeObject;
 
-    element: (
-        <Component />
-    ),
-  })),
+    return {
+      path,
 
-  /* eslint-disable sort-keys */
-  // @ts-ignore
-  { path: '/', element: <Navigate to={ERoutes.Login} /> },
-  // @ts-ignore
-  { path: '*', element: <Navigate to={ERoutes.PageNotFound} /> },
-  /* eslint-enable sort-keys */
+      element: (
+        <AuthContextProvider>
+          <PublicRoute>
+            <Component />
+          </PublicRoute>
+        </AuthContextProvider>
+      ),
+    };
+  }),
+
+  ...ProtectedRoutesList.map<RouteObject>(routeObject => {
+    const { path, Component } = routeObject;
+
+    return {
+      path,
+
+      element: (
+        <AuthContextProvider>
+          <ProtectedRoute>
+            <Component />
+          </ProtectedRoute>
+        </AuthContextProvider>
+      ),
+    };
+  }),
+
+  {
+    element: <Navigate to={ERoutes.WaitingPage} />,
+    path: '/',
+  },
+  {
+    element: <Navigate to={ERoutes.PageNotFound} />,
+    path: '*',
+  },
 ]);
 
 export const Router = () => <RouterProvider router={router} />;
