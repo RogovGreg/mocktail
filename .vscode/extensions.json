@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "streetsidesoftware.code-spell-checker",
+    "ue.alphabetical-sorter",
+  ],
+  "unwantedRecommendations": [
+    "codeandstuff.package-json-upgrade",
+    "eamodio.gitlens",
+    "phoenisx.cssvar"
+  ]
+}

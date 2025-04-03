@@ -8,7 +8,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string not found");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -56,7 +56,11 @@ app.UseAuthorization();
 // Routes
 app.MapPost("/login", AuthHandlers.LoginHandler);
 app.MapPost("/register", AuthHandlers.RegisterHandler);
-app.MapPost("/refresh-token", AuthHandlers.RefreshTokenHandler);
+app.MapPost("/logout", AuthHandlers.LogoutHandler);
+app.MapPost("/refresh-token", AuthHandlers.RefreshTokenHandler).AllowAnonymous();
+app.MapGet("/profile", AuthHandlers.ProfileHandler).RequireAuthorization();
+app.MapGet("/check-status", AuthHandlers.CheckStatusHandler).RequireAuthorization();
+app.MapGet("/check-availability", AuthHandlers.CheckAvailability).RequireAuthorization();
 
 app.Urls.Add("http://*:80");
 app.Run();
