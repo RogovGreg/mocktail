@@ -3,6 +3,17 @@ using Microsoft.AspNetCore.Identity;
 
 public static class AuthHandlers
 {
+    private static CookieOptions CreateRefreshCookieOptions(bool forDelete = false)
+    {
+        return new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddDays(forDelete ? -1 : 7),
+        };
+    }
+
     public static async Task<IResult> LoginHandler(
         HttpContext context,
         LoginRequest request,
@@ -18,13 +29,7 @@ public static class AuthHandlers
 
         var (accessToken, refreshToken, expires) = await tokenService.GenerateTokens(user);
 
-        context.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.UtcNow.AddDays(7),
-        });
+        context.Response.Cookies.Append("refreshToken", refreshToken, CreateRefreshCookieOptions());
 
         return Results.Ok(new
         {
@@ -62,12 +67,7 @@ public static class AuthHandlers
 
     public static async Task<IResult> LogoutHandler(HttpContext context)
     {
-        context.Response.Cookies.Delete("refreshToken", new CookieOptions
-        {
-            HttpOnly = true,
-            SameSite = SameSiteMode.Strict
-        }
-        );
+        context.Response.Cookies.Delete("refreshToken", CreateRefreshCookieOptions(true));
 
         return Results.Ok(new { Message = "Logged out successfully" });
     }
@@ -97,13 +97,7 @@ public static class AuthHandlers
 
         var (accessToken, newRefreshToken, expires) = await tokenService.GenerateTokens(user);
 
-        context.Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.UtcNow.AddDays(7),
-        });
+        context.Response.Cookies.Append("refreshToken", newRefreshToken, CreateRefreshCookieOptions());
 
         return Results.Ok(new
         {
