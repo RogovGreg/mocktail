@@ -65,8 +65,19 @@ public static class AuthHandlers
         return Results.Ok();
     }
 
-    public static async Task<IResult> LogoutHandler(HttpContext context)
+    public static async Task<IResult> LogoutHandler(
+        HttpContext context,
+        UserManager<User> userManager,
+        JwtTokenService tokenService
+    )
     {
+        var user = await userManager.GetUserAsync(context.User);
+        if (user == null)
+        {
+            return Results.NotFound();
+        }
+
+        await tokenService.DeleteTokens(user);
         context.Response.Cookies.Delete("refreshToken", CreateRefreshCookieOptions(true));
 
         return Results.Ok(new { Message = "Logged out successfully" });

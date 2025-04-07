@@ -56,7 +56,7 @@ public class JwtTokenService
 
         return (new JwtSecurityTokenHandler().WriteToken(token), new DateTimeOffset(token.ValidTo.ToUniversalTime()).ToUnixTimeMilliseconds().ToString());
     }
- 
+
     private string GenerateRefreshToken()
     {
         var randomNumber = new byte[64];
@@ -67,12 +67,19 @@ public class JwtTokenService
 
     public async Task<bool> ValidateRefreshToken(User user, string refreshToken)
     {
-        if (user.RefreshToken != refreshToken || 
+        if (user.RefreshToken != refreshToken ||
             user.RefreshTokenExpiryTime <= DateTime.UtcNow)
         {
             return false;
         }
 
         return true;
+    }
+
+    public async Task DeleteTokens(User user)
+    {
+        user.RefreshToken = null;
+        user.RefreshTokenExpiryTime = null;
+        await _userManager.UpdateAsync(user);
     }
 }
