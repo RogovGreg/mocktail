@@ -15,6 +15,13 @@ public class OpenAIIntegration
         PropertyNameCaseInsensitive = true
     };
 
+    private static string makeOpenAIRequest(string prompt)
+    {
+        ChatCompletion completion = client.CompleteChat(prompt);
+        var response = completion.Content[0].Text;
+        return response;
+    }
+
     public static async Task<IResult> Prompt(HttpContext context)
     {
         try
@@ -27,8 +34,7 @@ public class OpenAIIntegration
 
             logger.LogInformation("[LLM Prompt]: {Prompt}", request.Prompt);
 
-            ChatCompletion completion = client.CompleteChat(request.Prompt);
-            var response = completion.Content[0].Text;
+            var response = makeOpenAIRequest(request.Prompt);
             logger.LogInformation("[LLM Response]: {Response}", response);
 
             return Results.Json(new { response });
@@ -38,6 +44,39 @@ public class OpenAIIntegration
             return Results.BadRequest("Invalid JSON");
         }
     }
+
+    public static async Task<IResult> Generate(HttpContext context)
+    {
+        try
+        {
+            var request = await JsonSerializer.DeserializeAsync<GenerateRequest>(context.Request.Body, jsonOptions);
+            if (request == null || string.IsNullOrEmpty(request.jsonSchema) || request.amount <= 0)
+            {
+                return Results.BadRequest("Invalid request");
+            }
+
+            string Prompt =
+                $"Generate {request.amount} JSON objects that match the following schema: \n```{request.jsonSchema}```\n"
+                + "The response should be a JSON array of objects, do not add any explanation text. \n";
+
+            logger.LogInformation("[LLM Prompt]: {Prompt}", Prompt);
+            string response = makeOpenAIRequest(Prompt)
+                .Replace("```json", string.Empty)
+                .Replace("```", string.Empty)
+                .Trim();
+
+            logger.LogInformation("[LLM Response]: {Response}", response);
+
+            var result = JsonSerializer.Deserialize<JsonElement>(response, jsonOptions);
+
+            return Results.Json(new { result });
+        }
+        catch (JsonException)
+        {
+            return Results.BadRequest("Invalid JSON");
+        }
+    }
 }
 
 record PromptRequest(string Prompt);
+record GenerateRequest(string jsonSchema, int amount);
