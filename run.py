@@ -62,6 +62,11 @@ def run_migrations():
 
 
 def start_docker():
+    print("Creating mssqldata volume...")
+    subprocess.run(
+        ["docker", "volume", "create", "mssqldata"],
+        check=True,
+    )
     print("Starting Docker containers...")
     subprocess.run(
         [
@@ -103,11 +108,7 @@ def main():
 
     while True:
         print()
-        command = (
-            input("Waiting for further commands (migrate/restart/quit): ")
-            .strip()
-            .lower()
-        )
+        command = input("Waiting for further commands (migrate/restart/quit): ").strip().lower()
         if command == "migrate":
             run_migrations()
         elif command == "restart":

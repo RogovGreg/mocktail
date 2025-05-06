@@ -9,6 +9,8 @@ services:
       ACCEPT_EULA: Y
       SA_PASSWORD: Admin@123
       MSSQL_SA_PASSWORD: Admin@123
+    volumes:
+      - mssqldata:/var/opt/mssql
 
   backend:
     build:
@@ -56,3 +58,7 @@ services:
     container_name: frontend
     depends_on:
       - gateway
+
+volumes:
+  mssqldata:
+    external: true
