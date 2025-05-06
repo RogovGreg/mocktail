@@ -56,7 +56,7 @@ app.UseAuthorization();
 // Routes
 app.MapPost("/login", AuthHandlers.LoginHandler);
 app.MapPost("/register", AuthHandlers.RegisterHandler);
-app.MapPost("/logout", AuthHandlers.LogoutHandler);
+app.MapPost("/logout", AuthHandlers.LogoutHandler).RequireAuthorization();
 app.MapPost("/refresh-token", AuthHandlers.RefreshTokenHandler).AllowAnonymous();
 app.MapGet("/profile", AuthHandlers.ProfileHandler).RequireAuthorization();
 app.MapGet("/check-status", AuthHandlers.CheckStatusHandler).RequireAuthorization();
