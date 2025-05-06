@@ -19,7 +19,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // Map gRPC service
-app.MapGrpcService<ContentService>();
+app.MapGrpcService<ContentServiceImpl>();
 
 app.MapGet("/", () => "`Content` service is alive");
 

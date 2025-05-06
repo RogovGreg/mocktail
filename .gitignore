@@ -59,3 +59,5 @@ Thumbs.db
 *.rej
 .env
 .env.*.local
+
+.fake

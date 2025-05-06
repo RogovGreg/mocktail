@@ -1,14 +1,14 @@
-using Content.Protos;
+using Shared.Content.Protos;
 using Grpc.Core;
 
 namespace Content.Services;
 
-public class ContentService : Protos.ContentService.ContentServiceBase
+public class ContentServiceImpl : Shared.Content.Protos.ContentService.ContentServiceBase
 {
-    private readonly ILogger<ContentService> _logger;
+    private readonly ILogger<ContentServiceImpl> _logger;
     private readonly List<ContentItem> _contentItems = new(); // In-memory storage for demo
 
-    public ContentService(ILogger<ContentService> logger)
+    public ContentServiceImpl(ILogger<ContentServiceImpl> logger)
     {
         _logger = logger;
     }
