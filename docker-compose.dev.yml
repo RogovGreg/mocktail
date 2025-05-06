@@ -8,6 +8,7 @@ services:
       - "5001:80"
     volumes:
       - ./services/Backend:/src
+      - ./services/Shared:/src/Shared
 
   content:
     build:
@@ -18,6 +19,7 @@ services:
       - "5002:80"
     volumes:
       - ./services/Content:/src
+      - ./services/Shared:/src/Shared
 
   generator:
     build:
