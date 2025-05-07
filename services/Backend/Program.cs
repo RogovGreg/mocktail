@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Configure gRPC client
 builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>
 {
-    options.Address = new Uri("http://content:8080"); // Docker service name and gRPC port
+    options.Address = new Uri("http://content:8080");
 });
 
 var app = builder.Build();

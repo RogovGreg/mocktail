@@ -1,3 +1,6 @@
+services/Backend/Shared/
+services/Content/Shared/
+
 # .NET Backend (C#)
 ## Build artifacts
 bin/

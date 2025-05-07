@@ -1,17 +1,18 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS base
 WORKDIR /app
+EXPOSE 80
 EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copy the Shared directory first
-COPY Shared ./Shared/
+COPY Shared/Contracts ./Shared/Contracts/
 
 COPY Content/Content.csproj .
 RUN dotnet restore
 
 COPY Content/ .
+
 RUN dotnet publish -c Release -o /app/publish
 
 FROM base AS runtime

@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\Shared.csproj" />
+    <Protobuf Include="Shared/Contracts/content.proto" GrpcServices="Client" />
   </ItemGroup>
 
 </Project>

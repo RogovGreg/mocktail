@@ -1,9 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS runtime
 WORKDIR /src
 
-# Copy the Shared directory first
-COPY Shared ./Shared/
-
 COPY Content/Content.csproj .
 RUN dotnet restore
 
