@@ -1,16 +1,17 @@
+using Shared.Content.Protos;
+using Grpc.Net.Client;
+using Microsoft.Extensions.DependencyInjection;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+
+// Configure gRPC client
+builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>
+{
+    options.Address = new Uri("http://content:8080");
+});
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
 
 app.MapGet("/check-availability", () =>
 {
@@ -20,6 +21,9 @@ app.MapGet("/check-availability", () =>
         timestamp = DateTime.UtcNow.ToString("o")
     });
 });
+
+app.MapGet("/content/{userId}", ContentHandlers.GetContent);
+app.MapPost("/content", ContentHandlers.CreateContent);
 
 app.MapGet("/", () => "`Backend` service is alive");
 

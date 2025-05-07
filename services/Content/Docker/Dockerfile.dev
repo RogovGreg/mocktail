@@ -1,9 +1,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS runtime
 WORKDIR /src
 
-COPY Content.csproj .
+COPY Content/Content.csproj .
 RUN dotnet restore
 
-COPY . .
+COPY Content/ .
 
 CMD ["dotnet", "watch", "run", "--project" , "Content.csproj",  "--urls", "https://*:443;http://*:80"]

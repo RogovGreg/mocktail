@@ -1,3 +1,6 @@
+services/Backend/Shared/
+services/Content/Shared/
+
 # .NET Backend (C#)
 ## Build artifacts
 bin/
@@ -59,3 +62,5 @@ Thumbs.db
 *.rej
 .env
 .env.*.local
+
+.fake
