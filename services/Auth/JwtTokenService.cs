@@ -36,14 +36,14 @@ public class JwtTokenService
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(ClaimTypes.Email, user.Email)
+            new Claim(ClaimTypes.Name, user.UserName ?? throw new InvalidOperationException("User name is null")),
+            new Claim(ClaimTypes.Email, user.Email ?? throw new InvalidOperationException("User email is null"))
         };
 
         var roles = await _userManager.GetRolesAsync(user);
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Secret"]));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not found")));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
@@ -65,7 +65,7 @@ public class JwtTokenService
         return Convert.ToBase64String(randomNumber);
     }
 
-    public async Task<bool> ValidateRefreshToken(User user, string refreshToken)
+    public bool ValidateRefreshToken(User user, string refreshToken)
     {
         if (user.RefreshToken != refreshToken ||
             user.RefreshTokenExpiryTime <= DateTime.UtcNow)

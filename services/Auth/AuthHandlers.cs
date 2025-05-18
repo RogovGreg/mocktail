@@ -101,7 +101,7 @@ public static class AuthHandlers
             return Results.Json(new { Message = "`refreshToken` is null or empty" }, statusCode: 401);
         }
 
-        if (!await tokenService.ValidateRefreshToken(user, refreshToken))
+        if (!tokenService.ValidateRefreshToken(user, refreshToken))
         {
             return Results.Json(new { Message = "`refreshToken` is invalid" }, statusCode: 401);
         }
@@ -128,6 +128,10 @@ public static class AuthHandlers
         }
 
         var userName = context.User.Identity.Name;
+        if (userName == null)
+        {
+            return Results.NotFound();
+        }
 
         var user = await userManager.FindByNameAsync(userName);
         if (user == null)
@@ -143,7 +147,7 @@ public static class AuthHandlers
         });
     }
 
-    public static async Task<IResult> CheckStatusHandler(HttpContext context)
+    public static IResult CheckStatusHandler(HttpContext context)
     {
         if (context.User?.Identity?.IsAuthenticated == true)
         {
@@ -153,7 +157,7 @@ public static class AuthHandlers
         return Results.Unauthorized();
     }
 
-    public static async Task<IResult> CheckAvailability()
+    public static IResult CheckAvailability()
     {
         return Results.Ok(new
         {
