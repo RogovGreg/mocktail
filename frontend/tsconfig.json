@@ -25,6 +25,7 @@
       "#pages": ["src/pages"],
       "#pages/*": ["src/pages/*"],
       "#common-constants": ["src/common-constants/index.ts"],
+      "#common-components": ["src/common-components/index.ts"],
       "#routes": ["src/routes-list.ts"],
       "#src": ["src"],
       "#src/*": ["src/*"],
