@@ -1,7 +1,11 @@
 import { createBrowserRouter, Navigate, RouteObject } from 'react-router';
 import { RouterProvider } from 'react-router-dom';
 
-import { AuthContextProvider } from '#src/global-contexts/index.ts';
+import { PageContainer } from '#common-components';
+import {
+  AuthContextProvider,
+  SidebarsContextProvider,
+} from '#src/global-contexts/index.ts';
 
 import { ProtectedRoute } from './ProtectedRoute.tsx';
 import { PublicRoute } from './PublicRoute.tsx';
@@ -18,7 +22,11 @@ const router = createBrowserRouter([
       element: (
         <AuthContextProvider>
           <PublicRoute>
-            <Component />
+            <SidebarsContextProvider>
+              <PageContainer>
+                <Component />
+              </PageContainer>
+            </SidebarsContextProvider>
           </PublicRoute>
         </AuthContextProvider>
       ),
@@ -34,7 +42,11 @@ const router = createBrowserRouter([
       element: (
         <AuthContextProvider>
           <ProtectedRoute>
-            <Component />
+            <SidebarsContextProvider>
+              <PageContainer>
+                <Component />
+              </PageContainer>
+            </SidebarsContextProvider>
           </ProtectedRoute>
         </AuthContextProvider>
       ),
