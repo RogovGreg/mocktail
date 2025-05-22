@@ -13,19 +13,25 @@ type TOverlayProps = {
 export const PageContainerStyled = styled.div`
   position: relative;
 
-  header {
-    height: 25px;
-    background-color: red;
+  main {
+    margin-top: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1000px;
   }
 
   footer {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
     height: 25px;
     background-color: blue;
   }
 `;
 
 export const HorizontalSidebar = styled.aside<THorizontalSidebarProps>`
-  position: absolute;
+  position: fixed;
   top: 0;
   z-index: 1000;
   ${({ side }) => (side === 'left' ? 'left: 0' : 'right: 0')};
