@@ -29,7 +29,7 @@ const SidebarBodyTempComponent = () => (
   </div>
 );
 
-export const HomePage = () => {
+export const DashboardPage = () => {
   const { updateIsAuthorized, updateAccessToken, updateAuthorizedUserData } =
     useContext(AuthContext);
 

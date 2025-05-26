@@ -46,7 +46,7 @@ export const LoginPage = () => {
           );
         }
 
-        navigate(ERoutes.HomePage);
+        navigate(ERoutes.Dashboard);
       }
     });
   };

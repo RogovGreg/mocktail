@@ -1,21 +1,11 @@
-import { ReactNode, useContext, useEffect, useMemo } from 'react';
+import { ReactNode, useContext, useMemo } from 'react';
 
 import { AuthContext } from '#src/global-contexts';
 
 import { HeaderNavigateButtonStyled, HeaderStyled } from './styled';
 
 export const Header = () => {
-  useEffect(() => {
-    console.log('Header did mount');
-
-    return () => {
-      console.log('Header will unmount');
-    };
-  }, []);
-
   const { isAuthorized } = useContext(AuthContext);
-
-  console.log('> HEADER RENDER', isAuthorized);
 
   const leftElementsGroup: Array<ReactNode> = useMemo(() => {
     if (isAuthorized) {
@@ -67,27 +57,6 @@ export const Header = () => {
         {leftElementsGroup}
       </div>
       <div>{rightElementsGroup}</div>
-      {/* <button
-        type='button'
-        onClick={() => openLeftSidebar({ Component: TestComponent })}
-      >
-        Open left Sidebar
-      </button>
-      <button
-        type='button'
-        onClick={() => {
-          openLeftSidebar({ Component: TestComponent });
-          openRightSidebar({ Component: TestComponent });
-        }}
-      >
-        Open both Sidebar
-      </button>
-      <button
-        type='button'
-        onClick={() => openRightSidebar({ Component: TestComponent })}
-      >
-        Open Right Sidebar
-      </button> */}
     </HeaderStyled>
   );
 };

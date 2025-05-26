@@ -1,5 +1,6 @@
 export enum ERoutes {
-  HomePage = '/home',
+  Landing = '',
+  Dashboard = '/dashboard',
   Login = '/login',
   PageNotFound = '/page-not-found',
   Register = '/register',
