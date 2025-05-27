@@ -9,7 +9,6 @@
   --mt-color-5: #2F6E6C;
 
   --mt-color-background-canvas: var(--mt-color-3);
-  --mt-color-header: var(--mt-color-5);
   --mt-color-main-text: var(--mt-color-1);
 
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -29,9 +28,14 @@
 [data-theme="dark"] {
   --mt-color-background-canvas: var(--mt-color-2);  
   --mt-color-main-text: var(--mt-color-3);
-  --mt-color-header: var(--mt-color-1);
 }
 
+svg {
+  fill: var(--mt-color-3);
+}
+svg:hover {
+  fill: var(--mt-color-tail);
+}
 
 h1 {
   margin: 0;

@@ -26,7 +26,11 @@ export const PageContainerStyled = styled.div`
     position: absolute;
     bottom: 0;
     height: 25px;
-    background-color: blue;
+    background-color: var(--mt-color-1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
   }
 `;
 

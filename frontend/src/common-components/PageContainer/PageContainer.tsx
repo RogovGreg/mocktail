@@ -9,8 +9,6 @@ export const PageContainer: FC<PropsWithChildren> = props => {
   const { children } = props;
 
   const {
-    // openLeftSidebar,
-    // openRightSidebar,
     closeBothSidebars,
     isLeftSidebarOpen,
     isRightSidebarOpen,
@@ -36,7 +34,7 @@ export const PageContainer: FC<PropsWithChildren> = props => {
       <Header />
       <main>
         {children}
-        <footer>Footer</footer>
+        <footer>MockTail | 2024-2025</footer>
       </main>
     </PageContainerStyled>
   );
