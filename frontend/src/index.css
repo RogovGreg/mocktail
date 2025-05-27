@@ -1,17 +1,37 @@
 :root {
+  --mt-color-mock: #00FFFF;
+  --mt-color-tail: #FF5900;
+
+  --mt-color-1: #0B0C10;
+  --mt-color-2: #1F2833;
+  --mt-color-3: #C5C6C7;
+  --mt-color-4: #66FCF1;
+  --mt-color-5: #2F6E6C;
+
+  --mt-color-background-canvas: var(--mt-color-3);
+  --mt-color-header: var(--mt-color-5);
+  --mt-color-main-text: var(--mt-color-1);
+
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: var(--mt-color-main-text);
+  background-color: var(--mt-color-background-canvas);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
 }
+[data-theme="dark"] {
+  --mt-color-background-canvas: var(--mt-color-2);  
+  --mt-color-main-text: var(--mt-color-3);
+  --mt-color-header: var(--mt-color-1);
+}
+
 
 h1 {
   margin: 0;

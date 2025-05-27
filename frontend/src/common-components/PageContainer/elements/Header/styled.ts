@@ -5,7 +5,7 @@ type THeaderStyledProps = Readonly<{
 }>;
 
 export const HeaderStyled = styled.header<THeaderStyledProps>`
-  height: ${props => (props.isAuthorized ? '30px' : '50px')};
+  height: ${props => (props.isAuthorized ? '50px' : '70px')};
 
   transition: all 1s ease;
 
@@ -15,7 +15,7 @@ export const HeaderStyled = styled.header<THeaderStyledProps>`
   justify-content: space-between;
   width: 100%;
 
-  background-color: violet;
+  background-color: var(--mt-color-header);
 
   div {
     display: flex;
@@ -41,4 +41,18 @@ export const HeaderNavigateButtonStyled = styled.button`
   &:hover {
     border: 1px solid red;
   }
+`;
+
+type THeaderNavigationItemStyledProps = Readonly<{
+  isActive: boolean;
+}>;
+
+export const HeaderNavigationPanelStyled = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+export const HeaderNavigationItemStyled = styled.button<THeaderNavigationItemStyledProps>`
+  text-transform: uppercase;
+  height: 100%;
 `;

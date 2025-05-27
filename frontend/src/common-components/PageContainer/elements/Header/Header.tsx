@@ -1,43 +1,31 @@
 import { ReactNode, useContext, useMemo } from 'react';
+import { useNavigate } from 'react-router';
 
 import { AuthContext } from '#src/global-contexts';
+import { useTheme } from '#src/theme';
 
-import { HeaderNavigateButtonStyled, HeaderStyled } from './styled';
+import { useHeaderNavigationPanelConfig } from './functions';
+import {
+  HeaderNavigateButtonStyled,
+  HeaderNavigationItemStyled,
+  HeaderNavigationPanelStyled,
+  HeaderStyled,
+} from './styled';
 
 export const Header = () => {
   const { isAuthorized } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const leftElementsGroup: Array<ReactNode> = useMemo(() => {
-    if (isAuthorized) {
-      return [
-        <HeaderNavigateButtonStyled key='dashboard-navigate-button'>
-          Dashboard
-        </HeaderNavigateButtonStyled>,
-        <HeaderNavigateButtonStyled key='projects-navigate-button'>
-          Projects
-        </HeaderNavigateButtonStyled>,
-      ];
-    }
+  const { toggleTheme } = useTheme();
 
-    return [
-      <HeaderNavigateButtonStyled key='about-navigate-button'>
-        About
-      </HeaderNavigateButtonStyled>,
-      <HeaderNavigateButtonStyled key='docs-navigate-button'>
-        Docs
-      </HeaderNavigateButtonStyled>,
-      <HeaderNavigateButtonStyled key='support-navigate-button'>
-        Support
-      </HeaderNavigateButtonStyled>,
-      <HeaderNavigateButtonStyled key='web-app-navigate-button'>
-        Web App
-      </HeaderNavigateButtonStyled>,
-    ];
-  }, [isAuthorized]);
+  const headerNavigationPanelConfig = useHeaderNavigationPanelConfig();
 
   const rightElementsGroup: Array<ReactNode> = useMemo(() => {
     if (isAuthorized) {
       return [
+        <HeaderNavigateButtonStyled onClick={toggleTheme} key='theme'>
+          Switch theme
+        </HeaderNavigateButtonStyled>,
         <HeaderNavigateButtonStyled key='logout-button'>
           Logout
         </HeaderNavigateButtonStyled>,
@@ -45,7 +33,7 @@ export const Header = () => {
     }
 
     return [];
-  }, [isAuthorized]);
+  }, [isAuthorized, toggleTheme]);
 
   return (
     <HeaderStyled isAuthorized={Boolean(isAuthorized)}>
@@ -54,7 +42,22 @@ export const Header = () => {
           <span style={{ color: 'aqua' }}>Mock</span>
           <span style={{ color: 'orangered' }}>Tail</span>
         </h1>
-        {leftElementsGroup}
+        <HeaderNavigationPanelStyled>
+          {headerNavigationPanelConfig.map(item => {
+            const { label, href, isActive } = item;
+
+            return (
+              <HeaderNavigationItemStyled
+                key={label}
+                type='button'
+                isActive={isActive}
+                onClick={() => navigate(href)}
+              >
+                {label}
+              </HeaderNavigationItemStyled>
+            );
+          })}
+        </HeaderNavigationPanelStyled>
       </div>
       <div>{rightElementsGroup}</div>
     </HeaderStyled>

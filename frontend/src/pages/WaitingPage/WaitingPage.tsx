@@ -18,8 +18,8 @@ export const WaitingPage = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <h1>
-        <span style={{ color: 'aqua' }}>Mock</span>
-        <span style={{ color: 'orangered' }}>Tail</span>
+        <span style={{ color: '#00FFFF' }}>Mock</span>
+        <span style={{ color: '#FF5900' }}>Tail</span>
       </h1>
       <MocktailLoadingIcon />
       <span>Loading{'.'.repeat(dotCount)}</span>

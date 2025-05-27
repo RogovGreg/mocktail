@@ -1,12 +1,17 @@
 import { ERoutes } from './routes-list.ts';
 import { TRouteObjectList } from './types.ts';
 import {
+  AboutPage,
   DashboardPage,
+  DocsPage,
   LandingPage,
   LoginPage,
   PageNotFoundPage,
+  ProfilePage,
+  ProjectsPage,
   RegisterPage,
   RegisterSuccessNotificationPage,
+  SupportPage,
   WaitingPage,
 } from '../pages/index.ts';
 
@@ -52,6 +57,37 @@ export const ROUTES_LIST: TRouteObjectList = [
     isOnAuthFlow: false,
     isProtected: false,
     path: ERoutes.Landing,
+  },
+  {
+    Component: AboutPage,
+    isOnAuthFlow: false,
+    isProtected: false,
+    path: ERoutes.About,
+  },
+
+  {
+    Component: DocsPage,
+    isOnAuthFlow: false,
+    isProtected: false,
+    path: ERoutes.Docs,
+  },
+  {
+    Component: ProfilePage,
+    isOnAuthFlow: false,
+    isProtected: true,
+    path: ERoutes.Profile,
+  },
+  {
+    Component: ProjectsPage,
+    isOnAuthFlow: false,
+    isProtected: true,
+    path: ERoutes.Projects,
+  },
+  {
+    Component: SupportPage,
+    isOnAuthFlow: false,
+    isProtected: false,
+    path: ERoutes.Support,
   },
 ];
 
