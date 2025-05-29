@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router';
 import { StatusCodes } from 'http-status-codes';
 
 import { AuthService, BackendService, ContentService } from '#api';
+import { MocktailLoadingIcon } from '#common-components';
 import { AUTHORIZED_USER_ID_FIELD_NAME } from '#common-constants';
+import { useSidebar } from '#src/common-functions';
 import { AuthContext } from '#src/global-contexts';
 import { ERoutes } from '#src/router';
 
@@ -14,13 +16,28 @@ import {
   TCheckServiceResponseHandler2,
 } from './types';
 
-export const HomePage = () => {
+const SidebarBodyTempComponent = () => (
+  <div
+    style={{
+      alignItems: 'center',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+    }}
+  >
+    <MocktailLoadingIcon />
+  </div>
+);
+
+export const DashboardPage = () => {
   const { updateIsAuthorized, updateAccessToken, updateAuthorizedUserData } =
     useContext(AuthContext);
 
   const [responses, setResponses] = useState<TAvailabilityLog>([]);
 
   const navigate = useNavigate();
+
+  const { openLeftSidebar, openRightSidebar } = useSidebar();
 
   const checkServiceResponseSuccessHandler: TCheckServiceResponseHandler = (
     response,
@@ -50,6 +67,35 @@ export const HomePage = () => {
 
   return (
     <div style={{ padding: '20px' }}>
+      <h1>Sidebars</h1>
+      <div>
+        <button
+          type='button'
+          onClick={() =>
+            openLeftSidebar({ Component: SidebarBodyTempComponent })
+          }
+          style={{
+            cursor: 'pointer',
+            margin: '5px',
+            padding: '10px 15px',
+          }}
+        >
+          Open Left Sidebar
+        </button>
+        <button
+          type='button'
+          onClick={() =>
+            openRightSidebar({ Component: SidebarBodyTempComponent })
+          }
+          style={{
+            cursor: 'pointer',
+            margin: '5px',
+            padding: '10px 15px',
+          }}
+        >
+          Open Right Sidebar
+        </button>
+      </div>
       <h1>Check Service Availability</h1>
       <div style={{ marginBottom: '20px' }}>
         <button

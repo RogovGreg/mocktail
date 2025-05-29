@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useLocation, useNavigate } from 'react-router';
 import { StatusCodes } from 'http-status-codes';
 
 import { AuthService, updateApiAuthorization } from '#api';
@@ -15,8 +14,6 @@ import {
   AUTHORIZED_USER_ID_FIELD_NAME,
   POLLING_AUTH_STATUS_INTERVAL,
 } from '#common-constants';
-import { ERoutes } from '#src/router';
-import { PROTECTED_ROUTES_PATHS_LIST } from '#src/router/routes';
 
 import { AuthContext } from './AuthContext';
 import { AUTH_CONTEXT_DEFAULT_VALUE } from './constants';
@@ -24,9 +21,6 @@ import { TAuthContextValue } from './types';
 
 export const AuthContextProvider: FC<PropsWithChildren> = props => {
   const { children } = props;
-
-  const navigate = useNavigate();
-  const { pathname: currentURL } = useLocation();
 
   const [accessToken, setAccessToken] = useState<
     TAuthContextValue['accessToken']
@@ -79,18 +73,9 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
           setIsAuthorized(false);
           setAccessToken(AUTH_CONTEXT_DEFAULT_VALUE.accessToken);
           setAuthorizedUserData(AUTH_CONTEXT_DEFAULT_VALUE.authorizedUserData);
-
-          if (PROTECTED_ROUTES_PATHS_LIST.includes(currentURL as ERoutes)) {
-            navigate(ERoutes.Login);
-          }
         });
-    } else if (
-      currentURL !== ERoutes.Login &&
-      currentURL !== ERoutes.Register
-    ) {
-      navigate(ERoutes.Login);
     }
-  }, [refreshTokenTimeoutRef.current, currentURL]);
+  }, [refreshTokenTimeoutRef.current]);
 
   useEffect(() => {
     refreshTokenAction();
@@ -111,7 +96,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
         AuthService.checkStatus();
       }, POLLING_AUTH_STATUS_INTERVAL);
     }
-  }, [currentURL, isAuthorized, pollingStatusIntervalRef.current]);
+  }, [isAuthorized, pollingStatusIntervalRef.current]);
 
   useEffect(() => {
     if (accessToken?.value && !isAuthorized) {

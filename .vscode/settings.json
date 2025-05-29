@@ -1,4 +1,8 @@
 {
+  "files.associations": {
+    "**/Templates/*.ts": "typescript",
+    "**/Templates/*.tsx": "typescriptreact"
+  },
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always"
   },

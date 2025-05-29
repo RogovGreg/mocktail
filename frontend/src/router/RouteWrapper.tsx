@@ -3,9 +3,10 @@ import { useLocation, useNavigate } from 'react-router';
 
 import { AuthContext } from '#src/global-contexts';
 
+import { PROTECTED_ROUTES } from './routes';
 import { ERoutes } from './routes-list';
 
-export const ProtectedRoute: FC<PropsWithChildren> = props => {
+export const RouteWrapper: FC<PropsWithChildren> = props => {
   const { children } = props;
 
   const { isAuthorized } = useContext(AuthContext);
@@ -13,12 +14,11 @@ export const ProtectedRoute: FC<PropsWithChildren> = props => {
   const { pathname: currentURL } = useLocation();
   const navigate = useNavigate();
 
-  // TODO: Put the logic for all authorisation redirects to one place
   useEffect(() => {
-    if (!isAuthorized) {
+    if (!isAuthorized && PROTECTED_ROUTES.includes(currentURL as ERoutes)) {
       navigate(ERoutes.Login);
     }
-  }, [isAuthorized, currentURL]);
+  }, [currentURL, isAuthorized]);
 
   // eslint-disable-next-line react/jsx-no-useless-fragment
   return <>{children}</>;

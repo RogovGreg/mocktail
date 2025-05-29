@@ -1,42 +1,28 @@
 import { createBrowserRouter, Navigate, RouteObject } from 'react-router';
 import { RouterProvider } from 'react-router-dom';
 
-import { AuthContextProvider } from '#src/global-contexts/index.ts';
+import { PageContainer } from '#common-components';
 
-import { ProtectedRoute } from './ProtectedRoute.tsx';
-import { PublicRoute } from './PublicRoute.tsx';
-import { ProtectedRoutesList, PUBLIC_ROUTES_LIST } from './routes.ts';
+import { ROUTES_LIST } from './routes.ts';
 import { ERoutes } from './routes-list.ts';
+import { RouteWrapper } from './RouteWrapper.tsx';
+import { SidebarsContextProvider } from '../global-contexts/SidebarsContext/index.ts';
 
 const router = createBrowserRouter([
-  ...PUBLIC_ROUTES_LIST.map<RouteObject>(routeObject => {
+  ...ROUTES_LIST.map<RouteObject>(routeObject => {
     const { path, Component } = routeObject;
 
     return {
       path,
 
       element: (
-        <AuthContextProvider>
-          <PublicRoute>
-            <Component />
-          </PublicRoute>
-        </AuthContextProvider>
-      ),
-    };
-  }),
-
-  ...ProtectedRoutesList.map<RouteObject>(routeObject => {
-    const { path, Component } = routeObject;
-
-    return {
-      path,
-
-      element: (
-        <AuthContextProvider>
-          <ProtectedRoute>
-            <Component />
-          </ProtectedRoute>
-        </AuthContextProvider>
+        <RouteWrapper>
+          <SidebarsContextProvider>
+            <PageContainer>
+              <Component />
+            </PageContainer>
+          </SidebarsContextProvider>
+        </RouteWrapper>
       ),
     };
   }),

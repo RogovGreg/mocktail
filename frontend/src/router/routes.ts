@@ -1,51 +1,112 @@
 import { ERoutes } from './routes-list.ts';
 import { TRouteObjectList } from './types.ts';
 import {
-  HomePage,
+  AboutPage,
+  DashboardPage,
+  DocsPage,
+  LandingPage,
   LoginPage,
   PageNotFoundPage,
+  ProfilePage,
+  ProjectsPage,
   RegisterPage,
   RegisterSuccessNotificationPage,
+  SupportPage,
   WaitingPage,
 } from '../pages/index.ts';
 
-export const PUBLIC_ROUTES_LIST: TRouteObjectList = [
+export const ROUTES_LIST: TRouteObjectList = [
   {
     Component: RegisterPage,
+    isOnAuthFlow: true,
+    isProtected: false,
     path: ERoutes.Register,
   },
   {
     Component: RegisterSuccessNotificationPage,
+    isOnAuthFlow: true,
+    isProtected: false,
     path: ERoutes.RegisterSuccess,
   },
   {
     Component: LoginPage,
+    isOnAuthFlow: true,
+    isProtected: false,
     path: ERoutes.Login,
   },
   {
     Component: PageNotFoundPage,
+    isOnAuthFlow: true,
+    isProtected: false,
     path: ERoutes.PageNotFound,
   },
   {
     Component: WaitingPage,
+    isOnAuthFlow: true,
+    isProtected: false,
     path: ERoutes.WaitingPage,
   },
-];
-
-export const PUBLIC_ROUTES_PATHS_LIST: Array<ERoutes> = PUBLIC_ROUTES_LIST.map(
-  routeObject => routeObject.path,
-);
-
-export const ProtectedRoutesList: TRouteObjectList = [
   {
-    Component: HomePage,
-    path: ERoutes.HomePage,
+    Component: DashboardPage,
+    isOnAuthFlow: false,
+    isProtected: true,
+    path: ERoutes.Dashboard,
   },
   {
-    Component: WaitingPage,
-    path: ERoutes.WaitingDemoPage,
+    Component: LandingPage,
+    isOnAuthFlow: false,
+    isProtected: false,
+    path: ERoutes.Landing,
+  },
+  {
+    Component: AboutPage,
+    isOnAuthFlow: false,
+    isProtected: false,
+    path: ERoutes.About,
+  },
+
+  {
+    Component: DocsPage,
+    isOnAuthFlow: false,
+    isProtected: false,
+    path: ERoutes.Docs,
+  },
+  {
+    Component: ProfilePage,
+    isOnAuthFlow: false,
+    isProtected: true,
+    path: ERoutes.Profile,
+  },
+  {
+    Component: ProjectsPage,
+    isOnAuthFlow: false,
+    isProtected: true,
+    path: ERoutes.Projects,
+  },
+  {
+    Component: SupportPage,
+    isOnAuthFlow: false,
+    isProtected: false,
+    path: ERoutes.Support,
   },
 ];
 
-export const PROTECTED_ROUTES_PATHS_LIST: Array<ERoutes> =
-  ProtectedRoutesList.map(routeObject => routeObject.path);
+export const PROTECTED_ROUTES: Array<ERoutes> = ROUTES_LIST.reduce<
+  Array<ERoutes>
+>((accumulator, { isProtected, path }) => {
+  if (isProtected) {
+    accumulator.push(path);
+  }
+
+  return accumulator;
+}, []);
+
+export const AUTH_FLOW_ROUTES: Array<ERoutes> = ROUTES_LIST.reduce<
+  Array<ERoutes>
+>((accumulator, { isOnAuthFlow, path }) => {
+  if (isOnAuthFlow) {
+    accumulator.push(path);
+  }
+
+  return accumulator;
+}, []);

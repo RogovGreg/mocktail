@@ -46,7 +46,7 @@ export const LoginPage = () => {
           );
         }
 
-        navigate(ERoutes.HomePage);
+        navigate(ERoutes.Dashboard);
       }
     });
   };
@@ -122,7 +122,7 @@ export const LoginPage = () => {
         </Form.Item>
       </Form>
       <Button type='primary' form='loginForm' htmlType='submit'>
-        Submit 1
+        Submit
       </Button>
       <div>
         <span>
