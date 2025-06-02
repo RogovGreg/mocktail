@@ -6,4 +6,6 @@ import { TBackendService } from './types';
 export const BackendService: TBackendService = {
   checkAvailability: options =>
     axiosInstance.get(EBackendServiceEndpoint.CheckAvailability, options),
+  getTemplates: (options: any) =>
+    axiosInstance.get(EBackendServiceEndpoint.GetTemplates, options),
 };
