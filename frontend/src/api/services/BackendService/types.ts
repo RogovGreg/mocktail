@@ -1,7 +1,7 @@
 import { TCheckServiceAvailability } from '../types';
 
 export type TTemplate = { // TODO Move somewhere else
-  id: string;
+  id?: string;
   name: string;
   schema: string;
   projectId: string;
@@ -11,4 +11,5 @@ export type TTemplate = { // TODO Move somewhere else
 export type TBackendService = Readonly<{
   checkAvailability: TCheckServiceAvailability;
   getTemplates: (options?: any) => Promise<TTemplate[]>;
+  creteTemplate: (data: TTemplate, options?: any) => Promise<TTemplate>;
 }>;

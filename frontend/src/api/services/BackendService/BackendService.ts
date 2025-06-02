@@ -8,4 +8,6 @@ export const BackendService: TBackendService = {
     axiosInstance.get(EBackendServiceEndpoint.CheckAvailability, options),
   getTemplates: (options: any) =>
     axiosInstance.get(EBackendServiceEndpoint.GetTemplates, options),
+  creteTemplate: (data, options) =>
+    axiosInstance.post(EBackendServiceEndpoint.CreateTemplate, data, options),
 };
