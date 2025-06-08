@@ -1,15 +1,21 @@
 using Shared.Content.Protos;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
+using Microsoft.EntityFrameworkCore;
 using Grpc.Net.Client;
 using Microsoft.Extensions.DependencyInjection;
+using MyService.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-// Configure gRPC client
 builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>
 {
     options.Address = new Uri("http://content:8080");
 });
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddControllers();
 
 var app = builder.Build();
 

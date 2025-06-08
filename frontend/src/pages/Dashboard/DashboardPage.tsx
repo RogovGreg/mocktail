@@ -140,6 +140,21 @@ export const DashboardPage = () => {
         <button
           type='button'
           onClick={() =>
+            BackendService.getTemplatesList().then(response => {
+              console.log('> GET TEMPLATE LIST', response);
+            })
+          }
+          style={{
+            cursor: 'pointer',
+            margin: '5px',
+            padding: '10px 15px',
+          }}
+        >
+          Check Template API
+        </button>
+        <button
+          type='button'
+          onClick={() =>
             ContentService.checkAvailability().then(
               response =>
                 checkServiceResponseSuccessHandler(
