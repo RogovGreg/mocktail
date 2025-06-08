@@ -16,15 +16,25 @@ export const PageContainer: FC<PropsWithChildren> = props => {
     leftSidebarConfig,
   } = useSidebar();
 
-  const { Component: RightSidebarBody } = rightSidebarConfig || {};
-  const { Component: LeftSidebarBody } = leftSidebarConfig || {};
+  const { Component: LeftSidebarBody, width: leftSidebarWidth } =
+    leftSidebarConfig || {};
+  const { Component: RightSidebarBody, width: rightSidebarWidth } =
+    rightSidebarConfig || {};
 
   return (
     <PageContainerStyled>
-      <HorizontalSidebar side='left' active={isLeftSidebarOpen}>
+      <HorizontalSidebar
+        side='left'
+        active={isLeftSidebarOpen}
+        width={leftSidebarWidth}
+      >
         {LeftSidebarBody ? <LeftSidebarBody /> : null}
       </HorizontalSidebar>
-      <HorizontalSidebar side='right' active={isRightSidebarOpen}>
+      <HorizontalSidebar
+        side='right'
+        active={isRightSidebarOpen}
+        width={rightSidebarWidth}
+      >
         {RightSidebarBody ? <RightSidebarBody /> : null}
       </HorizontalSidebar>
       <Overlay

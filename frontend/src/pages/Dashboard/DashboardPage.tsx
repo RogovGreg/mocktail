@@ -1,12 +1,10 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { StatusCodes } from 'http-status-codes';
 
 import { AuthService, BackendService, ContentService } from '#api';
 import { MocktailLoadingIcon } from '#common-components';
-import { AUTHORIZED_USER_ID_FIELD_NAME } from '#common-constants';
+import { MockTailIcon } from '#src/assets/icons';
 import { useSidebar } from '#src/common-functions';
-import { AuthContext } from '#src/global-contexts';
 import { ERoutes } from '#src/router';
 
 import {
@@ -25,14 +23,12 @@ const SidebarBodyTempComponent = () => (
       justifyContent: 'center',
     }}
   >
+    <MockTailIcon />
     <MocktailLoadingIcon />
   </div>
 );
 
 export const DashboardPage = () => {
-  const { updateIsAuthorized, updateAccessToken, updateAuthorizedUserData } =
-    useContext(AuthContext);
-
   const [responses, setResponses] = useState<TAvailabilityLog>([]);
 
   const navigate = useNavigate();
@@ -85,7 +81,10 @@ export const DashboardPage = () => {
         <button
           type='button'
           onClick={() =>
-            openRightSidebar({ Component: SidebarBodyTempComponent })
+            openRightSidebar({
+              Component: SidebarBodyTempComponent,
+              width: '100%',
+            })
           }
           style={{
             cursor: 'pointer',
@@ -192,39 +191,6 @@ export const DashboardPage = () => {
           }}
         >
           To Demo Waiting Page
-        </button>
-        <button
-          type='button'
-          onClick={async () => {
-            if (
-              updateIsAuthorized &&
-              updateAccessToken &&
-              updateAuthorizedUserData
-            ) {
-              await AuthService.logout().then(response => {
-                if (response.status === StatusCodes.OK) {
-                  updateIsAuthorized(false);
-                  updateAccessToken({
-                    expiresIn: null,
-                    type: null,
-                    value: null,
-                  });
-                  updateAuthorizedUserData(null);
-
-                  sessionStorage.removeItem(AUTHORIZED_USER_ID_FIELD_NAME);
-
-                  navigate(ERoutes.Login);
-                }
-              });
-            }
-          }}
-          style={{
-            cursor: 'pointer',
-            margin: '5px',
-            padding: '10px 15px',
-          }}
-        >
-          Logout
         </button>
       </div>
       <div>
