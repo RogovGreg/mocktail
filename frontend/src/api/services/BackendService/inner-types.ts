@@ -1,4 +1,4 @@
 export enum EBackendServiceEndpoint {
   CheckAvailability = 'backend/check-availability',
-  Template = 'backend/template',
+  Template = 'backend/templates',
 }

@@ -6,7 +6,7 @@ using MyService.Models;
 namespace MyService.Controllers
 {
   [ApiController]
-  [Route("api/[controller]")]
+  [Route("api/v1/backend/templates")]
   public class TemplatesController : ControllerBase
   {
     private readonly AppDbContext _db;

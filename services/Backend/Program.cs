@@ -35,6 +35,8 @@ app.MapGet("/", () => "`Backend` service is alive");
 
 app.Urls.Add("http://*:80");
 
+app.MapControllers();
+
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)

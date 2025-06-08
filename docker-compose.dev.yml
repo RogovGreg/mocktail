@@ -4,11 +4,12 @@ services:
       dockerfile: Backend/Docker/Dockerfile.dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=backend_db;Port=5432;Database=MyServiceDb;Username=myuser;Password=S3cr3tP@ss
     ports:
       - "5001:80"
     volumes:
       - ./services/Backend:/src
-      - ./services/Shared:/src/Shared
+      - ./services/Shared:/Shared
 
   content:
     build:
@@ -19,7 +20,7 @@ services:
       - "5002:80"
     volumes:
       - ./services/Content:/src
-      - ./services/Shared:/src/Shared
+      - ./services/Shared:/Shared
 
   generator:
     build:
