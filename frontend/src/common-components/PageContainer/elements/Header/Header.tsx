@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { AuthService } from '#api';
 import { AUTHORIZED_USER_ID_FIELD_NAME } from '#common-constants';
+import { MockTailIcon } from '#icons';
 import { AuthContext } from '#src/global-contexts';
 import { ERoutes } from '#src/router';
 import { useTheme } from '#src/theme';
@@ -15,6 +16,7 @@ import {
   HeaderNavigationPanelStyled,
   HeaderStyled,
 } from './styled';
+import { THeaderNavigationPanel } from './types';
 
 export const Header = () => {
   const {
@@ -28,7 +30,8 @@ export const Header = () => {
 
   const { toggleTheme } = useTheme();
 
-  const headerNavigationPanelConfig = useHeaderNavigationPanelConfig();
+  const headerNavigationPanelConfig: THeaderNavigationPanel =
+    useHeaderNavigationPanelConfig();
 
   const rightElementsGroup: Array<ReactNode> = useMemo(() => {
     if (isAuthorized) {
@@ -81,12 +84,7 @@ export const Header = () => {
   return (
     <HeaderStyled isAuthorized={Boolean(isAuthorized)}>
       <div>
-        <h1
-          style={{ display: 'flex', alignSelf: 'center', marginLeft: '10px' }}
-        >
-          <span style={{ color: 'aqua' }}>Mock</span>
-          <span style={{ color: 'orangered' }}>Tail</span>
-        </h1>
+        <MockTailIcon width='200px' height='auto' />
         <HeaderNavigationPanelStyled>
           {headerNavigationPanelConfig.map(item => {
             const { label, href, isActive } = item;
