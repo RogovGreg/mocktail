@@ -20,7 +20,9 @@ const MockTemplates: TTemplate[] = [
 
 export const ProjectsPage = () => {
   const [templates, setTemplates] = useState<TTemplate[]>(MockTemplates);
-  const [showTemplateForm, setTemplateForm] = useState(false);
+  const [activeTemplate, setActiveTemplate] = useState<TTemplate | undefined>(
+    undefined
+  );
 
   const fetchTemplates = async () =>
     BackendService.getTemplates().then((res) => setTemplates(res));
@@ -29,16 +31,19 @@ export const ProjectsPage = () => {
     fetchTemplates();
   }, []);
 
-  const handleCreateClick = () => setTemplateForm(true);
-  const handleCancel = () => setTemplateForm(false);
+  const openTemplateForm = (template?: TTemplate) => {
+    setActiveTemplate(
+      template || { id: "", name: "", schema: "", projectId: "" }
+    );
+  };
+  const closeTemplateForm = () => setActiveTemplate(undefined);
 
-  const handleFormSubmit = (values: { name: string; schema: string }) => {
+  const handleCreateTemplate = (values: TTemplate) => {
     BackendService.creteTemplate({
       name: values.name,
       schema: values.schema,
       projectId: "1",
     });
-    // TODO Confirm creation then update state
     setTemplates([
       ...templates,
       {
@@ -48,7 +53,39 @@ export const ProjectsPage = () => {
         projectId: "1",
       },
     ]);
-    setTemplateForm(false);
+  };
+
+  const handleUpdateTemplate = (values: TTemplate) => {
+    if (!activeTemplate?.id) return;
+
+    BackendService.updateTemplate(activeTemplate.id, {
+      id: activeTemplate.id,
+      name: values.name,
+      schema: values.schema,
+      projectId: "1",
+    });
+
+    setTemplates(
+      templates.map((template) =>
+        template.id === activeTemplate.id
+          ? { ...template, name: values.name, schema: values.schema }
+          : template
+      )
+    );
+  };
+
+  const handleFormSubmit = (values: TTemplate) => {
+    if (activeTemplate?.id) {
+      handleUpdateTemplate(values);
+    } else {
+      handleCreateTemplate(values);
+    }
+    closeTemplateForm();
+  };
+
+  const handleDelete = (templateId: string) => {
+    BackendService.deleteTemplate(templateId);
+    setTemplates(templates.filter((template) => template.id !== templateId));
   };
 
   return (
@@ -60,16 +97,27 @@ export const ProjectsPage = () => {
           <li key={index}>
             <h2>{template.name}</h2>
             <p>{template.schema}</p>
+            <Button onClick={() => openTemplateForm(template)}>Edit</Button>
+            <Button
+              onClick={() =>
+                handleDelete(
+                  template.id || "TODO: Change this to something better"
+                )
+              }
+            >
+              Delete
+            </Button>
           </li>
         ))}
         <li>
-          <Button onClick={handleCreateClick}>Create template</Button>
+          <Button onClick={() => openTemplateForm()}>Create template</Button>
         </li>
       </ul>
       <TemplateForm
-        open={showTemplateForm}
-        onCancel={handleCancel}
+        open={activeTemplate !== undefined}
+        onCancel={closeTemplateForm}
         onCreate={handleFormSubmit}
+        template={activeTemplate}
       />
     </div>
   );

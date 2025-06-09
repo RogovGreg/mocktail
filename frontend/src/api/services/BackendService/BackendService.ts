@@ -10,4 +10,15 @@ export const BackendService: TBackendService = {
     axiosInstance.get(EBackendServiceEndpoint.GetTemplates, options),
   creteTemplate: (data, options) =>
     axiosInstance.post(EBackendServiceEndpoint.CreateTemplate, data, options),
+  updateTemplate: (templateId, data, options) =>
+    axiosInstance.put(
+      EBackendServiceEndpoint.UpdateTemplate.replace(':templateId', templateId),
+      data,
+      options,
+    ),
+  deleteTemplate: (templateId, options) =>
+    axiosInstance.delete(
+      EBackendServiceEndpoint.DeleteTemplate.replace(':templateId', templateId),
+      options,
+    ),
 };

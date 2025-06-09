@@ -12,4 +12,6 @@ export type TBackendService = Readonly<{
   checkAvailability: TCheckServiceAvailability;
   getTemplates: (options?: any) => Promise<TTemplate[]>;
   creteTemplate: (data: TTemplate, options?: any) => Promise<TTemplate>;
+  updateTemplate: (templateId: string, data: TTemplate, options?: any) => Promise<TTemplate>;
+  deleteTemplate: (templateId: string, options?: any) => Promise<void>;
 }>;

@@ -1,38 +1,40 @@
+import { TTemplate } from "#api";
 import { Form, Input, Modal } from "antd";
 import { FC } from "react";
 
 interface CreateTemplateModalProps {
   open: boolean;
   onCancel: () => void;
-  onCreate: (values: { name: string; schema: string }) => void;
+  onCreate: (values: TTemplate) => void;
+  template?: TTemplate;
 }
 
-export const TemplateForm: FC<CreateTemplateModalProps> = ({ open, onCancel, onCreate }) => {
+export const TemplateForm: FC<CreateTemplateModalProps> = ({ open, onCancel, onCreate, template }) => {
   const [form] = Form.useForm();
 
   const handleOk = () => {
     form.submit();
   };
 
-  const handleFinish = (values: { name: string; schema: string }) => {
+  const handleFinish = (values: TTemplate) => {
     onCreate(values);
     form.resetFields();
   };
 
   return (
     <Modal
-      title="Create Template"
+      title={template?.id ? "Edit Template" : "Create Template"}
       open={open}
       onCancel={onCancel}
       onOk={handleOk}
-      okText="Create"
+      okText={template?.id ? "Update" : "Create"}
       cancelText="Cancel"
       destroyOnClose
     >
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ name: "", schema: "" }}
+        initialValues={template}
         onFinish={handleFinish}
       >
         <Form.Item
