@@ -6,7 +6,7 @@ interface CreateTemplateModalProps {
   open: boolean;
   onCancel: () => void;
   onCreate: (values: TTemplate) => void;
-  template?: TTemplate;
+  template: TTemplate;
 }
 
 export const TemplateForm: FC<CreateTemplateModalProps> = ({ open, onCancel, onCreate, template }) => {
@@ -23,11 +23,11 @@ export const TemplateForm: FC<CreateTemplateModalProps> = ({ open, onCancel, onC
 
   return (
     <Modal
-      title={template?.id ? "Edit Template" : "Create Template"}
+      title={template.id ? "Edit Template" : "Create Template"}
       open={open}
       onCancel={onCancel}
       onOk={handleOk}
-      okText={template?.id ? "Update" : "Create"}
+      okText={template.id ? "Update" : "Create"}
       cancelText="Cancel"
       destroyOnClose
     >

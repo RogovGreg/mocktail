@@ -109,16 +109,18 @@ export const ProjectsPage = () => {
             </Button>
           </li>
         ))}
-        <li>
+        <li style={{ marginTop: "20px" }}>
           <Button onClick={() => openTemplateForm()}>Create template</Button>
         </li>
       </ul>
-      <TemplateForm
-        open={activeTemplate !== undefined}
-        onCancel={closeTemplateForm}
-        onCreate={handleFormSubmit}
-        template={activeTemplate}
-      />
+      {activeTemplate && (
+        <TemplateForm
+          open={activeTemplate !== undefined}
+          onCancel={closeTemplateForm}
+          onCreate={handleFormSubmit}
+          template={activeTemplate}
+        />
+      )}
     </div>
   );
 };
