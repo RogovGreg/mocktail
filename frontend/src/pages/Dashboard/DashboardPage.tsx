@@ -96,6 +96,20 @@ export const DashboardPage = () => {
           Open Right Sidebar
         </button>
       </div>
+      <h1>Pages:</h1>
+      <div style={{ marginBottom: '20px' }}>
+        <button
+          type='button'
+          onClick={() => navigate(ERoutes.Projects)}
+          style={{
+            cursor: 'pointer',
+            margin: '5px',
+            padding: '10px 15px',
+          }}
+        >
+          To Projects page
+        </button>
+      </div>
       <h1>Check Service Availability</h1>
       <div style={{ marginBottom: '20px' }}>
         <button
