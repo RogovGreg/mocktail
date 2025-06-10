@@ -256,23 +256,6 @@ export const DashboardPage = () => {
           })}
         </ul>
       </div>
-      {/* <div>
-        <h2>Templates</h2>
-        <span>Look to the browser&apos;s console</span>
-        <div style={{ marginBottom: '20px' }}>
-          <button
-            type='button'
-            onClick={() => AuthService.checkStatus()}
-            style={{
-              cursor: 'pointer',
-              margin: '5px',
-              padding: '10px 15px',
-            }}
-          >
-            Check Status
-          </button>
-        </div>
-      </div> */}
     </div>
   );
 };

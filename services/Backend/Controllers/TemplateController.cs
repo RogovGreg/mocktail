@@ -37,9 +37,10 @@ namespace MyService.Controllers
 
     // PUT api/templates/{id}
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Put(Guid id, Template template)
+    public async Task<IActionResult> Put(Guid id, [FromBody] Template template)
     {
-      if (id != template.Id) return BadRequest();
+      template.Id = id;
+
       _db.Entry(template).State = EntityState.Modified;
       await _db.SaveChangesAsync();
       return NoContent();

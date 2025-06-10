@@ -53,7 +53,19 @@ export type TDeleteTemplateAPIMethod =
 // =========================== getTemplateByID ==========================
 
 export type TGetTemplateByIDMethodQueryParams = Pick<TTemplate, 'Id'>;
-export type TGetTemplateByIDMethodResponse = TTemplate;
+
+// TODO: Fix this type
+export type TGetTemplateByIDMethodResponse = Readonly<{
+  id: string;
+  schema: string;
+  name: string;
+  keyWords: Array<string> | null;
+  description: string | null;
+  releases: Array<TTemplatesRelease>;
+  updatedAt: string;
+  relatedProjectId: string;
+  usedIn: Array<string>;
+}>;
 export type GetTemplateByIDMethod = TApiMethodWithPayload<
   TGetTemplateByIDMethodQueryParams,
   null,

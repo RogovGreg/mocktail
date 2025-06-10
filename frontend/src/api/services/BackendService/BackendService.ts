@@ -9,23 +9,19 @@ export const BackendService: TBackendService = {
 
   createTemplate: (_queryParams, payload, options) =>
     axiosInstance.post(EBackendServiceEndpoint.Template, payload, options),
-  deleteTemplate: (queryParams, _payload, options) =>
-    axiosInstance.delete(EBackendServiceEndpoint.Template, {
-      ...options,
-      params: { id: queryParams.Id },
-    }),
+  deleteTemplate: queryParams =>
+    axiosInstance.delete(
+      EBackendServiceEndpoint.TemplateItem.replace(':id', queryParams.Id),
+    ),
   getTemplateByID: queryParams =>
-    axiosInstance.get(EBackendServiceEndpoint.TemplateItem, {
-      params: {
-        id: queryParams.Id,
-      },
-    }),
+    axiosInstance.get(
+      EBackendServiceEndpoint.TemplateItem.replace(':id', queryParams.Id),
+    ),
   updateTemplate: (queryParams, payload) =>
-    axiosInstance.put(EBackendServiceEndpoint.TemplateItem, payload, {
-      params: {
-        id: queryParams.Id,
-      },
-    }),
+    axiosInstance.put(
+      EBackendServiceEndpoint.TemplateItem.replace(':id', queryParams.Id),
+      payload,
+    ),
 
   getTemplatesList: options =>
     axiosInstance.get(EBackendServiceEndpoint.Template, options),
