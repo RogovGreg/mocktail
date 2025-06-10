@@ -7,7 +7,6 @@ import {
 } from '#api';
 
 export const TemplatesDemoPage = () => {
-  // form state
   const [id, setId] = useState<string>('');
   const [template, setTemplate] = useState<Partial<TTemplate>>({});
   const [isEditing, setIsEditing] = useState(false);
@@ -16,7 +15,6 @@ export const TemplatesDemoPage = () => {
     setIsEditing(Boolean(id));
   }, [id]);
 
-  // Fetch by ID
   const handleRequest = async () => {
     try {
       const response = await BackendService.getTemplateByID({ Id: id }, null);
@@ -30,23 +28,18 @@ export const TemplatesDemoPage = () => {
         usedIn,
       } = response.data;
 
-      console.log('>>> ACHTUNG!', response.data);
-
-      setTemplate(
-        // response.data,
-        {
-          Id: id,
-          Schema: schema,
-          Name: name,
-          KeyWords: keyWords || [],
-          Description: description,
-          UpdatedAt: updatedAt,
-          RelatedProjectId: relatedProjectId,
-          UsedIn: usedIn,
-        },
-      );
-    } catch (err) {
-      console.error('Template not found', err);
+      setTemplate({
+        Id: id,
+        Schema: schema,
+        Name: name,
+        KeyWords: keyWords || [],
+        Description: description,
+        UpdatedAt: updatedAt,
+        RelatedProjectId: relatedProjectId,
+        UsedIn: usedIn,
+      });
+    } catch (error) {
+      console.error('Template not found', error);
       setTemplate({});
     }
   };
@@ -56,13 +49,13 @@ export const TemplatesDemoPage = () => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const values: TCreateTemplateAPIMethodPayload = {
-      Name: String(form.get('name') ?? ''),
       Description: String(form.get('description') ?? ''),
       KeyWords: String(form.get('keyWords') ?? '')
         .split(',')
         .map(s => s.trim()),
-      Schema: String(form.get('schema') ?? ''),
+      Name: String(form.get('name') ?? ''),
       RelatedProjectId: String(form.get('relatedProjectId') ?? ''),
+      Schema: String(form.get('schema') ?? ''),
     };
 
     try {
