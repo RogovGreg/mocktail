@@ -41,7 +41,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
     );
 
     if (authorizedUserID) {
-      AuthService.refreshToken({
+      AuthService.refreshToken(null, {
         UserId: authorizedUserID,
       })
         .then(response => {

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from pathlib import Path
 import os
 import subprocess
 import argparse
@@ -16,49 +17,49 @@ Features:
 
 """
 
+env_path = Path(__file__).parent / ".env"
+if env_path.exists():
+    for line in env_path.read_text().splitlines():
+        if line and not line.startswith("#"):
+            k, v = line.split("=", 1)
+            os.environ.setdefault(k, v)
 
-def get_connection_string():
-    env_file = ".env"
-    connection_string = None
 
-    if os.path.exists(env_file):
-        with open(env_file, "r") as file:
-            for line in file:
-                if line.startswith("CONNECTION_STRING="):
-                    connection_string = line.strip().split("=", 1)[1]
-                    break
-
-    if connection_string:
-        return connection_string.replace("mssql", "localhost")
-    else:
-        print("Error: CONNECTION_STRING not found in .env file.")
+def get_connection_string_for(service_name: str):
+    key = f"{service_name.upper()}_CONNECTION_STRING"
+    val = os.getenv(key)
+    if not val:
+        # fallback
+        val = os.getenv("CONNECTION_STRING")
+    if not val:
+        print(f"Error: neither {key} nor CONNECTION_STRING found in .env")
         exit(1)
+    return val.replace("mssql", "localhost")
 
 
 def run_migrations():
-    connection_string = get_connection_string()
-    services_dir = "services"
+    conn = get_connection_string_for("backend")
+    backend_path = os.path.join("services", "Backend")
+    migrations_path = os.path.join(backend_path, "Migrations")
 
-    for service in os.listdir(services_dir):
-        service_path = os.path.join(services_dir, service)
-        migrations_path = os.path.join(service_path, "Migrations")
-
-        if os.path.isdir(migrations_path):
-            print(f"Running migrations for {service}...")
+    if os.path.isdir(migrations_path):
+        print("Running migrations for Backend...")
+    else:
+        print("No migrations folder: creating initial migration for Backend...")
+        try:
             subprocess.run(
-                [
-                    "dotnet",
-                    "ef",
-                    "database",
-                    "update",
-                    "--connection",
-                    connection_string,
-                ],
-                cwd=service_path,
+                ["dotnet", "ef", "migrations", "add", "InitialCreate"],
+                cwd=backend_path,
                 check=True,
             )
-        else:
-            print(f"No migrations found for {service}, skipping...")
+        except subprocess.CalledProcessError:
+            print("⚠️ InitialCreate migration already exists or failed to generate.")
+
+    subprocess.run(
+        ["dotnet", "ef", "database", "update", "--connection", conn],
+        cwd=os.path.join("services", "Backend"),
+        check=True,
+    )
 
 
 def start_docker():
@@ -102,6 +103,9 @@ def main():
     args = parser.parse_args()
 
     start_docker()
+    print("Applying EF migrations for Backend locally…")
+    run_migrations()
+
 
     if args.migrate:
         run_migrations()

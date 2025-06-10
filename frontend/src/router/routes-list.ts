@@ -1,4 +1,6 @@
 export enum ERoutes {
+  TemplatesDemo = '/templates-demo',
+
   About = '/about',
   Dashboard = '/dashboard',
   Docs = '/docs',
