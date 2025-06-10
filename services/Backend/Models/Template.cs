@@ -11,13 +11,12 @@ namespace MyService.Models
     [Key]
     public Guid Id { get; set; }
 
-    [Column(TypeName = "jsonb")]
-    public JsonDocument Schema { get; set; } = default!;
+    [Required]
+    public string Schema { get; set; } = default!;
 
     [Required]
     public string Name { get; set; } = default!;
 
-    [Required]
     public List<string> KeyWords { get; set; } = new();
 
     public string? Description { get; set; }
@@ -57,7 +56,7 @@ namespace MyService.Models
     [Required]
     public List<string> KeyWords { get; set; } = new();
 
-    [Column(TypeName = "jsonb")]
-    public JsonDocument Schema { get; set; } = default!;
+    [Required]
+    public string Schema { get; set; } = default!;
   }
 }

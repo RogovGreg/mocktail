@@ -20,7 +20,7 @@ export const LoginPage = () => {
   const navigate = useNavigate();
 
   const onFormSubmit = async (values: TLoginFormValues) => {
-    await AuthService.login(values).then(response => {
+    await AuthService.login(null, values).then(response => {
       if (
         response.status === StatusCodes.OK &&
         updateAccessToken &&

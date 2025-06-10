@@ -6,7 +6,7 @@ using MyService.Models;
 namespace MyService.Controllers
 {
   [ApiController]
-  [Route("api/v1/backend/templates")]
+  [Route("templates")]
   public class TemplatesController : ControllerBase
   {
     private readonly AppDbContext _db;
@@ -26,17 +26,13 @@ namespace MyService.Controllers
       return template;
     }
 
-    // POST api/templates
+    // POST /templates
     [HttpPost]
-    public async Task<ActionResult<Template>> Post(Template template)
+    public async Task<ActionResult<Template>> Post([FromBody] Template template)
     {
       _db.Templates.Add(template);
       await _db.SaveChangesAsync();
-      return CreatedAtAction(
-        nameof(Get),
-        new { id = template.Id },
-        template
-      );
+      return CreatedAtAction(nameof(Get), new { id = template.Id }, template);
     }
 
     // PUT api/templates/{id}
