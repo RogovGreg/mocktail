@@ -10,13 +10,13 @@ export const AuthService: TAuthService = {
     axiosInstance.get(EAuthServiceEndpoint.CheckStatus, options),
   getProfile: options =>
     axiosInstance.get(EAuthServiceEndpoint.GetProfile, options),
-  login: (requestBody, options) =>
+  login: (_queryParams, requestBody, options) =>
     axiosInstance.post(EAuthServiceEndpoint.Login, requestBody, options),
   logout: options =>
     axiosInstance.post(EAuthServiceEndpoint.Logout, undefined, options),
 
-  refreshToken: (requestBody, options) =>
+  refreshToken: (_queryParams, requestBody, options) =>
     axiosInstance.post(EAuthServiceEndpoint.RefreshToken, requestBody, options),
-  register: (requestBody, options) =>
+  register: (_queryParams, requestBody, options) =>
     axiosInstance.post(EAuthServiceEndpoint.Register, requestBody, options),
 };

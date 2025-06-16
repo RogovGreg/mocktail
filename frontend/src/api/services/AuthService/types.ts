@@ -37,6 +37,7 @@ export type TAuthMethodLoginResponse = TApiMethodResponse<
   TAuthMethodLoginRequestBody
 >;
 export type TAuthMethodLogin = TApiMethodWithPayload<
+  null,
   TAuthMethodLoginRequestBody,
   TAuthMethodLoginResponseData
 >;
@@ -56,6 +57,7 @@ export type TAuthMethodRefreshTokenResponseData = TAuthTokenData;
 export type TAuthMethodRefreshTokenResponse =
   TApiMethodResponse<TAuthMethodRefreshTokenResponseData>;
 export type TAuthMethodRefreshToken = TApiMethodWithPayload<
+  null,
   { UserId: string },
   TAuthMethodRefreshTokenResponseData
 >;
@@ -67,7 +69,7 @@ export type TAuthMethodRegisterResponse = TApiMethodResponse<
   void,
   TAuthMethodRegisterRequestBody
 >;
-export type TAuthMethodRegister = TApiMethodWithPayload<TLoginPassword>;
+export type TAuthMethodRegister = TApiMethodWithPayload<null, TLoginPassword>;
 
 // ================= CHECK STATUS =======================
 

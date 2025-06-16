@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from pathlib import Path
 import os
 import subprocess
 import argparse
@@ -16,49 +17,92 @@ Features:
 
 """
 
-
-def get_connection_string():
-    env_file = ".env"
-    connection_string = None
-
-    if os.path.exists(env_file):
-        with open(env_file, "r") as file:
-            for line in file:
-                if line.startswith("CONNECTION_STRING="):
-                    connection_string = line.strip().split("=", 1)[1]
-                    break
-
-    if connection_string:
-        return connection_string.replace("mssql", "localhost")
-    else:
-        print("Error: CONNECTION_STRING not found in .env file.")
-        exit(1)
+env_path = Path(__file__).parent / ".env"
+if env_path.exists():
+    for line in env_path.read_text().splitlines():
+        if line and not line.startswith("#"):
+            k, v = line.split("=", 1)
+            os.environ.setdefault(k, v)
 
 
 def run_migrations():
-    connection_string = get_connection_string()
-    services_dir = "services"
+    services_dir = Path("services")
 
-    for service in os.listdir(services_dir):
-        service_path = os.path.join(services_dir, service)
-        migrations_path = os.path.join(service_path, "Migrations")
+    for service_dir in services_dir.iterdir():
+        if not service_dir.is_dir():
+            continue
 
-        if os.path.isdir(migrations_path):
-            print(f"Running migrations for {service}...")
+        service_name = service_dir.name
+
+        # Проверка наличия .csproj
+        csproj_files = list(service_dir.glob("*.csproj"))
+        if not csproj_files:
+            print(f"⚠️  Skipping {service_name} — no .csproj file found.")
+            continue
+
+        csproj_path = csproj_files[0]
+
+        # Проверка на наличие EF Core пакета (Design или Tools)
+        csproj_content = csproj_path.read_text()
+        has_ef = any(
+            keyword in csproj_content
+            for keyword in [
+                "Microsoft.EntityFrameworkCore.Design",
+                "Microsoft.EntityFrameworkCore.Tools",
+            ]
+        )
+        if not has_ef:
+            print(f"⚠️  Skipping {service_name} — no EF Core tools package referenced.")
+            continue
+
+        # Определение строки подключения и типа БД
+        if service_name.lower() == "backend":
+            conn_string = os.getenv("BACKEND_CONNECTION_STRING")
+            db_type = "PostgreSQL"
+        else:
+            conn_string = os.getenv("CONNECTION_STRING")
+            db_type = "MSSQL"
+
+        if not conn_string:
+            print(f"❌ No connection string found for {service_name}")
+            continue
+
+        if db_type == "MSSQL":
+            conn_string = conn_string.replace("mssql", "localhost")
+
+        def safe_mask(conn: str) -> str:
+            if "Password=" in conn:
+                before, after = conn.split("Password=", 1)
+                masked_pass = after.split(";", 1)[0]
+                return conn.replace(masked_pass, "****")
+            return conn
+
+        print(f"🔄 Running migrations for {service_name} ({db_type})")
+        print(f"   → Using connection string: {safe_mask(conn_string)}")
+
+        migrations_path = service_dir / "Migrations"
+
+        if migrations_path.exists():
+            print(f"   ↪ Found Migrations folder.")
+        else:
+            print(f"   📁 No migrations folder: attempting to create InitialCreate...")
+            try:
+                subprocess.run(
+                    ["dotnet", "ef", "migrations", "add", "InitialCreate"],
+                    cwd=service_dir,
+                    check=True,
+                )
+            except subprocess.CalledProcessError:
+                print(f"   ⚠️  Could not create InitialCreate for {service_name} — already exists or failed.")
+
+        try:
             subprocess.run(
-                [
-                    "dotnet",
-                    "ef",
-                    "database",
-                    "update",
-                    "--connection",
-                    connection_string,
-                ],
-                cwd=service_path,
+                ["dotnet", "ef", "database", "update", "--connection", conn_string],
+                cwd=service_dir,
                 check=True,
             )
-        else:
-            print(f"No migrations found for {service}, skipping...")
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Failed to apply migrations for {service_name} ({db_type})")
 
 
 def start_docker():
@@ -102,6 +146,9 @@ def main():
     args = parser.parse_args()
 
     start_docker()
+    print("Applying EF migrations for Backend locally…")
+    run_migrations()
+
 
     if args.migrate:
         run_migrations()
