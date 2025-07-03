@@ -4,7 +4,7 @@ services:
       dockerfile: Backend/Docker/Dockerfile.dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=backend_db;Port=5432;Database=MyServiceDb;Username=myuser;Password=S3cr3tP@ss
+      - ConnectionStrings__DefaultConnection=Host=backend_db;Port=5432;Database=BackendDb;Username=myuser;Password=S3cr3tP@ss
     ports:
       - "5001:80"
     volumes:

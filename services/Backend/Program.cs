@@ -1,5 +1,4 @@
 using Shared.Content.Protos;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Microsoft.EntityFrameworkCore;
 using Grpc.Net.Client;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +12,7 @@ builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllers();
 

@@ -34,7 +34,6 @@ def run_migrations():
 
         service_name = service_dir.name
 
-        # Проверка наличия .csproj
         csproj_files = list(service_dir.glob("*.csproj"))
         if not csproj_files:
             print(f"⚠️  Skipping {service_name} — no .csproj file found.")
@@ -42,7 +41,6 @@ def run_migrations():
 
         csproj_path = csproj_files[0]
 
-        # Проверка на наличие EF Core пакета (Design или Tools)
         csproj_content = csproj_path.read_text()
         has_ef = any(
             keyword in csproj_content
@@ -55,10 +53,9 @@ def run_migrations():
             print(f"⚠️  Skipping {service_name} — no EF Core tools package referenced.")
             continue
 
-        # Определение строки подключения и типа БД
         if service_name.lower() == "backend":
             conn_string = os.getenv("BACKEND_CONNECTION_STRING")
-            db_type = "PostgreSQL"
+            db_type = "MSSQL"
         else:
             conn_string = os.getenv("CONNECTION_STRING")
             db_type = "MSSQL"
