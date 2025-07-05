@@ -3,6 +3,7 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     hostname: mssql
     container_name: mssql
+    platform: linux/amd64
     ports:
       - 1433:1433
     environment:
@@ -11,6 +12,11 @@ services:
       MSSQL_SA_PASSWORD: Admin@123
     volumes:
       - mssqldata:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/1433'"]
+      interval: 5s
+      timeout: 2s
+      retries: 12
 
   backend:
     build:
@@ -47,7 +53,8 @@ services:
       dockerfile: Docker/Dockerfile
     container_name: auth
     depends_on:
-      - mssql
+      mssql:
+        condition: service_healthy
 
   gateway:
     build:
