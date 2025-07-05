@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,10 +49,24 @@ builder.Services.AddScoped<JwtTokenService>();
 
 var app = builder.Build();
 
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
+    try
+    {
+        db.Database.Migrate();
+    }
+    catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 1801)
+    {
+        Console.WriteLine("Database already exists, skipping CREATE DATABASE.");
+        var pending = db.Database.GetPendingMigrations();
+        if (pending.Any())
+        {
+            Console.WriteLine($"Applying {pending.Count()} pending migrations...");
+            db.Database.Migrate();
+        }
+    }
 }
 
 // Middleware

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Grpc.Net.Client;
 using Microsoft.Extensions.DependencyInjection;
 using MyService.Data;
+using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,8 +22,32 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    try
+    {
+        db.Database.Migrate();
+    }
+    catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 1801)
+    {
+        Console.WriteLine("Database already exists, skipping CREATE DATABASE.");
+        var pending = db.Database.GetPendingMigrations();
+        if (pending.Any())
+        {
+            Console.WriteLine($"Applying {pending.Count()} pending migrations...");
+            db.Database.Migrate();
+        }
+    }
 }
+
+// Middleware
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapGet("/templates", BackendHandlers.GetTemplates);
+app.MapGet("/templates/{id:guid}", BackendHandlers.GetTemplateById);
+app.MapPost("/templates", BackendHandlers.CreateTemplate);
+app.MapPut("/templates/{id:guid}", BackendHandlers.UpdateTemplate);
+app.MapDelete("/templates/{id:guid}", BackendHandlers.DeleteTemplate);
 
 app.MapGet("/check-availability", () =>
 {
