@@ -1,36 +1,72 @@
 using Microsoft.EntityFrameworkCore;
 using MyService.Models;
+using System.Text.Json;
+using System.Collections.Generic;
 
 namespace MyService.Data
 {
   public class AppDbContext : DbContext
   {
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
     public DbSet<Template> Templates { get; set; } = null!;
 
-    public AppDbContext(DbContextOptions<AppDbContext> options)
-        : base(options)
+    public override int SaveChanges()
     {
+      UpdateTimestamps();
+      return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
+    {
+      UpdateTimestamps();
+      return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void UpdateTimestamps()
+    {
+      var utcNow = DateTime.UtcNow;
+
+      foreach (var entry in ChangeTracker.Entries<Template>())
+      {
+        if (entry.State == EntityState.Added)
+        {
+          entry.Entity.CreatedAt = utcNow;
+          entry.Entity.UpdatedAt = utcNow;
+        }
+        else if (entry.State == EntityState.Modified)
+        {
+          entry.Property(p => p.CreatedAt).IsModified = false;
+          entry.Entity.UpdatedAt = utcNow;
+        }
+      }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
       base.OnModelCreating(modelBuilder);
 
-      modelBuilder.Entity<Template>(t =>
+      modelBuilder.Entity<Template>(entity =>
       {
-        t.OwnsMany(x => x.Releases, r =>
-              {
-                r.WithOwner().HasForeignKey("TemplateId");
-                r.HasKey("TemplateId", "Author", "CreatedAt");
+        entity.Property(e => e.KeyWords)
+                  .HasConversion(
+                      v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                      v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null)!);
 
-                r.OwnsOne(x => x.Changes, c =>
-                      {
-                        c.Property(p => p.Name).IsRequired();
-                        c.Property(p => p.Schema).IsRequired();
-                        c.Property(p => p.Description);
-                        c.Property(p => p.KeyWords);
-                      });
-              });
+        entity.Property(e => e.UsedIn)
+                  .HasConversion(
+                      v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                      v => JsonSerializer.Deserialize<List<Guid>>(v, (JsonSerializerOptions?)null)!);
+
+        entity.Property(e => e.CreatedAt)
+                  .ValueGeneratedOnAdd()
+                  .HasDefaultValueSql("GETUTCDATE()");
+
+        entity.Property(e => e.UpdatedAt)
+                  .ValueGeneratedOnAddOrUpdate()
+                  .HasDefaultValueSql("GETUTCDATE()");
       });
     }
   }

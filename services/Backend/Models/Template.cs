@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json;
 
 namespace MyService.Models
 {
@@ -21,42 +19,16 @@ namespace MyService.Models
 
     public string? Description { get; set; }
 
-    public List<Release> Releases { get; set; } = new();
+    public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
+
+    public Guid CreatedBy { get; set; }
+
+    public Guid UpdatedBy { get; set; }
 
     public Guid RelatedProjectId { get; set; }
 
     public List<Guid> UsedIn { get; set; } = new();
-  }
-
-  public class Release
-  {
-    [Required]
-    public Guid Author { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    [Required]
-    public string Comment { get; set; } = default!;
-
-    public int Version { get; set; }
-
-    [Required]
-    public Change Changes { get; set; } = default!;
-  }
-
-  public class Change
-  {
-    [Required]
-    public string Name { get; set; } = default!;
-
-    public string? Description { get; set; }
-
-    [Required]
-    public List<string> KeyWords { get; set; } = new();
-
-    [Required]
-    public string Schema { get; set; } = default!;
   }
 }

@@ -19,6 +19,23 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
+var cs = builder.Configuration.GetConnectionString("DefaultConnection")!;
+for (var i = 0; i < 10; i++)
+{
+    try
+    {
+        using var testConn = new SqlConnection(cs);
+        testConn.Open();
+        Console.WriteLine("✅ MSSQL is up");
+        break;
+    }
+    catch
+    {
+        Console.WriteLine("⏳ MSSQL not ready yet, retrying in 5s...");
+        Thread.Sleep(5000);
+    }
+}
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
