@@ -65,8 +65,8 @@ namespace MyService.Data
                   .HasDefaultValueSql("GETUTCDATE()");
 
         entity.Property(e => e.UpdatedAt)
-                  .ValueGeneratedOnAddOrUpdate()
-                  .HasDefaultValueSql("GETUTCDATE()");
+              .ValueGeneratedOnAddOrUpdate()
+              .HasComputedColumnSql("[CreatedAt]", stored: true);
       });
     }
   }

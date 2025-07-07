@@ -4,6 +4,8 @@ using Grpc.Net.Client;
 using Microsoft.Extensions.DependencyInjection;
 using MyService.Data;
 using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +17,11 @@ builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson(opts =>
+    {
+        opts.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+        opts.SerializerSettings.DateFormatString = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.fffffff'Z'";
+    }); ;
 
 var app = builder.Build();
 
