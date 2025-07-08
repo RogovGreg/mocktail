@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from pathlib import Path
 import os
 import subprocess
 import argparse
@@ -17,12 +16,49 @@ Features:
 
 """
 
-env_path = Path(__file__).parent / ".env"
-if env_path.exists():
-    for line in env_path.read_text().splitlines():
-        if line and not line.startswith("#"):
-            k, v = line.split("=", 1)
-            os.environ.setdefault(k, v)
+
+def get_connection_string():
+    env_file = ".env"
+    connection_string = None
+
+    if os.path.exists(env_file):
+        with open(env_file, "r") as file:
+            for line in file:
+                if line.startswith("CONNECTION_STRING="):
+                    connection_string = line.strip().split("=", 1)[1]
+                    break
+
+    if connection_string:
+        return connection_string.replace("mssql", "localhost")
+    else:
+        print("Error: CONNECTION_STRING not found in .env file.")
+        exit(1)
+
+
+def run_migrations():
+    connection_string = get_connection_string()
+    services_dir = "services"
+
+    for service in os.listdir(services_dir):
+        service_path = os.path.join(services_dir, service)
+        migrations_path = os.path.join(service_path, "Migrations")
+
+        if os.path.isdir(migrations_path):
+            print(f"Running migrations for {service}...")
+            subprocess.run(
+                [
+                    "dotnet",
+                    "ef",
+                    "database",
+                    "update",
+                    "--connection",
+                    connection_string,
+                ],
+                cwd=service_path,
+                check=True,
+            )
+        else:
+            print(f"No migrations found for {service}, skipping...")
 
 
 def start_docker():
@@ -63,15 +99,19 @@ def main():
     parser.add_argument(
         "--migrate", action="store_true", help="Run migrations before starting commands"
     )
+    args = parser.parse_args()
 
     start_docker()
-    print("Applying EF migrations for Backend locally…")
+
+    if args.migrate:
+        run_migrations()
 
     while True:
         print()
         command = input("Waiting for further commands (migrate/restart/quit): ").strip().lower()
-
-        if command == "restart":
+        if command == "migrate":
+            run_migrations()
+        elif command == "restart":
             stop_docker()
             start_docker()
         elif command == "quit":

@@ -42,25 +42,6 @@ for (var i = 0; i < 10; i++)
     }
 }
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    try
-    {
-        db.Database.Migrate();
-    }
-    catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 1801)
-    {
-        Console.WriteLine("Database already exists, skipping CREATE DATABASE.");
-        var pending = db.Database.GetPendingMigrations();
-        if (pending.Any())
-        {
-            Console.WriteLine($"Applying {pending.Count()} pending migrations...");
-            db.Database.Migrate();
-        }
-    }
-}
-
 // Middleware
 app.UseHttpsRedirection();
 app.UseAuthentication();
