@@ -26,12 +26,7 @@ services:
     depends_on:
       - mssql
     environment:
-      ConnectionStrings__DefaultConnection: >
-        Server=mssql;
-        Database=BackendDb;
-        User=sa;
-        Password=Admin@123;
-        TrustServerCertificate=True;
+      - ConnectionStrings__BackendDb=${ConnectionStrings__BackendDb}
 
   content:
     build:
@@ -52,6 +47,8 @@ services:
       context: services/Auth
       dockerfile: Docker/Dockerfile
     container_name: auth
+    environment:
+      ConnectionStrings__AuthDb: ${ConnectionStrings__AuthDb}
     depends_on:
       mssql:
         condition: service_healthy

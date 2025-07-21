@@ -1,4 +1,3 @@
-using Shared.Content.Protos;
 using Microsoft.EntityFrameworkCore;
 using Grpc.Net.Client;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,35 +5,49 @@ using MyService.Data;
 using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = "http://auth";
+        options.RequireHttpsMetadata = false;
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]
+                    ?? throw new InvalidOperationException("JWT Secret not found"))
+            )
+        };
+    });
+
+builder.Services.AddAuthorization();
+builder.Configuration.AddEnvironmentVariables();
+
+var connectionString = builder.Configuration.GetConnectionString("BackendDb");
+Console.WriteLine($"Backend service. connectionString: {connectionString}");
+if (string.IsNullOrWhiteSpace(connectionString))
 {
-    options.Address = new Uri("http://content:8080");
-});
+    throw new InvalidOperationException("Connection string 'BackendDb' not found. Make sure the environment variable 'ConnectionStrings__BackendDb' is set.");
+}
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        connectionString
+    ));
 
 var app = builder.Build();
-
-var cs = builder.Configuration.GetConnectionString("DefaultConnection")!;
-for (var i = 0; i < 10; i++)
-{
-    try
-    {
-        using var testConn = new SqlConnection(cs);
-        testConn.Open();
-        Console.WriteLine("✅ MSSQL is up");
-        break;
-    }
-    catch
-    {
-        Console.WriteLine("⏳ MSSQL not ready yet, retrying in 5s...");
-        Thread.Sleep(5000);
-    }
-}
 
 // Middleware
 app.UseHttpsRedirection();
@@ -56,14 +69,9 @@ app.MapGet("/check-availability", () =>
     });
 });
 
-app.MapGet("/content/{userId}", ContentHandlers.GetContent);
-app.MapPost("/content", ContentHandlers.CreateContent);
-
 app.MapGet("/", () => "`Backend` service is alive");
 
 app.Urls.Add("http://*:80");
-
-app.MapControllers();
 
 app.Run();
 

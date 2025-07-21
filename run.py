@@ -2,6 +2,7 @@
 import os
 import subprocess
 import argparse
+from datetime import datetime
 
 DESCRIPTION = """
 This script manages the lifecycle of a .NET application with multiple microservices.\n
@@ -17,48 +18,96 @@ Features:
 """
 
 
-def get_connection_string():
+def get_connection_string(service_name):
     env_file = ".env"
+    db_key = f"ConnectionStrings__{service_name}Db"
     connection_string = None
 
-    if os.path.exists(env_file):
-        with open(env_file, "r") as file:
-            for line in file:
-                if line.startswith("CONNECTION_STRING="):
-                    connection_string = line.strip().split("=", 1)[1]
-                    break
+    print(f"🔍 Looking for connection string '{db_key}' in {env_file}...")
+    if not os.path.exists(env_file):
+        print(f"❌ Error: {env_file} file not found.")
+        exit(1)
+
+    print("📂 Reading .env file contents:")
+    with open(env_file, "r") as file:
+        for line in file:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            print(f"   • {line}")
+            if line.startswith(db_key + "="):
+                connection_string = line.split("=", 1)[1]
+                print(f"✅ Found connection string for {service_name}: {connection_string}")
+                break
 
     if connection_string:
         return connection_string.replace("mssql", "localhost")
     else:
-        print("Error: CONNECTION_STRING not found in .env file.")
-        exit(1)
+        print(f"⚠️ Warning: Connection string '{db_key}' not found in {env_file}.")
+        return None
 
 
 def run_migrations():
-    connection_string = get_connection_string()
     services_dir = "services"
 
     for service in os.listdir(services_dir):
         service_path = os.path.join(services_dir, service)
         migrations_path = os.path.join(service_path, "Migrations")
+        connection_string = get_connection_string(service)
 
-        if os.path.isdir(migrations_path):
-            print(f"Running migrations for {service}...")
+        if connection_string is None:
+            print(f"❌ Error: connection string is not found for {service}. Skipping migrations.")
+            continue
+
+        print(f"🔧 Using connection string for {service}: {connection_string}")
+
+        initial_migration_needed = not os.path.isdir(migrations_path) or not os.listdir(migrations_path)
+        
+        if initial_migration_needed:
+            print(f"📦 No migrations found for {service}. Creating initial migration...")
+            migration_name = "InitialCreate"
+        else:
+            print(f"📦 Creating automatic migration for {service}...")
+            migration_name = f"AutoMigration{datetime.now().strftime('%Y%m%d_%H%M')}"
+
+        env = os.environ.copy()
+        env[f"ConnectionStrings__{service}Db"] = connection_string
+
+        try:
+            subprocess.run(
+                [
+                    "dotnet",
+                    "ef",
+                    "migrations",
+                    "add",
+                    migration_name,
+                ],
+                cwd=service_path,
+                check=True,
+                env=env,
+            )
+            print(f"✅ Migration '{migration_name}' for {service} created successfully.")
+        except subprocess.CalledProcessError as error:
+            print(f"❌ Failed to create migration for {service}: {error}")
+            continue
+
+        print(f"🚀 Applying migrations for {service}...")
+
+        try:
             subprocess.run(
                 [
                     "dotnet",
                     "ef",
                     "database",
                     "update",
-                    "--connection",
-                    connection_string,
                 ],
                 cwd=service_path,
                 check=True,
+                env=env,
             )
-        else:
-            print(f"No migrations found for {service}, skipping...")
+            print(f"✅ Migrations for {service} applied successfully.\n")
+        except subprocess.CalledProcessError as error:
+            print(f"❌ Failed to apply migrations for {service}: {error}")
 
 
 def start_docker():

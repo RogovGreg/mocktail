@@ -9,10 +9,20 @@ using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string not found");
+builder.Configuration.AddEnvironmentVariables();
+
+var connectionString = builder.Configuration.GetConnectionString("AuthDb");
+Console.WriteLine("Auth service. connectionString: ", connectionString);
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Connection string 'AuthDb' not found. Make sure the environment variable 'ConnectionStrings__AuthDb' is set.");
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(
+        connectionString
+    ));
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
