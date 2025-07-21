@@ -13,6 +13,7 @@ namespace MyService.Data
 
     public override int SaveChanges()
     {
+      Console.WriteLine("SaveChanges");
       UpdateTimestamps();
       return base.SaveChanges();
     }
@@ -21,13 +22,15 @@ namespace MyService.Data
         bool acceptAllChangesOnSuccess,
         CancellationToken cancellationToken = default)
     {
+      Console.WriteLine("SaveChangesAsync");
       UpdateTimestamps();
       return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
     private void UpdateTimestamps()
     {
-      var utcNow = DateTime.UtcNow;
+      var utcNow = DateTime.UtcNow.ToUniversalTime();
+      Console.WriteLine($"Updating timestamps at {utcNow}");
 
       foreach (var entry in ChangeTracker.Entries<Template>())
       {
@@ -46,6 +49,7 @@ namespace MyService.Data
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+      Console.WriteLine("OnModelCreating");
       base.OnModelCreating(modelBuilder);
 
       modelBuilder.Entity<Template>(entity =>
@@ -65,8 +69,8 @@ namespace MyService.Data
                   .HasDefaultValueSql("GETUTCDATE()");
 
         entity.Property(e => e.UpdatedAt)
-              .ValueGeneratedOnAddOrUpdate()
-              .HasComputedColumnSql("[CreatedAt]", stored: true);
+                  .ValueGeneratedOnAdd()
+                  .HasDefaultValueSql("GETUTCDATE()");
       });
     }
   }

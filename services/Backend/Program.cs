@@ -17,12 +17,6 @@ builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddControllers().AddNewtonsoftJson(opts =>
-    {
-        opts.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
-        opts.SerializerSettings.DateFormatString = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.fffffff'Z'";
-    }); ;
-
 var app = builder.Build();
 
 var cs = builder.Configuration.GetConnectionString("DefaultConnection")!;
