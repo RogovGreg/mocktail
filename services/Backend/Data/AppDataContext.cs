@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Backend.Utils;
 using MyService.Models;
-using System.Text.Json;
-using System.Collections.Generic;
 
 namespace MyService.Data
 {
@@ -11,66 +11,41 @@ namespace MyService.Data
 
     public DbSet<Template> Templates { get; set; } = null!;
 
-    public override int SaveChanges()
+    public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
-      Console.WriteLine("SaveChanges");
-      UpdateTimestamps();
-      return base.SaveChanges();
-    }
-
-    public override Task<int> SaveChangesAsync(
-        bool acceptAllChangesOnSuccess,
-        CancellationToken cancellationToken = default)
-    {
-      Console.WriteLine("SaveChangesAsync");
-      UpdateTimestamps();
-      return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
-    }
-
-    private void UpdateTimestamps()
-    {
-      var utcNow = DateTime.UtcNow.ToUniversalTime();
-      Console.WriteLine($"Updating timestamps at {utcNow}");
+      var now = DateTimeOffset.UtcNow.UtcDateTruncateToMilliseconds();
 
       foreach (var entry in ChangeTracker.Entries<Template>())
       {
-        if (entry.State == EntityState.Added)
+        switch (entry.State)
         {
-          entry.Entity.CreatedAt = utcNow;
-          entry.Entity.UpdatedAt = utcNow;
-        }
-        else if (entry.State == EntityState.Modified)
-        {
-          entry.Property(p => p.CreatedAt).IsModified = false;
-          entry.Entity.UpdatedAt = utcNow;
+          case EntityState.Added:
+            entry.Entity.CreatedAt = now;
+            entry.Entity.UpdatedAt = now;
+            break;
+
+          case EntityState.Modified:
+            entry.Property(p => p.CreatedAt).IsModified = false;
+            entry.Entity.UpdatedAt = now;
+            break;
         }
       }
+      return await base.SaveChangesAsync(ct);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-      Console.WriteLine("OnModelCreating");
-      base.OnModelCreating(modelBuilder);
+      var utcConverter = new ValueConverter<DateTimeOffset, DateTimeOffset>(
+          v => v.UtcDateTruncateToMilliseconds(),
+          v => v.UtcDateTruncateToMilliseconds());
 
-      modelBuilder.Entity<Template>(entity =>
+      modelBuilder.Entity<Template>(b =>
       {
-        entity.Property(e => e.KeyWords)
-                  .HasConversion(
-                      v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                      v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null)!);
+        b.Property(p => p.CreatedAt)
+        .HasConversion(utcConverter);
 
-        entity.Property(e => e.UsedIn)
-                  .HasConversion(
-                      v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                      v => JsonSerializer.Deserialize<List<Guid>>(v, (JsonSerializerOptions?)null)!);
-
-        entity.Property(e => e.CreatedAt)
-                  .ValueGeneratedOnAdd()
-                  .HasDefaultValueSql("GETUTCDATE()");
-
-        entity.Property(e => e.UpdatedAt)
-                  .ValueGeneratedOnAdd()
-                  .HasDefaultValueSql("GETUTCDATE()");
+        b.Property(p => p.UpdatedAt)
+        .HasConversion(utcConverter);
       });
     }
   }

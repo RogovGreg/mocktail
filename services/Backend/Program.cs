@@ -3,11 +3,12 @@ using Grpc.Net.Client;
 using Microsoft.Extensions.DependencyInjection;
 using MyService.Data;
 using Microsoft.Data.SqlClient;
-using Newtonsoft.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Http.Json;
+using Backend.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +47,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         connectionString
     ));
+
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new UtcMillisecondsConverter());
+});
 
 var app = builder.Build();
 

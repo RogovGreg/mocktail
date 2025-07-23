@@ -56,7 +56,7 @@ def run_migrations():
         connection_string = get_connection_string(service)
 
         if connection_string is None:
-            print(f"❌ Error: connection string is not found for {service}. Skipping migrations.")
+            print(f"⚠️ Warning: connection string is not found for {service}. Skipping migrations.")
             continue
 
         print(f"🔧 Using connection string for {service}: {connection_string}")
