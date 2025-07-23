@@ -1,9 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Grpc.Net.Client;
-using Microsoft.Extensions.DependencyInjection;
 using MyService.Data;
 using Microsoft.Data.SqlClient;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -34,10 +31,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddHttpContextAccessor();
 builder.Configuration.AddEnvironmentVariables();
 
 var connectionString = builder.Configuration.GetConnectionString("BackendDb");
-Console.WriteLine($"Backend service. connectionString: {connectionString}");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new InvalidOperationException("Connection string 'BackendDb' not found. Make sure the environment variable 'ConnectionStrings__BackendDb' is set.");
@@ -81,8 +78,3 @@ app.MapGet("/", () => "`Backend` service is alive");
 app.Urls.Add("http://*:80");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
