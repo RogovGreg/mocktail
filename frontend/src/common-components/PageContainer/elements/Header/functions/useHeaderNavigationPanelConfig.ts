@@ -27,6 +27,11 @@ export const useHeaderNavigationPanelConfig = (): THeaderNavigationPanel => {
           isActive: currentURL === ERoutes.Projects,
           label: 'Projects',
         },
+        {
+          href: ERoutes.TemplatesDemo,
+          isActive: currentURL === ERoutes.TemplatesDemo,
+          label: 'Templates Demo',
+        },
       ];
     }
 

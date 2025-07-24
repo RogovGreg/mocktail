@@ -6,13 +6,20 @@ export type TAuthorizationParameters = Readonly<{
 }>;
 
 export type TApiMethodResponse<
-  TRequestResponseData = void,
+  TResponseData = void,
   TRequestBody = void,
-> = Promise<Readonly<AxiosResponse<TRequestResponseData, TRequestBody>>>;
-export type TApiMethod<TRequestResponseData = void> = (
+> = Promise<Readonly<AxiosResponse<TResponseData, TRequestBody>>>;
+
+export type TApiMethod<TResponseData = void> = (
   options?: AxiosRequestConfig,
-) => TApiMethodResponse<TRequestResponseData>;
-export type TApiMethodWithPayload<TRequestBody, TRequestResponseData = void> = (
+) => TApiMethodResponse<TResponseData>;
+
+export type TApiMethodWithPayload<
+  TQueryParams,
+  TRequestBody = void,
+  TResponseData = void,
+> = (
+  queryParams: TQueryParams,
   requestBody: TRequestBody,
   options?: AxiosRequestConfig<TRequestBody>,
-) => TApiMethodResponse<TRequestResponseData, TRequestBody>;
+) => TApiMethodResponse<TResponseData, TRequestBody>;

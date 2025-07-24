@@ -1,3 +1,5 @@
+export * from './TemplatesDemo';
+
 export * from './About/index.ts';
 export * from './Dashboard/index.ts';
 export * from './Docs/index.ts';

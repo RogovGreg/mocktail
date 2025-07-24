@@ -6,4 +6,4 @@ RUN dotnet restore
 
 COPY Backend/ .
 
-CMD ["dotnet", "watch", "run", "--project" , "Backend.csproj",  "--urls", "https://*:443;http://*:80"]
+CMD ["dotnet", "run", "--project" , "Backend.csproj",  "--urls", "https://*:443;http://*:80"]

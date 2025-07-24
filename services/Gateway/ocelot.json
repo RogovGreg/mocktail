@@ -32,7 +32,7 @@
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [{ "Host": "backend", "Port": 80 }],
       "UpstreamPathTemplate": "/v1/backend/{everything}",
-      "UpstreamHttpMethod": ["GET", "POST", "DELETE"],
+      "UpstreamHttpMethod": ["GET", "PUT", "POST", "DELETE"],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       }

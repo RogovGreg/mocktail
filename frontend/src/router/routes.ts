@@ -12,10 +12,18 @@ import {
   RegisterPage,
   RegisterSuccessNotificationPage,
   SupportPage,
+  TemplatesDemoPage,
   WaitingPage,
 } from '../pages/index.ts';
 
 export const ROUTES_LIST: TRouteObjectList = [
+  {
+    Component: TemplatesDemoPage,
+    isOnAuthFlow: false,
+    isProtected: true,
+    path: ERoutes.TemplatesDemo,
+  },
+
   {
     Component: RegisterPage,
     isOnAuthFlow: true,

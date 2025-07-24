@@ -5,13 +5,24 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string not found");
+builder.Configuration.AddEnvironmentVariables();
+
+var connectionString = builder.Configuration.GetConnectionString("AuthDb");
+Console.WriteLine("Auth service. connectionString: ", connectionString);
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Connection string 'AuthDb' not found. Make sure the environment variable 'ConnectionStrings__AuthDb' is set.");
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(
+        connectionString
+    ));
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
@@ -47,6 +58,26 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<JwtTokenService>();
 
 var app = builder.Build();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    try
+    {
+        db.Database.Migrate();
+    }
+    catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 1801)
+    {
+        Console.WriteLine("Database already exists, skipping CREATE DATABASE.");
+        var pending = db.Database.GetPendingMigrations();
+        if (pending.Any())
+        {
+            Console.WriteLine($"Applying {pending.Count()} pending migrations...");
+            db.Database.Migrate();
+        }
+    }
+}
 
 // Middleware
 app.UseHttpsRedirection();

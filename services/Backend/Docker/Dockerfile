@@ -7,14 +7,17 @@ WORKDIR /src
 
 COPY Shared/Contracts ./Shared/Contracts/
 
-COPY Backend/Backend.csproj .
-RUN dotnet restore
+COPY Backend/Backend.csproj ./
+RUN dotnet restore "Backend.csproj"
 
-COPY Backend/ .
+COPY Backend/. ./
+RUN dotnet publish "Backend.csproj" -c Release -o /app/publish
 
-RUN dotnet publish -c Release -o /app/publish
-
-FROM base AS runtime
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS runtime
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=build /app/publish ./
+
+ENV ConnectionStrings__DefaultConnection="Server=mssql;Database=BackendDb;User=sa;Password=Admin@123;TrustServerCertificate=True;"
+
+# ENTRYPOINT ["sh", "-c", "dotnet ef database update --no-build && dotnet Backend.dll"]
 ENTRYPOINT ["dotnet", "Backend.dll"]
