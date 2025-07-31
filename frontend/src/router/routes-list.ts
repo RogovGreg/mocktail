@@ -9,6 +9,8 @@ export enum ERoutes {
   PageNotFound = '/page-not-found',
   Profile = '/profile',
   Projects = '/projects',
+  ProjectCreate = '/projects/create',
+  ProjectView = '/projects/:id',
   Register = '/register',
   RegisterSuccess = '/register/success',
   Support = '/support',

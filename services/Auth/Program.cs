@@ -90,6 +90,7 @@ app.MapPost("/register", AuthHandlers.RegisterHandler);
 app.MapPost("/logout", AuthHandlers.LogoutHandler).RequireAuthorization();
 app.MapPost("/refresh-token", AuthHandlers.RefreshTokenHandler).AllowAnonymous();
 app.MapGet("/profile", AuthHandlers.ProfileHandler).RequireAuthorization();
+app.MapPatch("/profile/update", AuthHandlers.ProfileUpdateHandler).RequireAuthorization();
 app.MapGet("/check-status", AuthHandlers.CheckStatusHandler).RequireAuthorization();
 app.MapGet("/check-availability", AuthHandlers.CheckAvailability).RequireAuthorization();
 

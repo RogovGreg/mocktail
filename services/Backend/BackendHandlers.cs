@@ -4,6 +4,43 @@ using MyService.Models;
 
 public static class BackendHandlers
 {
+  public static async Task<IEnumerable<Project>> GetProjects(AppDbContext db)
+      => await db.Projects.ToListAsync();
+
+  public static async Task<IResult> GetProjectById(Guid id, AppDbContext db)
+  {
+    var tpl = await db.Projects.FindAsync(id);
+    return tpl is not null ? Results.Ok(tpl) : Results.NotFound();
+  }
+
+  public static async Task<IResult> CreateProject(Project project, AppDbContext db)
+  {
+    db.Projects.Add(project);
+    await db.SaveProjectChangesAsync();
+    return Results.Created($"/project/{project.Id}", project);
+  }
+
+  public static async Task<IResult> UpdateProject(Guid id, Project project, AppDbContext db)
+  {
+    var exists = await db.Projects.AnyAsync(t => t.Id == id);
+    if (!exists) return Results.NotFound();
+
+    project.Id = id;
+    db.Entry(project).State = EntityState.Modified;
+    await db.SaveProjectChangesAsync();
+    return Results.NoContent();
+  }
+
+  public static async Task<IResult> DeleteProject(Guid id, AppDbContext db)
+  {
+    var tpl = await db.Projects.FindAsync(id);
+    if (tpl is null) return Results.NotFound();
+
+    db.Projects.Remove(tpl);
+    await db.SaveProjectChangesAsync();
+    return Results.NoContent();
+  }
+
   public static async Task<IEnumerable<Template>> GetTemplates(AppDbContext db)
       => await db.Templates.ToListAsync();
 

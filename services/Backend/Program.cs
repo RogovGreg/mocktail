@@ -58,6 +58,12 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/projects", BackendHandlers.GetProjects);
+app.MapGet("/projects/{id:guid}", BackendHandlers.GetProjectById);
+app.MapPost("/projects", BackendHandlers.CreateProject);
+app.MapPut("/projects/{id:guid}", BackendHandlers.UpdateProject);
+app.MapDelete("/projects/{id:guid}", BackendHandlers.DeleteProject);
+
 app.MapGet("/templates", BackendHandlers.GetTemplates);
 app.MapGet("/templates/{id:guid}", BackendHandlers.GetTemplateById);
 app.MapPost("/templates", BackendHandlers.CreateTemplate);
