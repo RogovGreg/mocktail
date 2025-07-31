@@ -2,6 +2,7 @@ import { ERoutes } from './routes-list.ts';
 import { TRouteObjectList } from './types.ts';
 import {
   AboutPage,
+  CreateProjectPage,
   DashboardPage,
   DocsPage,
   LandingPage,
@@ -13,6 +14,7 @@ import {
   RegisterSuccessNotificationPage,
   SupportPage,
   TemplatesDemoPage,
+  ViewProjectPage,
   WaitingPage,
 } from '../pages/index.ts';
 
@@ -97,6 +99,18 @@ export const ROUTES_LIST: TRouteObjectList = [
     isProtected: false,
     path: ERoutes.Support,
   },
+  {
+    Component: CreateProjectPage,
+    isOnAuthFlow: false,
+    isProtected: true,
+    path: ERoutes.ProjectCreate,
+  },
+  {
+    Component: ViewProjectPage,
+    isOnAuthFlow: false,
+    isProtected: true,
+    path: ERoutes.ProjectView,
+  }
 ];
 
 export const PROTECTED_ROUTES: Array<ERoutes> = ROUTES_LIST.reduce<

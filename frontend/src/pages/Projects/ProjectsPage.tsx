@@ -16,16 +16,34 @@ export const ProjectsPage = () => {
     });
   }, []);
 
+  const handleDeleteProject = (projectId: string) => {
+    BackendService.deleteProject({ Id: projectId })
+      .then(() => {
+        setProjects(projects.filter(project => project.Id !== projectId));
+      })
+      .catch(error => {
+        console.error('Failed to delete project', error);
+      });
+  };
+
   return (
     <div>
       <h1>Projects Page</h1>
+
+      <button onClick={() => {
+        navigate(ERoutes.ProjectCreate);
+      }}>Create New Project</button>
 
       {projects.length > 0 ? (
         <ul>
           {projects.map(project => (
             <li key={project.Id}>
+              {project.Title} - {project.Description}
               <button onClick={() => navigate(ERoutes.ProjectView.replace(':id', project.Id))}>
-                {project.Title} - {project.Description}
+                View
+              </button>
+              <button onClick={() => handleDeleteProject(project.Id)}>
+                Delete
               </button>
             </li>
           ))}
