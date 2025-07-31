@@ -4,19 +4,10 @@ import { TCheckServiceAvailability } from '../types';
 
 // =========================== common ===========================
 
-export type TTemplateReleasesChange = Readonly<{
-  Name: string;
+export type TProject = Readonly<{
+  Id: string;
+  Title: string;
   Description: string | null;
-  KeyWords: Array<string> | null;
-  Schema: string;
-}>;
-
-export type TTemplatesRelease = Readonly<{
-  author: string;
-  createdAt: string;
-  comment: string;
-  version: number;
-  changes: TTemplateReleasesChange;
 }>;
 
 export type TTemplate = Readonly<{
@@ -25,11 +16,50 @@ export type TTemplate = Readonly<{
   Name: string;
   KeyWords: Array<string> | null;
   Description: string | null;
-  Releases: Array<TTemplatesRelease>;
   UpdatedAt: string;
   RelatedProjectId: string;
   UsedIn: Array<string>;
 }>;
+
+// =========================== createProject ===========================
+
+export type TCreateProjectAPIMethodPayload = Pick<
+  TProject,
+  'Title' | 'Description'
+>;
+export type TCreateProjectAPIMethodResponse = TProject;
+export type TCreateProjectAPIMethod = TApiMethodWithPayload<
+  null,
+  TCreateProjectAPIMethodPayload,
+  TCreateProjectAPIMethodResponse
+>;
+
+// =========================== deleteProject ===========================
+export type TDeleteProjectAPIMethodQueryParams = Pick<TProject, 'Id'>;
+export type TDeleteProjectAPIMethod = TApiMethodWithPayload<TDeleteProjectAPIMethodQueryParams>;
+
+// =========================== getProjectByID ===========================
+
+export type TGetProjectByIDMethodQueryParams = Pick<TProject, 'Id'>;
+export type TGetProjectByIDMethodResponse = TProject;
+export type TGetProjectByIDMethod = TApiMethodWithPayload<
+  TGetProjectByIDMethodQueryParams,
+  null,
+  TGetProjectByIDMethodResponse
+>;
+// ========================== getProjectsList ==========================
+export type TGetProjectsListMethodResponse = Array<TProject>;
+export type TGetProjectsListMethod = TApiMethod<TGetProjectsListMethodResponse>;
+
+// =========================== updateProject ===========================
+export type TUpdateProjectMethodQueryParams = Pick<TProject, 'Id'>;
+export type TUpdateProjectAPIMethodPayload = TCreateProjectAPIMethodPayload;
+export type TUpdateProjectAPIMethodResponse = TCreateProjectAPIMethodResponse;
+export type TUpdateProjectAPIMethod = TApiMethodWithPayload<
+  TUpdateProjectMethodQueryParams,
+  TUpdateProjectAPIMethodPayload,
+  TUpdateProjectAPIMethodResponse
+>;
 
 // =========================== createTemplate ===========================
 
@@ -61,7 +91,6 @@ export type TGetTemplateByIDMethodResponse = Readonly<{
   name: string;
   keyWords: Array<string> | null;
   description: string | null;
-  releases: Array<TTemplatesRelease>;
   updatedAt: string;
   relatedProjectId: string;
   usedIn: Array<string>;
@@ -81,7 +110,6 @@ export type GetTemplatesListMethod =
 // =========================== updateTemplate ===========================
 
 export type TUpdateTemplateMethodQueryParams = Pick<TTemplate, 'Id'>;
-export type TUpdateTemplateAPIMethodPayload = TTemplateReleasesChange;
 export type TUpdateTemplateAPIMethodResponse = TTemplate;
 export type TUpdateTemplateAPIMethod = TApiMethodWithPayload<
   TUpdateTemplateMethodQueryParams,
@@ -93,6 +121,12 @@ export type TUpdateTemplateAPIMethod = TApiMethodWithPayload<
 
 export type TBackendService = Readonly<{
   checkAvailability: TCheckServiceAvailability;
+
+  createProject: TCreateProjectAPIMethod;
+  deleteProject: TDeleteProjectAPIMethod;
+  getProjectByID: TGetProjectByIDMethod;
+  getProjectsList: TGetProjectsListMethod;
+  updateProject: TUpdateProjectAPIMethod;
 
   createTemplate: TCreateTemplateAPIMethod;
   deleteTemplate: TDeleteTemplateAPIMethod;
