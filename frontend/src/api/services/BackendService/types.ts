@@ -5,9 +5,9 @@ import { TCheckServiceAvailability } from '../types';
 // =========================== common ===========================
 
 export type TProject = Readonly<{
-  Id: string;
-  Title: string;
-  Description: string | null;
+  id: string;
+  title: string;
+  description: string | null;
 }>;
 
 export type TTemplate = Readonly<{
@@ -36,7 +36,8 @@ export type TCreateProjectAPIMethod = TApiMethodWithPayload<
 
 // =========================== deleteProject ===========================
 export type TDeleteProjectAPIMethodQueryParams = Pick<TProject, 'Id'>;
-export type TDeleteProjectAPIMethod = TApiMethodWithPayload<TDeleteProjectAPIMethodQueryParams>;
+export type TDeleteProjectAPIMethod =
+  TApiMethodWithPayload<TDeleteProjectAPIMethodQueryParams>;
 
 // =========================== getProjectByID ===========================
 

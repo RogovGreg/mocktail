@@ -1,6 +1,7 @@
-import { BackendService, TProject } from "#api";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router';
+
+import { BackendService, TProject } from '#api';
 
 export const ViewProjectPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,12 +12,14 @@ export const ViewProjectPage = () => {
       console.error('Project ID is required');
       return;
     }
-    
-    BackendService.getProjectByID({ Id: id }, null).then(response => {
-      setProject(response.data);
-    }).catch(error => {
-      console.error('Failed to fetch project', error);
-    });
+
+    BackendService.getProjectByID({ Id: id }, null)
+      .then(response => {
+        setProject(response.data);
+      })
+      .catch(error => {
+        console.error('Failed to fetch project', error);
+      });
   }, [id]);
 
   return (
@@ -24,8 +27,8 @@ export const ViewProjectPage = () => {
       <h1>View Project</h1>
       {project ? (
         <div>
-          <h2>{project.Title}</h2>
-          <p>{project.Description || 'No description'}</p>
+          <h2>{project.title}</h2>
+          <p>{project.description || 'No description'}</p>
         </div>
       ) : (
         <p>Loading project...</p>

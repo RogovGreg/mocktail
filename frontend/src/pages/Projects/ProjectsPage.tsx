@@ -1,7 +1,8 @@
-import { BackendService} from '#api';
 import { useEffect, useState } from 'react';
-import { TProject } from '#api/services/BackendService/types';
 import { useNavigate } from 'react-router';
+
+import { BackendService } from '#api';
+import { TProject } from '#api/services/BackendService/types';
 import { ERoutes } from '#src/router';
 
 export const ProjectsPage = () => {
@@ -9,17 +10,19 @@ export const ProjectsPage = () => {
   const [projects, setProjects] = useState<TProject[]>([]);
 
   useEffect(() => {
-    BackendService.getProjectsList().then(response => {
-      setProjects(response.data);
-    }).catch(error => {
-      console.error('Failed to fetch projects', error);
-    });
+    BackendService.getProjectsList()
+      .then(response => {
+        setProjects(response.data);
+      })
+      .catch(error => {
+        console.error('Failed to fetch projects', error);
+      });
   }, []);
 
   const handleDeleteProject = (projectId: string) => {
     BackendService.deleteProject({ Id: projectId })
       .then(() => {
-        setProjects(projects.filter(project => project.Id !== projectId));
+        setProjects(projects.filter(project => project.id !== projectId));
       })
       .catch(error => {
         console.error('Failed to delete project', error);
@@ -30,19 +33,32 @@ export const ProjectsPage = () => {
     <div>
       <h1>Projects Page</h1>
 
-      <button onClick={() => {
-        navigate(ERoutes.ProjectCreate);
-      }}>Create New Project</button>
+      <button
+        type='button'
+        onClick={() => {
+          navigate(ERoutes.ProjectCreate);
+        }}
+      >
+        Create New Project
+      </button>
 
       {projects.length > 0 ? (
         <ul>
           {projects.map(project => (
-            <li key={project.Id}>
-              {project.Title} - {project.Description}
-              <button onClick={() => navigate(ERoutes.ProjectView.replace(':id', project.Id))}>
+            <li key={project.id}>
+              {project.title} - {project.description}
+              <button
+                type='button'
+                onClick={() =>
+                  navigate(ERoutes.ProjectView.replace(':id', project.id))
+                }
+              >
                 View
               </button>
-              <button onClick={() => handleDeleteProject(project.Id)}>
+              <button
+                type='button'
+                onClick={() => handleDeleteProject(project.id)}
+              >
                 Delete
               </button>
             </li>
@@ -53,4 +69,4 @@ export const ProjectsPage = () => {
       )}
     </div>
   );
-}
+};
