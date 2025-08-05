@@ -14,11 +14,12 @@ export const PageContainerStyled = styled.div`
   position: relative;
 
   main {
-    margin-top: 50px;
-    display: flex;
     align-items: center;
+    box-sizing: border-box;
+    display: flex;
+    height: 100vh;
     justify-content: center;
-    height: 1000px;
+    padding-top: 50px;
   }
 
   footer {
