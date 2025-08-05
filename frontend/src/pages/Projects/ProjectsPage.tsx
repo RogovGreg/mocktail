@@ -20,7 +20,7 @@ export const ProjectsPage = () => {
   }, []);
 
   const handleDeleteProject = (projectId: string) => {
-    BackendService.deleteProject({ Id: projectId })
+    BackendService.deleteProject({ id: projectId })
       .then(() => {
         setProjects(projects.filter(project => project.id !== projectId));
       })

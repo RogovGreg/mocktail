@@ -9,8 +9,8 @@ export const CreateProjectPage = () => {
 		event.preventDefault();
 		const formData = new FormData(event.currentTarget);
 		const values: TCreateProjectAPIMethodPayload = {
-			Title: String(formData.get('title') ?? ''),
-			Description: String(formData.get('description') ?? ''),
+			title: String(formData.get('title') ?? ''),
+			description: String(formData.get('description') ?? ''),
 		};
 		BackendService.createProject(null, values)
 			.then(response => {

@@ -12,15 +12,15 @@ export const BackendService: TBackendService = {
 
   deleteProject: queryParams =>
     axiosInstance.delete(
-      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.Id),
+      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.id),
     ),
   getProjectByID: queryParams =>
     axiosInstance.get(
-      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.Id),
+      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.id),
     ),
   updateProject: (queryParams, payload) =>
     axiosInstance.put(
-      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.Id),
+      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.id),
       payload,
     ),
   getProjectsList: options =>
