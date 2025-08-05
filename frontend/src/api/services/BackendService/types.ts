@@ -25,7 +25,7 @@ export type TTemplate = Readonly<{
 
 export type TCreateProjectAPIMethodPayload = Pick<
   TProject,
-  'Title' | 'Description'
+  'title' | 'description'
 >;
 export type TCreateProjectAPIMethodResponse = TProject;
 export type TCreateProjectAPIMethod = TApiMethodWithPayload<
@@ -35,13 +35,13 @@ export type TCreateProjectAPIMethod = TApiMethodWithPayload<
 >;
 
 // =========================== deleteProject ===========================
-export type TDeleteProjectAPIMethodQueryParams = Pick<TProject, 'Id'>;
+export type TDeleteProjectAPIMethodQueryParams = Pick<TProject, 'id'>;
 export type TDeleteProjectAPIMethod =
   TApiMethodWithPayload<TDeleteProjectAPIMethodQueryParams>;
 
 // =========================== getProjectByID ===========================
 
-export type TGetProjectByIDMethodQueryParams = Pick<TProject, 'Id'>;
+export type TGetProjectByIDMethodQueryParams = Pick<TProject, 'id'>;
 export type TGetProjectByIDMethodResponse = TProject;
 export type TGetProjectByIDMethod = TApiMethodWithPayload<
   TGetProjectByIDMethodQueryParams,
@@ -53,7 +53,7 @@ export type TGetProjectsListMethodResponse = Array<TProject>;
 export type TGetProjectsListMethod = TApiMethod<TGetProjectsListMethodResponse>;
 
 // =========================== updateProject ===========================
-export type TUpdateProjectMethodQueryParams = Pick<TProject, 'Id'>;
+export type TUpdateProjectMethodQueryParams = Pick<TProject, 'id'>;
 export type TUpdateProjectAPIMethodPayload = TCreateProjectAPIMethodPayload;
 export type TUpdateProjectAPIMethodResponse = TCreateProjectAPIMethodResponse;
 export type TUpdateProjectAPIMethod = TApiMethodWithPayload<

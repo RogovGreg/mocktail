@@ -13,7 +13,7 @@ export const ViewProjectPage = () => {
       return;
     }
 
-    BackendService.getProjectByID({ Id: id }, null)
+    BackendService.getProjectByID({ id }, null)
       .then(response => {
         setProject(response.data);
       })
