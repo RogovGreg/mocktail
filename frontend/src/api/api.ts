@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { StatusCodes } from 'http-status-codes';
 
+import { AUTHORIZED_USER_ID_FIELD_NAME } from '#common-constants';
 import { ERoutes } from '#src/router';
 import { PROTECTED_ROUTES } from '#src/router/routes';
 
@@ -19,6 +20,7 @@ axiosInstance.interceptors.response.use(undefined, error => {
     error.status === StatusCodes.UNAUTHORIZED &&
     PROTECTED_ROUTES.includes(window.location.pathname as ERoutes)
   ) {
+    sessionStorage.removeItem(AUTHORIZED_USER_ID_FIELD_NAME);
     window.location.pathname = ERoutes.Login;
   }
 
