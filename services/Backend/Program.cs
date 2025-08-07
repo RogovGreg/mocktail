@@ -6,8 +6,19 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Http.Json;
 using Backend.Serialization;
+using Shared.Content.Protos;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add gRPC client for Content service
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<ContentService.ContentServiceClient>(provider =>
+{
+    var httpClient = provider.GetRequiredService<HttpClient>();
+    var channel = Grpc.Net.Client.GrpcChannel.ForAddress("http://content:8080");
+    return new ContentService.ContentServiceClient(channel);
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -69,6 +80,17 @@ app.MapGet("/templates/{id:guid}", BackendHandlers.GetTemplateById);
 app.MapPost("/templates", BackendHandlers.CreateTemplate);
 app.MapPut("/templates/{id:guid}", BackendHandlers.UpdateTemplate);
 app.MapDelete("/templates/{id:guid}", BackendHandlers.DeleteTemplate);
+
+// Content endpoints that communicate with Content service via gRPC
+app.MapGet("/content", async (string? userId, ContentService.ContentServiceClient client) =>
+    await ContentHandlers.GetContent(userId ?? "", client));
+
+// Support path parameter variant: /content/{userId}
+app.MapGet("/content/{userId}", async (string userId, ContentService.ContentServiceClient client) =>
+    await ContentHandlers.GetContent(userId, client));
+
+app.MapPost("/content", async (CreateContentRequest request, ContentService.ContentServiceClient client) =>
+    await ContentHandlers.CreateContent(request, client));
 
 app.MapGet("/check-availability", () =>
 {
