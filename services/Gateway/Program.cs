@@ -57,11 +57,8 @@ builder.Configuration
 
 var app = builder.Build();
 
-// // Configure the HTTP request pipeline
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseDeveloperExceptionPage();
-// }
+// TODO: Remove this in production
+app.UseDeveloperExceptionPage();
 
 // Use authentication and authorization
 app.UseAuthentication();
