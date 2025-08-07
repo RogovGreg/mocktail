@@ -5,8 +5,6 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-COPY Shared/Contracts ./Shared/Contracts/
-
 COPY Backend/Backend.csproj ./
 RUN dotnet restore "Backend.csproj"
 
