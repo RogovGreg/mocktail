@@ -10,7 +10,7 @@ namespace MyService.Models
     [Key]
     public Guid Id { get; set; }
 
-    public string Title { get; set; }
+    public required string Title { get; set; }
 
     public string? Description { get; set; }
 
@@ -18,7 +18,7 @@ namespace MyService.Models
 
     public List<Guid> templates { get; set; } = new();
 
-    public bool WithMockServer { get; set; }
+    public bool WithMockServer { get; set; } = false;
 
     public List<Guid> Members { get; set; } = new();
 

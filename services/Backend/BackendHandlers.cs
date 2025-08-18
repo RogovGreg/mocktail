@@ -4,8 +4,46 @@ using MyService.Models;
 
 public static class BackendHandlers
 {
-  public static async Task<IEnumerable<Project>> GetProjects(AppDbContext db)
-      => await db.Projects.ToListAsync();
+  public class ProjectFilterParameters
+  {
+    public Guid? Id { get; set; }
+    public string? Title { get; set; }
+    public Guid? Member { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
+    public Guid? CreatedBy { get; set; }
+    public Guid? UpdatedBy { get; set; }
+  }
+
+  public static async Task<IEnumerable<Project>> GetProjects(
+    [AsParameters] ProjectFilterParameters filters,
+    AppDbContext db)
+  {
+    var query = db.Projects.AsQueryable();
+
+    if (filters.Id.HasValue)
+      query = query.Where(p => p.Id == filters.Id);
+
+    if (!string.IsNullOrEmpty(filters.Title))
+      query = query.Where(p => p.Title.Contains(filters.Title));
+
+    if (filters.Member.HasValue)
+      query = query.Where(p => p.Members.Contains(filters.Member.Value));
+
+    if (filters.CreatedAt.HasValue)
+      query = query.Where(p => p.CreatedAt == filters.CreatedAt);
+
+    if (filters.UpdatedAt.HasValue)
+      query = query.Where(p => p.UpdatedAt == filters.UpdatedAt);
+
+    if (filters.CreatedBy.HasValue)
+      query = query.Where(p => p.CreatedBy == filters.CreatedBy);
+
+    if (filters.UpdatedBy.HasValue)
+      query = query.Where(p => p.UpdatedBy == filters.UpdatedBy);
+
+    return await query.ToListAsync();
+  }
 
   public static async Task<IResult> GetProjectById(Guid id, AppDbContext db)
   {
@@ -52,6 +90,11 @@ public static class BackendHandlers
 
   public static async Task<IResult> CreateTemplate(Template template, AppDbContext db)
   {
+    var projectExists = await db.Projects.AnyAsync(p => p.Id == template.RelatedProjectId);
+    if (!projectExists)
+    {
+      return Results.BadRequest($"Project with Id '{template.RelatedProjectId}' does not exist.");
+    }
     db.Templates.Add(template);
     await db.SaveChangesAsync();
     return Results.Created($"/templates/{template.Id}", template);
@@ -61,6 +104,12 @@ public static class BackendHandlers
   {
     var exists = await db.Templates.AnyAsync(t => t.Id == id);
     if (!exists) return Results.NotFound();
+
+    var projectExists = await db.Projects.AnyAsync(p => p.Id == template.RelatedProjectId);
+    if (!projectExists)
+    {
+      return Results.BadRequest($"Project with Id '{template.RelatedProjectId}' does not exist.");
+    }
 
     template.Id = id;
     db.Entry(template).State = EntityState.Modified;
