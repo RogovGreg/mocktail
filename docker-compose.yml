@@ -20,8 +20,8 @@ services:
 
   backend:
     build:
-      context: services
-      dockerfile: Backend/Docker/Dockerfile
+      context: services/Backend
+      dockerfile: Docker/Dockerfile
     container_name: backend
     depends_on:
       - mssql
@@ -30,8 +30,8 @@ services:
 
   content:
     build:
-      context: services
-      dockerfile: Content/Docker/Dockerfile
+      context: services/Content
+      dockerfile: Docker/Dockerfile
     container_name: content
 
   generator:

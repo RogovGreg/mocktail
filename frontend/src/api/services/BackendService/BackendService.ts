@@ -12,15 +12,15 @@ export const BackendService: TBackendService = {
 
   deleteProject: queryParams =>
     axiosInstance.delete(
-      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.id),
+      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.id as string),
     ),
   getProjectByID: queryParams =>
     axiosInstance.get(
-      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.id),
+      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.id as string),
     ),
   updateProject: (queryParams, payload) =>
     axiosInstance.put(
-      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.id),
+      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.id as string),
       payload,
     ),
   getProjectsList: options =>
@@ -30,15 +30,15 @@ export const BackendService: TBackendService = {
     axiosInstance.post(EBackendServiceEndpoint.Template, payload, options),
   deleteTemplate: queryParams =>
     axiosInstance.delete(
-      EBackendServiceEndpoint.TemplateItem.replace(':id', queryParams.Id),
+      EBackendServiceEndpoint.TemplateItem.replace(':id', queryParams.Id as string),
     ),
   getTemplateByID: queryParams =>
     axiosInstance.get(
-      EBackendServiceEndpoint.TemplateItem.replace(':id', queryParams.Id),
+      EBackendServiceEndpoint.TemplateItem.replace(':id', queryParams.Id as string),
     ),
   updateTemplate: (queryParams, payload) =>
     axiosInstance.put(
-      EBackendServiceEndpoint.TemplateItem.replace(':id', queryParams.Id),
+      EBackendServiceEndpoint.TemplateItem.replace(':id', queryParams.Id as string),
       payload,
     ),
 

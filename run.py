@@ -28,16 +28,21 @@ def get_connection_string(service_name):
         print(f"❌ Error: {env_file} file not found.")
         exit(1)
 
-    print("📂 Reading .env file contents:")
+    # Do not print entire .env; only search for the needed key.
     with open(env_file, "r") as file:
         for line in file:
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            print(f"   • {line}")
             if line.startswith(db_key + "="):
                 connection_string = line.split("=", 1)[1]
-                print(f"✅ Found connection string for {service_name}: {connection_string}")
+                # Mask password if present when echoing.
+                masked = connection_string
+                if "Password=" in masked:
+                    masked = masked.replace(
+                        masked.split("Password=", 1)[1].split(";", 1)[0], "****"
+                    )
+                print(f"✅ Found connection string for {service_name}: {masked}")
                 break
 
     if connection_string:
@@ -52,6 +57,22 @@ def run_migrations():
 
     for service in os.listdir(services_dir):
         service_path = os.path.join(services_dir, service)
+        # Only process directories that contain a .csproj.
+        csproj_files = [f for f in os.listdir(service_path) if f.endswith(".csproj")]
+        if not csproj_files:
+            continue
+
+        # Skip services that do not reference EF Core Design package.
+        csproj_path = os.path.join(service_path, csproj_files[0])
+        try:
+            with open(csproj_path, "r", encoding="utf-8") as f:
+                csproj_text = f.read()
+            if "Microsoft.EntityFrameworkCore.Design" not in csproj_text:
+                print(f"⏭️  Skipping {service}: no EF Core Design reference in {csproj_files[0]}.")
+                continue
+        except Exception as read_error:
+            print(f"⚠️ Could not read {csproj_path}: {read_error}. Skipping.")
+            continue
         migrations_path = os.path.join(service_path, "Migrations")
         connection_string = get_connection_string(service)
 
@@ -72,6 +93,32 @@ def run_migrations():
 
         env = os.environ.copy()
         env[f"ConnectionStrings__{service}Db"] = connection_string
+
+        # Verify there is at least one DbContext. If not, skip this service.
+        try:
+            result = subprocess.run(
+                [
+                    "dotnet",
+                    "ef",
+                    "dbcontext",
+                    "list",
+                ],
+                cwd=service_path,
+                check=False,
+                env=env,
+                capture_output=True,
+                text=True,
+            )
+            dbcontexts_output = (result.stdout or "") + (result.stderr or "")
+            has_dbcontext = result.returncode == 0 and any(
+                line.strip() and not line.lower().startswith("build") for line in dbcontexts_output.splitlines()
+            )
+            if not has_dbcontext:
+                print(f"⏭️  Skipping {service}: no DbContext found.")
+                continue
+        except Exception as list_error:
+            print(f"⚠️ Could not enumerate DbContexts for {service}: {list_error}. Skipping.")
+            continue
 
         try:
             subprocess.run(
