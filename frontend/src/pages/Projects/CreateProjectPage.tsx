@@ -1,33 +1,31 @@
+import { FC } from 'react';
 import { useNavigate } from 'react-router';
 
 import { BackendService, TCreateProjectAPIMethodPayload } from '#api';
-import { ERoutes } from '#src/router';
 
-export const CreateProjectPage = () => {
+export const CreateProjectPage: FC = () => {
   const navigate = useNavigate();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const values: TCreateProjectAPIMethodPayload = {
-      title: String(formData.get('title') ?? ''),
       description: String(formData.get('description') ?? ''),
+      title: String(formData.get('title') ?? ''),
     };
-    BackendService.createProject(null, values)
+    BackendService.createProject({ body: { data: values } })
       .then(response => {
-        console.log('Project created successfully:', response.data);
-        // TODO Navigate to the project details page
-        navigate(ERoutes.Projects);
+        navigate(`/app/projects/${response.data.id}`);
       })
       .catch(error => {
+        // eslint-disable-next-line no-console
         console.error('Error creating project:', error);
-        // Optionally, show an error message
       });
   };
 
   return (
     <div>
-      <h1>Create New Project</h1>
+      <h2>Create New Project</h2>
       <form onSubmit={handleSubmit}>
         <label
           htmlFor='title'

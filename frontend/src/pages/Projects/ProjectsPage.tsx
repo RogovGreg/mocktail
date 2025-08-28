@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { Button } from 'antd';
 
 import { BackendService } from '#api';
 import { TProject } from '#api/services/BackendService/types';
@@ -15,52 +16,60 @@ export const ProjectsPage = () => {
         setProjects(response.data);
       })
       .catch(error => {
+        // eslint-disable-next-line no-console
         console.error('Failed to fetch projects', error);
       });
   }, []);
 
   const handleDeleteProject = (projectId: string) => {
-    BackendService.deleteProject({ id: projectId })
+    BackendService.deleteProject({ path: { params: { id: projectId } } })
       .then(() => {
         setProjects(projects.filter(project => project.id !== projectId));
       })
       .catch(error => {
+        // eslint-disable-next-line no-console
         console.error('Failed to delete project', error);
       });
   };
 
   return (
-    <div>
-      <h1>Projects Page</h1>
-
-      <button
-        type='button'
-        onClick={() => {
-          navigate(ERoutes.ProjectCreate);
+    <div
+      style={{
+        boxSizing: 'border-box',
+        padding: '20px',
+        width: '100%',
+      }}
+    >
+      <div
+        style={{
+          alignItems: 'center',
+          display: 'flex',
+          justifyContent: 'space-between',
         }}
       >
-        Create New Project
-      </button>
+        <h1>Projects Page</h1>
+
+        <Button onClick={() => navigate(ERoutes.ProjectCreate)}>
+          Create New Project
+        </Button>
+      </div>
 
       {projects.length > 0 ? (
         <ul>
           {projects.map(project => (
             <li key={project.id}>
               {project.title} - {project.description}
-              <button
-                type='button'
-                onClick={() =>
-                  navigate(ERoutes.ProjectView.replace(':id', project.id))
-                }
-              >
+              <Button onClick={() => navigate(`/app/projects/${project.id}`)}>
                 View
-              </button>
-              <button
-                type='button'
-                onClick={() => handleDeleteProject(project.id)}
+              </Button>
+              <Button
+                onClick={() => navigate(`/app/projects/${project.id}/edit`)}
               >
+                Edit
+              </Button>
+              <Button danger onClick={() => handleDeleteProject(project.id)}>
                 Delete
-              </button>
+              </Button>
             </li>
           ))}
         </ul>

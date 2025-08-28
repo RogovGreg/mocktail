@@ -1,11 +1,16 @@
-import { AuthContextProvider } from './global-contexts/index.ts';
-import { Router } from './router/Router.tsx';
+import {
+  AuthContextProvider,
+  SidebarsContextProvider,
+} from './global-contexts';
+import { RootLayout } from './layouts';
 import { ThemeProvider } from './theme';
 
 export const App = () => (
   <ThemeProvider>
     <AuthContextProvider>
-      <Router />
+      <SidebarsContextProvider>
+        <RootLayout />
+      </SidebarsContextProvider>
     </AuthContextProvider>
   </ThemeProvider>
 );

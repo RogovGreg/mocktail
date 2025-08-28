@@ -1,10 +1,13 @@
-import { TApiMethod, TApiMethodResponse } from '#api/inner-types';
+import { TUnifiedApiMethod } from '#api/inner-types';
 
-export type TCheckServiceAvailabilityResponseData = Readonly<{
+export type TCheckServiceAvailabilityResponse = Readonly<{
   service: string;
   timestamp: string;
 }>;
-export type TCheckServiceAvailabilityResponse =
-  TApiMethodResponse<TCheckServiceAvailabilityResponseData>;
-export type TCheckServiceAvailability =
-  TApiMethod<TCheckServiceAvailabilityResponseData>;
+
+export type TCheckServiceAvailability = TUnifiedApiMethod<
+  void,
+  void,
+  void,
+  TCheckServiceAvailabilityResponse
+>;

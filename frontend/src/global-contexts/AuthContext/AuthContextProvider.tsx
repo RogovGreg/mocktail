@@ -41,9 +41,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
     );
 
     if (authorizedUserID) {
-      AuthService.refreshToken(null, {
-        UserId: authorizedUserID,
-      })
+      AuthService.refreshToken({ body: { data: { UserId: authorizedUserID } } })
         .then(response => {
           if (response.status === StatusCodes.OK) {
             const { tokenType, accessToken, expiresIn } = response.data;
@@ -129,13 +127,16 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
     [],
   );
 
+  console.log('AuthContextProvider', isAuthorized);
+
   useEffect(() => {
-    if (isAuthorized && !pollingStatusIntervalRef.current) {
+    console.log('AuthContextProvider - start polling');
+    if (!pollingStatusIntervalRef.current) {
       pollingStatusIntervalRef.current = setInterval(() => {
         AuthService.checkStatus();
       }, POLLING_AUTH_STATUS_INTERVAL);
     }
-  }, [isAuthorized, pollingStatusIntervalRef.current]);
+  }, [pollingStatusIntervalRef.current]);
 
   useEffect(() => {
     if (accessToken?.value && !isAuthorized) {

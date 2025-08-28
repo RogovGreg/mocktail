@@ -1,48 +1,82 @@
-import { axiosInstance } from '#api/api';
-
 import { EBackendServiceEndpoint } from './inner-types';
 import { TBackendService } from './types';
+import { axiosInstance } from '../../api';
+import { interpolateUrl } from '../../helpers';
 
 export const BackendService: TBackendService = {
-  checkAvailability: options =>
-    axiosInstance.get(EBackendServiceEndpoint.CheckAvailability, options),
-
-  createProject: (_queryParams, payload, options) =>
-    axiosInstance.post(EBackendServiceEndpoint.Project, payload, options),
-
-  deleteProject: queryParams =>
-    axiosInstance.delete(
-      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.id),
-    ),
-  getProjectByID: queryParams =>
+  checkAvailability: config =>
     axiosInstance.get(
-      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.id),
-    ),
-  updateProject: (queryParams, payload) =>
-    axiosInstance.put(
-      EBackendServiceEndpoint.ProjectItem.replace(':id', queryParams.id),
-      payload,
+      EBackendServiceEndpoint.CheckAvailability,
+      config?.options,
     ),
 
-  getProjectsList: options =>
-    axiosInstance.get(EBackendServiceEndpoint.Project, options),
-
-  createTemplate: (_queryParams, payload, options) =>
-    axiosInstance.post(EBackendServiceEndpoint.Template, payload, options),
-  deleteTemplate: queryParams =>
+  createProject: config =>
+    axiosInstance.post(
+      EBackendServiceEndpoint.Project,
+      config?.body?.data,
+      config?.options,
+    ),
+  deleteProject: config =>
     axiosInstance.delete(
-      EBackendServiceEndpoint.TemplateItem.replace(':id', queryParams.Id),
+      interpolateUrl(EBackendServiceEndpoint.ProjectItem, {
+        id: String(config?.path?.params?.id),
+      }),
+      config?.options,
     ),
-  getTemplateByID: queryParams =>
+  getProjectByID: config =>
     axiosInstance.get(
-      EBackendServiceEndpoint.TemplateItem.replace(':id', queryParams.Id),
+      interpolateUrl(EBackendServiceEndpoint.ProjectItem, {
+        id: String(config?.path?.params?.id),
+      }),
+      config?.options,
     ),
-  updateTemplate: (queryParams, payload) =>
+  getProjectsList: config =>
+    axiosInstance.get(
+      config?.query?.params
+        ? interpolateUrl(EBackendServiceEndpoint.Project, config.query.params)
+        : EBackendServiceEndpoint.Project,
+      config?.options,
+    ),
+  updateProject: config =>
     axiosInstance.put(
-      EBackendServiceEndpoint.TemplateItem.replace(':id', queryParams.Id),
-      payload,
+      interpolateUrl(EBackendServiceEndpoint.ProjectItem, {
+        id: String(config?.path?.params?.id),
+      }),
+      config?.body?.data,
+      config?.options,
     ),
 
-  getTemplatesList: options =>
-    axiosInstance.get(EBackendServiceEndpoint.Template, options),
+  createTemplate: config =>
+    axiosInstance.post(
+      EBackendServiceEndpoint.Template,
+      config?.body?.data,
+      config?.options,
+    ),
+  deleteTemplate: config =>
+    axiosInstance.delete(
+      interpolateUrl(EBackendServiceEndpoint.TemplateItem, {
+        id: String(config?.path?.params?.id),
+      }),
+      config?.options,
+    ),
+  getTemplateByID: config =>
+    axiosInstance.get(
+      interpolateUrl(EBackendServiceEndpoint.TemplateItem, {
+        id: String(config?.path?.params?.id),
+      }),
+      config?.options,
+    ),
+  getTemplatesList: config =>
+    axiosInstance.get(EBackendServiceEndpoint.Template, {
+      ...config?.options,
+      params: config?.query?.params,
+    }),
+  updateTemplate: config =>
+    axiosInstance.put(
+      interpolateUrl(EBackendServiceEndpoint.TemplateItem, {
+        id: String(config?.path?.params?.id),
+      }),
+      config?.body?.data,
+      config?.options,
+    ),
 };

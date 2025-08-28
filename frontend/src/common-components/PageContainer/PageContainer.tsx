@@ -1,12 +1,15 @@
-import { FC, PropsWithChildren } from 'react';
+import { FC, PropsWithChildren, useContext } from 'react';
 
 import { useSidebar } from '#src/common-functions';
+import { AuthContext } from '#src/global-contexts/AuthContext/AuthContext';
 
 import { Header } from './elements';
 import { HorizontalSidebar, Overlay, PageContainerStyled } from './styled';
 
 export const PageContainer: FC<PropsWithChildren> = props => {
   const { children } = props;
+
+  const { isAuthorized } = useContext(AuthContext);
 
   const {
     closeBothSidebars,
@@ -20,7 +23,7 @@ export const PageContainer: FC<PropsWithChildren> = props => {
   const { Component: LeftSidebarBody } = leftSidebarConfig || {};
 
   return (
-    <PageContainerStyled>
+    <PageContainerStyled isAuthorized={Boolean(isAuthorized)}>
       <HorizontalSidebar side='left' active={isLeftSidebarOpen}>
         {LeftSidebarBody ? <LeftSidebarBody /> : null}
       </HorizontalSidebar>

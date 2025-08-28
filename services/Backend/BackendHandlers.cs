@@ -15,6 +15,18 @@ public static class BackendHandlers
     public Guid? UpdatedBy { get; set; }
   }
 
+  public class TemplateFilterParameters
+  {
+    public Guid? Id { get; set; }
+    public string? SearchString { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
+    public Guid? CreatedBy { get; set; }
+    public Guid? UpdatedBy { get; set; }
+    public Guid? RelatedProjectId { get; set; }
+    public Guid? UsedIn { get; set; }
+  }
+
   public static async Task<IEnumerable<Project>> GetProjects(
     [AsParameters] ProjectFilterParameters filters,
     AppDbContext db)
@@ -22,25 +34,25 @@ public static class BackendHandlers
     var query = db.Projects.AsQueryable();
 
     if (filters.Id.HasValue)
-      query = query.Where(p => p.Id == filters.Id);
+      query = query.Where(project => project.Id == filters.Id);
 
     if (!string.IsNullOrEmpty(filters.Title))
-      query = query.Where(p => p.Title.Contains(filters.Title));
+      query = query.Where(project => project.Title.Contains(filters.Title));
 
     if (filters.Member.HasValue)
-      query = query.Where(p => p.Members.Contains(filters.Member.Value));
+      query = query.Where(project => project.Members.Contains(filters.Member.Value));
 
     if (filters.CreatedAt.HasValue)
-      query = query.Where(p => p.CreatedAt == filters.CreatedAt);
+      query = query.Where(project => project.CreatedAt == filters.CreatedAt);
 
     if (filters.UpdatedAt.HasValue)
-      query = query.Where(p => p.UpdatedAt == filters.UpdatedAt);
+      query = query.Where(project => project.UpdatedAt == filters.UpdatedAt);
 
     if (filters.CreatedBy.HasValue)
-      query = query.Where(p => p.CreatedBy == filters.CreatedBy);
+      query = query.Where(project => project.CreatedBy == filters.CreatedBy);
 
     if (filters.UpdatedBy.HasValue)
-      query = query.Where(p => p.UpdatedBy == filters.UpdatedBy);
+      query = query.Where(project => project.UpdatedBy == filters.UpdatedBy);
 
     return await query.ToListAsync();
   }
@@ -79,8 +91,39 @@ public static class BackendHandlers
     return Results.NoContent();
   }
 
-  public static async Task<IEnumerable<Template>> GetTemplates(AppDbContext db)
-      => await db.Templates.ToListAsync();
+  public static async Task<IEnumerable<Template>> GetTemplates(
+    [AsParameters] TemplateFilterParameters filters,
+    AppDbContext db)
+  {
+    var query = db.Templates.AsQueryable();
+
+    if (filters.Id.HasValue)
+      query = query.Where(t => t.Id == filters.Id);
+
+    if (!string.IsNullOrEmpty(filters.SearchString))
+      query = query.Where(t => t.Name.Contains(filters.SearchString) ||
+                              t.KeyWords.Any(k => k == filters.SearchString));
+
+    if (filters.CreatedAt.HasValue)
+      query = query.Where(template => template.CreatedAt == filters.CreatedAt);
+
+    if (filters.UpdatedAt.HasValue)
+      query = query.Where(template => template.UpdatedAt == filters.UpdatedAt);
+
+    if (filters.CreatedBy.HasValue)
+      query = query.Where(template => template.CreatedBy == filters.CreatedBy);
+
+    if (filters.UpdatedBy.HasValue)
+      query = query.Where(template => template.UpdatedBy == filters.UpdatedBy);
+
+    if (filters.RelatedProjectId.HasValue)
+      query = query.Where(template => template.RelatedProjectId == filters.RelatedProjectId);
+
+    if (filters.UsedIn.HasValue)
+      query = query.Where(template => template.UsedIn.Contains(filters.UsedIn.Value));
+
+    return await query.ToListAsync();
+  }
 
   public static async Task<IResult> GetTemplateById(Guid id, AppDbContext db)
   {
