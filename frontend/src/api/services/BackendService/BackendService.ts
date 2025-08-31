@@ -32,10 +32,12 @@ export const BackendService: TBackendService = {
     ),
   getProjectsList: config =>
     axiosInstance.get(
-      config?.query?.params
-        ? interpolateUrl(EBackendServiceEndpoint.Project, config.query.params)
-        : EBackendServiceEndpoint.Project,
-      config?.options,
+      EBackendServiceEndpoint.Project,
+
+      {
+        ...config?.options,
+        params: config?.query?.params,
+      },
     ),
   updateProject: config =>
     axiosInstance.put(

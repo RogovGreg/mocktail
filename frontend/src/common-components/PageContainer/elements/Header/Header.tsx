@@ -77,7 +77,9 @@ export const Header = () => {
                   <path d='M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z' />
                 </svg>
               }
-              onClick={() => AuthService.logout()}
+              onClick={() =>
+                AuthService.logout().then(() => navigate(ERoutes.Landing))
+              }
             />
           ) : (
             <Button
@@ -115,7 +117,7 @@ export const Header = () => {
     <HeaderStyled isAuthorized={Boolean(isAuthorized)}>
       <div>
         <h1
-          style={{ display: 'flex', alignSelf: 'center', marginLeft: '10px' }}
+          style={{ alignSelf: 'center', display: 'flex', marginLeft: '10px' }}
         >
           <span style={{ color: 'aqua' }}>Mock</span>
           <span style={{ color: 'orangered' }}>Tail</span>
@@ -137,7 +139,7 @@ export const Header = () => {
           })}
         </HeaderNavigationPanelStyled>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div style={{ alignItems: 'center', display: 'flex' }}>
         {rightElementsGroup}
       </div>
     </HeaderStyled>

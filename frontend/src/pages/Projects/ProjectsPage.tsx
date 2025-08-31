@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Button } from 'antd';
+import { Button, Form, Input } from 'antd';
 
 import { BackendService } from '#api';
 import { TProject } from '#api/services/BackendService/types';
 import { ERoutes } from '#src/router';
+
+import { TProjectFiltersFormValues } from './types';
 
 export const ProjectsPage = () => {
   const navigate = useNavigate();
@@ -32,6 +34,17 @@ export const ProjectsPage = () => {
       });
   };
 
+  const onSearch = useCallback((values: TProjectFiltersFormValues): void => {
+    BackendService.getProjectsList({ query: { params: values } })
+      .then(response => {
+        setProjects(response.data);
+      })
+      .catch(error => {
+        // eslint-disable-next-line no-console
+        console.error('Failed to fetch projects', error);
+      });
+  }, []);
+
   return (
     <div
       style={{
@@ -53,7 +66,34 @@ export const ProjectsPage = () => {
           Create New Project
         </Button>
       </div>
-
+      <div>
+        <Form<TProjectFiltersFormValues> layout='inline' onFinish={onSearch}>
+          <Form.Item name='id' label='Search by ID'>
+            <Input placeholder='Project ID' />
+          </Form.Item>
+          <Form.Item name='title' label='Search by Title'>
+            <Input placeholder='Project Title' />
+          </Form.Item>
+          <Form.Item name='member' label='Search by Member'>
+            <Input placeholder='Member' />
+          </Form.Item>
+          <Form.Item name='createdBy' label='Search by Created By'>
+            <Input placeholder='Created By' />
+          </Form.Item>
+          <Form.Item name='updatedBy' label='Search by Updated By'>
+            <Input placeholder='Updated By' />
+          </Form.Item>
+          <Form.Item name='createdAt' label='Search by Created At'>
+            <Input placeholder='Created At' />
+          </Form.Item>
+          <Form.Item name='updatedAt' label='Search by Updated At'>
+            <Input placeholder='Updated At' />
+          </Form.Item>
+          <Button type='primary' htmlType='submit'>
+            Search
+          </Button>
+        </Form>
+      </div>
       {projects.length > 0 ? (
         <ul>
           {projects.map(project => (

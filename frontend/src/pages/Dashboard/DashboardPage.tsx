@@ -1,9 +1,9 @@
 import { FC, useState } from 'react';
 
 import { AuthService, BackendService, ContentService } from '#api';
-import { MocktailLoadingIcon } from '#common-components';
-import { useSidebar } from '#src/common-functions';
 
+// import { MocktailLoadingIcon } from '#common-components';
+// import { useSidebar } from '#src/common-functions';
 import {
   EApiServices,
   TAvailabilityLog,
@@ -11,23 +11,23 @@ import {
   TCheckServiceResponseHandler2,
 } from './types';
 
-const SidebarBodyTempComponent = () => (
-  <div
-    style={{
-      alignItems: 'center',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-    }}
-  >
-    <MocktailLoadingIcon />
-  </div>
-);
+// const SidebarBodyTempComponent = () => (
+//   <div
+//     style={{
+//       alignItems: 'center',
+//       display: 'flex',
+//       flexDirection: 'column',
+//       justifyContent: 'center',
+//     }}
+//   >
+//     <MocktailLoadingIcon />
+//   </div>
+// );
 
 export const DashboardPage: FC = () => {
   const [responses, setResponses] = useState<TAvailabilityLog>([]);
 
-  const { openLeftSidebar, openRightSidebar } = useSidebar();
+  // const { openLeftSidebar, openRightSidebar } = useSidebar();
 
   const checkServiceResponseSuccessHandler: TCheckServiceResponseHandler = (
     response,
@@ -57,7 +57,7 @@ export const DashboardPage: FC = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Sidebars</h1>
+      {/* <h1>Sidebars</h1>
       <div>
         <button
           type='button'
@@ -85,7 +85,7 @@ export const DashboardPage: FC = () => {
         >
           Open Right Sidebar
         </button>
-      </div>
+      </div> */}
       <h1>Check Service Availability</h1>
       <div style={{ marginBottom: '20px' }}>
         <button
