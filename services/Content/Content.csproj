@@ -3,6 +3,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Use system protoc instead of gRPC.Tools version -->
+    <Protobuf_Protoc>protoc</Protobuf_Protoc>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="2.70.0" />
@@ -15,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Shared/Contracts/content.proto" GrpcServices="Server" />
+    <Protobuf Include="Protos/content.proto" GrpcServices="Server" />
   </ItemGroup>
+
 </Project>

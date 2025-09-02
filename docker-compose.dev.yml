@@ -1,7 +1,7 @@
 services:
   backend:
     build:
-      dockerfile: Backend/Docker/Dockerfile.dev
+      dockerfile: Docker/Dockerfile.dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=mssql;Database=BackendDb;User ID=sa;Password=Admin@123;TrustServerCertificate=True;
@@ -15,7 +15,7 @@ services:
 
   content:
     build:
-      dockerfile: Content/Docker/Dockerfile.dev
+      dockerfile: Docker/Dockerfile.dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
@@ -48,7 +48,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
-      - "5000:8080"
+      - "5006:8080"
 
   frontend:
     environment:

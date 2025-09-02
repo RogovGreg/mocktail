@@ -1,7 +1,4 @@
 {
-  "AuthenticationOptions": {
-    "AuthenticationProviderKey": "Bearer"
-  },
   "Routes": [
     {
       "DownstreamPathTemplate": "/",
@@ -43,8 +40,8 @@
       "DownstreamHostAndPorts": [{ "Host": "content", "Port": 80 }],
       "UpstreamPathTemplate": "/v1/content",
       "UpstreamHttpMethod": ["GET", "POST"],
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer"
+      "DisabledAuthenticationOptions": {
+        "AuthenticationProviderKey": "ContentBearer"
       }
     },
     {
@@ -53,8 +50,8 @@
       "DownstreamHostAndPorts": [{ "Host": "content", "Port": 80 }],
       "UpstreamPathTemplate": "/v1/content/{everything}",
       "UpstreamHttpMethod": ["GET", "POST"],
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer"
+      "DisabledAuthenticationOptions": {
+        "AuthenticationProviderKey": "ContentBearer"
       }
     }
   ],

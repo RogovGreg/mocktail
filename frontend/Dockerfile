@@ -3,7 +3,7 @@ WORKDIR /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 
-FROM node:20.11.0 AS build
+FROM node:20.19.4 AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
