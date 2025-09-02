@@ -18,7 +18,7 @@ namespace MyService.Models
 
     public List<Guid> templates { get; set; } = new();
 
-    public bool WithMockServer { get; set; }
+    public bool WithMockServer { get; set; } = false;
 
     public List<Guid> Members { get; set; } = new();
 

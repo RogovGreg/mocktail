@@ -1,9 +1,11 @@
-import { axiosInstance } from '#api/api';
-
 import { EContentServiceEndpoint } from './inner-types';
 import { TContentService } from './types';
+import { axiosInstance } from '../../api';
 
 export const ContentService: TContentService = {
-  checkAvailability: options =>
-    axiosInstance.get(EContentServiceEndpoint.CheckAvailability, options),
+  checkAvailability: config =>
+    axiosInstance.get(
+      EContentServiceEndpoint.CheckAvailability,
+      config?.options,
+    ),
 };

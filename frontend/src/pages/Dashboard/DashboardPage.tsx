@@ -1,14 +1,9 @@
-import { useContext, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { StatusCodes } from 'http-status-codes';
+import { FC, useState } from 'react';
 
 import { AuthService, BackendService, ContentService } from '#api';
-import { MocktailLoadingIcon } from '#common-components';
-import { AUTHORIZED_USER_ID_FIELD_NAME } from '#common-constants';
-import { useSidebar } from '#src/common-functions';
-import { AuthContext } from '#src/global-contexts';
-import { ERoutes } from '#src/router';
 
+// import { MocktailLoadingIcon } from '#common-components';
+// import { useSidebar } from '#src/common-functions';
 import {
   EApiServices,
   TAvailabilityLog,
@@ -16,28 +11,23 @@ import {
   TCheckServiceResponseHandler2,
 } from './types';
 
-const SidebarBodyTempComponent = () => (
-  <div
-    style={{
-      alignItems: 'center',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-    }}
-  >
-    <MocktailLoadingIcon />
-  </div>
-);
+// const SidebarBodyTempComponent = () => (
+//   <div
+//     style={{
+//       alignItems: 'center',
+//       display: 'flex',
+//       flexDirection: 'column',
+//       justifyContent: 'center',
+//     }}
+//   >
+//     <MocktailLoadingIcon />
+//   </div>
+// );
 
-export const DashboardPage = () => {
-  const { updateIsAuthorized, updateAccessToken, updateAuthorizedUserData } =
-    useContext(AuthContext);
-
+export const DashboardPage: FC = () => {
   const [responses, setResponses] = useState<TAvailabilityLog>([]);
 
-  const navigate = useNavigate();
-
-  const { openLeftSidebar, openRightSidebar } = useSidebar();
+  // const { openLeftSidebar, openRightSidebar } = useSidebar();
 
   const checkServiceResponseSuccessHandler: TCheckServiceResponseHandler = (
     response,
@@ -67,7 +57,7 @@ export const DashboardPage = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Sidebars</h1>
+      {/* <h1>Sidebars</h1>
       <div>
         <button
           type='button'
@@ -95,7 +85,7 @@ export const DashboardPage = () => {
         >
           Open Right Sidebar
         </button>
-      </div>
+      </div> */}
       <h1>Check Service Availability</h1>
       <div style={{ marginBottom: '20px' }}>
         <button
@@ -181,50 +171,6 @@ export const DashboardPage = () => {
           }}
         >
           Get Profile
-        </button>
-        <button
-          type='button'
-          onClick={() => navigate(ERoutes.WaitingDemoPage)}
-          style={{
-            cursor: 'pointer',
-            margin: '5px',
-            padding: '10px 15px',
-          }}
-        >
-          To Demo Waiting Page
-        </button>
-        <button
-          type='button'
-          onClick={async () => {
-            if (
-              updateIsAuthorized &&
-              updateAccessToken &&
-              updateAuthorizedUserData
-            ) {
-              await AuthService.logout().then(response => {
-                if (response.status === StatusCodes.OK) {
-                  updateIsAuthorized(false);
-                  updateAccessToken({
-                    expiresIn: null,
-                    type: null,
-                    value: null,
-                  });
-                  updateAuthorizedUserData(null);
-
-                  sessionStorage.removeItem(AUTHORIZED_USER_ID_FIELD_NAME);
-
-                  navigate(ERoutes.Login);
-                }
-              });
-            }
-          }}
-          style={{
-            cursor: 'pointer',
-            margin: '5px',
-            padding: '10px 15px',
-          }}
-        >
-          Logout
         </button>
       </div>
       <div>
