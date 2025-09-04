@@ -1,6 +1,6 @@
 import { AxiosError, AxiosResponse } from 'axios';
 
-import { TCheckServiceAvailabilityResponseData } from '#api';
+import { TCheckServiceAvailabilityResponse } from '#api';
 
 export enum EApiServices {
   Auth = 'auth',
@@ -10,14 +10,12 @@ export enum EApiServices {
 
 // TODO: Simplify this type
 export type TCheckServiceResponseHandler = (
-  response: Readonly<
-    AxiosResponse<TCheckServiceAvailabilityResponseData, void>
-  >,
+  response: Readonly<AxiosResponse<TCheckServiceAvailabilityResponse, void>>,
   service: EApiServices,
 ) => void;
 
 export type TCheckServiceResponseHandler2 = (
-  error: Readonly<AxiosError<TCheckServiceAvailabilityResponseData, void>>,
+  error: Readonly<AxiosError<TCheckServiceAvailabilityResponse, void>>,
   service: EApiServices,
 ) => void;
 

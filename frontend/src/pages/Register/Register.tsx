@@ -17,11 +17,13 @@ export const RegisterPage = () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword, ...restFields } = values;
 
-    await AuthService.register(restFields).then(response => {
-      if (response.status === StatusCodes.OK) {
-        navigate(ERoutes.RegisterSuccess);
-      }
-    });
+    await AuthService.register({ body: { data: { ...restFields } } }).then(
+      response => {
+        if (response.status === StatusCodes.OK) {
+          navigate(ERoutes.RegisterSuccess);
+        }
+      },
+    );
   };
 
   return (

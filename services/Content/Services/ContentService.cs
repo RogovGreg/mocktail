@@ -1,29 +1,26 @@
 using Shared.Content.Protos;
 using Grpc.Core;
+using Content.Repositories;
 
 namespace Content.Services;
 
 public class ContentServiceImpl : Shared.Content.Protos.ContentService.ContentServiceBase
 {
     private readonly ILogger<ContentServiceImpl> _logger;
-    private static readonly List<ContentItem> _contentItems = new(); // Static storage for demo
+    private readonly IContentRepository _repository;
 
-    public ContentServiceImpl(ILogger<ContentServiceImpl> logger)
+    public ContentServiceImpl(ILogger<ContentServiceImpl> logger, IContentRepository repository)
     {
         _logger = logger;
-        if (_contentItems.Count == 0)
-        {
-            _contentItems.Add(new ContentItem { Id = "1", UserId = "1", ContentBody = "Hello, world!", CreatedAt = DateTime.UtcNow.ToString("o") });
-        }
+        _repository = repository;
     }
 
     public override Task<ListContentResponse> ListContent(ListContentRequest request, ServerCallContext context)
     {
         _logger.LogInformation("Listing content for user: {UserId}", request.UserId);
-        _logger.LogInformation("Current content items: {ContentItems}", _contentItems);
         var items = string.IsNullOrEmpty(request.UserId)
-            ? _contentItems
-            : _contentItems.Where(x => x.UserId == request.UserId).ToList();
+            ? _repository.GetAll()
+            : _repository.GetByUserId(request.UserId);
 
         return Task.FromResult(new ListContentResponse
         {
@@ -35,15 +32,7 @@ public class ContentServiceImpl : Shared.Content.Protos.ContentService.ContentSe
     {
         _logger.LogInformation("Creating content for user: {UserId}", request.UserId);
 
-        var newItem = new ContentItem
-        {
-            Id = Guid.NewGuid().ToString(),
-            UserId = request.UserId,
-            ContentBody = request.ContentBody,
-            CreatedAt = DateTime.UtcNow.ToString("o")
-        };
-
-        _contentItems.Add(newItem);
+        var newItem = _repository.Add(request.UserId, request.ContentBody);
         _logger.LogInformation("Added new content item with ID: {Id} and content: {Content}", newItem.Id, newItem.ContentBody);
 
         return Task.FromResult(new CreateContentResponse

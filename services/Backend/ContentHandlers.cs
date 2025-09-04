@@ -4,8 +4,7 @@ using Grpc.Core;
 public static class ContentHandlers
 {
     public static async Task<IResult> GetContent(string userId, ContentService.ContentServiceClient client)
-    {
-        var request = new ListContentRequest { UserId = userId };
+    {   
         var response = await client.ListContentAsync(new Shared.Content.Protos.ListContentRequest { UserId = userId });
         return Results.Json(response.Items);
     }

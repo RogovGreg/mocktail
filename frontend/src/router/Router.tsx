@@ -1,32 +1,36 @@
 import { createBrowserRouter, Navigate, RouteObject } from 'react-router';
 import { RouterProvider } from 'react-router-dom';
 
-import { PageContainer } from '#common-components';
-
 import { ROUTES_LIST } from './routes.ts';
 import { ERoutes } from './routes-list.ts';
 import { RouteWrapper } from './RouteWrapper.tsx';
+import { TRouteObject } from './types.ts';
 import { SidebarsContextProvider } from '../global-contexts/SidebarsContext/index.ts';
 
+const mapRouteObject = (routeObject: TRouteObject): RouteObject => {
+  const { path, Component, children } = routeObject;
+
+  return {
+    children: children?.map(mapRouteObject),
+    path,
+
+    element: (
+      <RouteWrapper>
+        <SidebarsContextProvider>
+          <Component />
+        </SidebarsContextProvider>
+      </RouteWrapper>
+    ),
+  };
+};
+
 const router = createBrowserRouter([
-  ...ROUTES_LIST.map<RouteObject>(routeObject => {
-    const { path, Component } = routeObject;
+  ...ROUTES_LIST.map(mapRouteObject),
 
-    return {
-      path,
-
-      element: (
-        <RouteWrapper>
-          <SidebarsContextProvider>
-            <PageContainer>
-              <Component />
-            </PageContainer>
-          </SidebarsContextProvider>
-        </RouteWrapper>
-      ),
-    };
-  }),
-
+  {
+    element: <Navigate to={ERoutes.Dashboard} />,
+    path: ERoutes.WebApp,
+  },
   {
     element: <Navigate to={ERoutes.WaitingPage} />,
     path: '/',

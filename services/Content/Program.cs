@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Content.Services;
+using Content.Repositories;
+using Shared.Content.Protos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,9 @@ builder.Services.AddOpenApi();
 
 // Add gRPC support
 builder.Services.AddGrpc();
+
+// Register repository as a singleton so gRPC and HTTP share data
+builder.Services.AddSingleton<IContentRepository, InMemoryContentRepository>();
 
 // Configure Kestrel specifically for gRPC
 builder.WebHost.ConfigureKestrel(options =>
@@ -42,6 +47,13 @@ app.MapGet("/check-availability", () =>
         service = "Content",
         timestamp = DateTime.UtcNow.ToString("o")
     });
+});
+
+// REST API endpoint to list content with optional userId filter
+app.MapGet("/api/content", (string? userId, IContentRepository repository) =>
+{
+    var items = string.IsNullOrEmpty(userId) ? repository.GetAll() : repository.GetByUserId(userId);
+    return Results.Json(items);
 });
 
 app.Urls.Add("http://*:80");

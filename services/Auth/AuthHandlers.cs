@@ -1,8 +1,16 @@
 using Auth.Entities;
 using Microsoft.AspNetCore.Identity;
+using MyService.Entities;
 
 public static class AuthHandlers
 {
+    public record UpdateProfileRequest(
+        string? FirstName,
+        string? LastName,
+        byte[]? Avatar,
+        string? About
+    );
+
     private static CookieOptions CreateRefreshCookieOptions(bool forDelete = false)
     {
         return new CookieOptions
@@ -145,6 +153,117 @@ public static class AuthHandlers
             user.UserName,
             user.Email,
         });
+    }
+
+    public static async Task<IResult> ProfileUpdateHandler(
+        HttpContext context,
+        UpdateProfileRequest request,
+        UserManager<User> userManager
+    )
+    {
+        if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
+            return Results.Unauthorized();
+
+        var userName = context.User.Identity.Name;
+        var user = await userManager.FindByNameAsync(userName);
+        if (user == null)
+            return Results.NotFound();
+
+        user.FirstName = request.FirstName ?? user.FirstName;
+        user.LastName = request.LastName ?? user.LastName;
+        user.Avatar = request.Avatar ?? user.Avatar;
+        user.About = request.About ?? user.About;
+
+        await userManager.UpdateAsync(user);
+
+        return Results.Ok(new { Message = "Profile updated successfully" });
+    }
+
+    public static async Task<IResult> AddBookmarkHandler(
+    HttpContext context,
+    Bookmark bookmark,
+    UserManager<User> userManager
+)
+    {
+        if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
+            return Results.Unauthorized();
+
+        var userName = context.User.Identity.Name;
+        var user = await userManager.FindByNameAsync(userName);
+        if (user == null)
+            return Results.NotFound();
+
+        user.Bookmarks.Add(bookmark);
+        await userManager.UpdateAsync(user);
+        return Results.Ok(new { Message = "Bookmark added" });
+    }
+
+    public static async Task<IResult> RemoveBookmarkHandler(
+        HttpContext context,
+        Guid bookmarkId,
+        UserManager<User> userManager
+    )
+    {
+        if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
+            return Results.Unauthorized();
+
+        var userName = context.User.Identity.Name;
+        var user = await userManager.FindByNameAsync(userName);
+        if (user == null)
+            return Results.NotFound();
+
+        var bookmark = user.Bookmarks.FirstOrDefault(b => b.Id == bookmarkId);
+        if (bookmark == null)
+            return Results.NotFound();
+
+        user.Bookmarks.Remove(bookmark);
+        await userManager.UpdateAsync(user);
+
+        return Results.Ok(new { Message = "Bookmark removed" });
+    }
+
+    public static async Task<IResult> AttachProjectToUserHandler(
+        HttpContext context,
+        Guid projectId,
+        UserManager<User> userManager
+    )
+    {
+        if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
+            return Results.Unauthorized();
+
+        var userName = context.User.Identity.Name;
+        var user = await userManager.FindByNameAsync(userName);
+        if (user == null)
+            return Results.NotFound();
+
+        if (!user.Projects.Contains(projectId))
+        {
+            user.Projects.Add(projectId);
+            await userManager.UpdateAsync(user);
+        }
+        return Results.Ok(new { Message = "Project attached" });
+    }
+
+    public static async Task<IResult> DetachProjectFromUserHandler(
+        HttpContext context,
+        Guid projectId,
+        UserManager<User> userManager
+    )
+    {
+        if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
+            return Results.Unauthorized();
+
+        var userName = context.User.Identity.Name;
+        var user = await userManager.FindByNameAsync(userName);
+        if (user == null)
+            return Results.NotFound();
+
+        if (user.Projects.Contains(projectId))
+        {
+            user.Projects.Remove(projectId);
+            await userManager.UpdateAsync(user);
+        }
+        return Results.Ok(new { Message = "Project detached" });
     }
 
     public static IResult CheckStatusHandler(HttpContext context)

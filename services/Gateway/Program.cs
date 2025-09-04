@@ -6,7 +6,6 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +22,20 @@ builder.Services
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
+        };
+    })
+    .AddJwtBearer("ContentBearer", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:ContentAudience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
         };
@@ -44,11 +57,8 @@ builder.Configuration
 
 var app = builder.Build();
 
-// // Configure the HTTP request pipeline
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseDeveloperExceptionPage();
-// }
+// TODO: Remove this in production
+app.UseDeveloperExceptionPage();
 
 // Use authentication and authorization
 app.UseAuthentication();

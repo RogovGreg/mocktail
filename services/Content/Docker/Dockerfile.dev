@@ -1,9 +1,12 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS runtime
 WORKDIR /src
 
-COPY Content/Content.csproj .
+# Simple: just install the native protobuf compiler
+RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
+
+COPY Content.csproj .
 RUN dotnet restore
 
-COPY Content/ .
+COPY . .
 
-CMD ["dotnet", "watch", "run", "--project" , "Content.csproj",  "--urls", "https://*:443;http://*:80"]
+CMD ["dotnet", "run", "--project" , "Content.csproj", "--urls", "https://*:443;http://*:80"]

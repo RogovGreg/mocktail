@@ -10,15 +10,27 @@ type TOverlayProps = {
   visible: boolean;
 };
 
-export const PageContainerStyled = styled.div`
+type TPageContainerStyledProps = Readonly<{
+  isAuthorized: boolean;
+}>;
+
+export const PageContainerStyled = styled.div<TPageContainerStyledProps>`
   position: relative;
 
   main {
-    margin-top: 50px;
-    display: flex;
     align-items: center;
+    box-sizing: border-box;
+    display: flex;
+    height: 100vh;
     justify-content: center;
-    height: 1000px;
+    flex-direction: column;
+    padding-top: ${({ isAuthorized }) => (isAuthorized ? '50px' : '70px')};
+    min-height: calc(100vh - 50px);
+
+    > div:first-child {
+      flex: 1;
+      margin-top: 0;
+    }
   }
 
   footer {

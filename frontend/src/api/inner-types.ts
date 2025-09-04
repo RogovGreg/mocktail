@@ -5,14 +5,24 @@ export type TAuthorizationParameters = Readonly<{
   accessToken?: string;
 }>;
 
-export type TApiMethodResponse<
-  TRequestResponseData = void,
+// ========================================================================
+
+export type TApiMethodConfig<
+  TPathParams = void,
+  TQueryParams = void,
   TRequestBody = void,
-> = Promise<Readonly<AxiosResponse<TRequestResponseData, TRequestBody>>>;
-export type TApiMethod<TRequestResponseData = void> = (
-  options?: AxiosRequestConfig,
-) => TApiMethodResponse<TRequestResponseData>;
-export type TApiMethodWithPayload<TRequestBody, TRequestResponseData = void> = (
-  requestBody: TRequestBody,
-  options?: AxiosRequestConfig<TRequestBody>,
-) => TApiMethodResponse<TRequestResponseData, TRequestBody>;
+> = {
+  path?: { params: TPathParams };
+  query?: { params: TQueryParams };
+  body?: { data: TRequestBody };
+  options?: AxiosRequestConfig;
+};
+
+export type TUnifiedApiMethod<
+  TPathParams = void,
+  TQueryParams = void,
+  TRequestBody = void,
+  TResponseData = void,
+> = (
+  config?: TApiMethodConfig<TPathParams, TQueryParams, TRequestBody>,
+) => Promise<AxiosResponse<TResponseData>>;

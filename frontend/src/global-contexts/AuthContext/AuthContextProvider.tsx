@@ -41,19 +41,10 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
     );
 
     if (authorizedUserID) {
-      AuthService.refreshToken({
-        UserId: authorizedUserID,
-      })
+      AuthService.refreshToken({ body: { data: { UserId: authorizedUserID } } })
         .then(response => {
           if (response.status === StatusCodes.OK) {
             const { tokenType, accessToken, expiresIn } = response.data;
-
-            setAccessToken({
-              expiresIn,
-              type: tokenType,
-              value: accessToken,
-            });
-            setIsAuthorized(true);
 
             const expiresInMs: number = expiresIn
               ? Number.parseInt(expiresIn, 10)
@@ -67,36 +58,85 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
                 expiresInMs - Date.now() - 5000,
               );
             }
+
+            setAccessToken({
+              expiresIn,
+              type: tokenType,
+              value: accessToken,
+            });
+            setIsAuthorized(true);
+            updateApiAuthorization({
+              accessToken: accessToken || undefined,
+              tokenType: tokenType || undefined,
+            });
           }
+
+          return response;
         })
         .catch(() => {
           setIsAuthorized(false);
           setAccessToken(AUTH_CONTEXT_DEFAULT_VALUE.accessToken);
+          updateApiAuthorization({
+            accessToken: undefined,
+            tokenType: undefined,
+          });
           setAuthorizedUserData(AUTH_CONTEXT_DEFAULT_VALUE.authorizedUserData);
         });
+    } else {
+      setIsAuthorized(false);
     }
   }, [refreshTokenTimeoutRef.current]);
 
   useEffect(() => {
-    refreshTokenAction();
+    const asyncProfileRequest = async () => {
+      const userProfile = await AuthService.getProfile();
+      const { email, id, userName } = userProfile.data || {};
 
-    return () => {
-      if (refreshTokenTimeoutRef.current) {
-        clearTimeout(refreshTokenTimeoutRef.current);
+      setAuthorizedUserData({
+        email,
+        id,
+        userName,
+      });
+
+      if (id) {
+        sessionStorage.setItem(AUTHORIZED_USER_ID_FIELD_NAME, id);
       }
-      if (pollingStatusIntervalRef.current) {
-        clearInterval(pollingStatusIntervalRef.current);
-      }
+
+      setIsAuthorized(true);
     };
-  }, []);
+
+    if (accessToken?.value && !authorizedUserData) {
+      asyncProfileRequest();
+    }
+  }, [accessToken, authorizedUserData]);
+
+  useEffect(
+    // init
+    () => {
+      refreshTokenAction();
+
+      return () => {
+        if (refreshTokenTimeoutRef.current) {
+          clearTimeout(refreshTokenTimeoutRef.current);
+        }
+        if (pollingStatusIntervalRef.current) {
+          clearInterval(pollingStatusIntervalRef.current);
+        }
+      };
+    },
+    [],
+  );
+
+  console.log('AuthContextProvider', isAuthorized);
 
   useEffect(() => {
-    if (isAuthorized && !pollingStatusIntervalRef.current) {
+    console.log('AuthContextProvider - start polling');
+    if (!pollingStatusIntervalRef.current) {
       pollingStatusIntervalRef.current = setInterval(() => {
         AuthService.checkStatus();
       }, POLLING_AUTH_STATUS_INTERVAL);
     }
-  }, [isAuthorized, pollingStatusIntervalRef.current]);
+  }, [pollingStatusIntervalRef.current]);
 
   useEffect(() => {
     if (accessToken?.value && !isAuthorized) {
@@ -106,17 +146,14 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
     }
   }, [accessToken, isAuthorized]);
 
-  useEffect(() => {
-    updateApiAuthorization({
-      accessToken: accessToken?.value || undefined,
-      tokenType: accessToken?.type || undefined,
-    });
-  }, [accessToken]);
-
   const updateAccessToken = (
     newAccessToken: TAuthContextValue['accessToken'],
   ) => {
     setAccessToken(newAccessToken);
+    updateApiAuthorization({
+      accessToken: newAccessToken?.value || undefined,
+      tokenType: newAccessToken?.type || undefined,
+    });
   };
 
   const updateIsAuthorized = (

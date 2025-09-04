@@ -1,9 +1,4 @@
-import {
-  TApiMethod,
-  TApiMethodResponse,
-  TApiMethodWithPayload,
-} from '#src/api/inner-types';
-
+import { TUnifiedApiMethod } from '../../inner-types';
 import { TCheckServiceAvailability } from '../types';
 
 // ================= Common Types =======================
@@ -28,50 +23,55 @@ export type TUserProfile = Readonly<{
 // ================= LOGIN =======================
 
 export type TAuthMethodLoginRequestBody = TLoginPassword;
-export type TAuthMethodLoginResponseData = Readonly<{
+export type TAuthMethodLoginResponse = Readonly<{
   accessToken: TAuthTokenData;
   authorizedUser: TUserProfile;
 }>;
-export type TAuthMethodLoginResponse = TApiMethodResponse<
-  TAuthMethodLoginResponseData,
-  TAuthMethodLoginRequestBody
->;
-export type TAuthMethodLogin = TApiMethodWithPayload<
+export type TAuthMethodLogin = TUnifiedApiMethod<
+  void,
+  void,
   TAuthMethodLoginRequestBody,
-  TAuthMethodLoginResponseData
+  TAuthMethodLoginResponse
 >;
 
 // ================= LOGOUT =======================
 
-export type TAuthMethodLogout = TApiMethod;
+export type TAuthMethodLogout = TUnifiedApiMethod;
 
-export type TAuthGetProfileResponseData = TUserProfile;
-export type TAuthGetProfileResponse =
-  TApiMethodResponse<TAuthGetProfileResponseData>;
-export type TAuthGetProfile = TApiMethod<TAuthGetProfileResponseData>;
+// ================= GET PROFILE =======================
+
+export type TAuthGetProfileResponse = TUserProfile;
+export type TAuthGetProfile = TUnifiedApiMethod<
+  void,
+  void,
+  void,
+  TAuthGetProfileResponse
+>;
 
 // ================= REFRESH TOKEN =======================
 
-export type TAuthMethodRefreshTokenResponseData = TAuthTokenData;
-export type TAuthMethodRefreshTokenResponse =
-  TApiMethodResponse<TAuthMethodRefreshTokenResponseData>;
-export type TAuthMethodRefreshToken = TApiMethodWithPayload<
-  { UserId: string },
-  TAuthMethodRefreshTokenResponseData
+export type TAuthMethodRefreshTokenRequestBody = Readonly<{ UserId: string }>;
+export type TAuthMethodRefreshTokenResponse = TAuthTokenData;
+export type TAuthMethodRefreshToken = TUnifiedApiMethod<
+  void,
+  void,
+  TAuthMethodRefreshTokenRequestBody,
+  TAuthMethodRefreshTokenResponse
 >;
 
 // ================= REGISTER =======================
 
-export type TAuthMethodRegisterRequestBody = TLoginPassword;
-export type TAuthMethodRegisterResponse = TApiMethodResponse<
+export type TAuthMethodRegisterRequest = TLoginPassword;
+
+export type TAuthMethodRegister = TUnifiedApiMethod<
   void,
-  TAuthMethodRegisterRequestBody
+  void,
+  TAuthMethodRegisterRequest
 >;
-export type TAuthMethodRegister = TApiMethodWithPayload<TLoginPassword>;
 
 // ================= CHECK STATUS =======================
 
-export type TAuthCheckStatus = TApiMethod;
+export type TAuthCheckStatus = TUnifiedApiMethod;
 
 // ======================================================
 
