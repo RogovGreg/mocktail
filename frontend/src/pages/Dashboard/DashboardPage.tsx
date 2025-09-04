@@ -75,7 +75,10 @@ export const DashboardPage: FC = () => {
         <button
           type='button'
           onClick={() =>
-            openRightSidebar({ Component: SidebarBodyTempComponent })
+            openRightSidebar({
+              Component: SidebarBodyTempComponent,
+              width: '100%',
+            })
           }
           style={{
             cursor: 'pointer',
