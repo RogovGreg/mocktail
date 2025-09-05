@@ -61,6 +61,13 @@ export const BackendService: TBackendService = {
       }),
       config?.options,
     ),
+  generateDataByTemplateID: config =>
+    axiosInstance.post(
+      interpolateUrl(EBackendServiceEndpoint.GenerateDataByTemplateID, {
+        id: String(config?.path?.params?.id),
+      }),
+      config?.options,
+    ),
   getTemplateByID: config =>
     axiosInstance.get(
       interpolateUrl(EBackendServiceEndpoint.TemplateItem, {

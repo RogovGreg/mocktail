@@ -1,5 +1,6 @@
 import { FC, ReactNode, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
+import { Button } from 'antd';
 
 import { BackendService, TTemplate } from '#api';
 
@@ -14,32 +15,10 @@ export const TemplatePage: FC = () => {
         path: { params: { id: String(templateId) } },
       })
         .then(response => {
-          // const {
-          //   description,
-          //   keyWords,
-          //   name,
-          //   relatedProjectId,
-          //   schema,
-          //   updatedAt,
-          //   usedIn,
-          //   id,
-          // } = response.data;
-
-          setTemplate(
-            response.data,
-            //   {
-            //   description,
-            //   id,
-            //   keyWords: keyWords || [],
-            //   name,
-            //   relatedProjectId,
-            //   schema,
-            //   updatedAt,
-            //   usedIn,
-            // }
-          );
+          setTemplate(response.data);
         })
         .catch(error => {
+          // eslint-disable-next-line no-console
           console.error('Failed to fetch template', error);
         });
     }
@@ -89,5 +68,29 @@ export const TemplatePage: FC = () => {
     );
   }, [template]);
 
-  return <div>{templateData}</div>;
+  return (
+    <div>
+      {templateData}
+      <Button
+        type='primary'
+        onClick={() => {
+          if (templateId) {
+            BackendService.generateDataByTemplateID({
+              path: { params: { id: String(templateId) } },
+            })
+              .then(response => {
+                // eslint-disable-next-line no-console
+                console.log('Generated data:', response.data);
+              })
+              .catch(error => {
+                // eslint-disable-next-line no-console
+                console.error('Failed to generate data', error);
+              });
+          }
+        }}
+      >
+        Generate Data And Show The Result In The Console
+      </Button>
+    </div>
+  );
 };

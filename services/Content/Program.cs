@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Content.Services;
 using Content.Repositories;
 using Shared.Content.Protos;
+using Content;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,11 +20,11 @@ builder.Services.AddSingleton<IContentRepository, InMemoryContentRepository>();
 builder.WebHost.ConfigureKestrel(options =>
 {
     // Setup a HTTP/2 endpoint without TLS for gRPC
-    options.ListenAnyIP(8080, o => o.Protocols = 
+    options.ListenAnyIP(8080, o => o.Protocols =
         Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2);
-    
+
     // Setup a HTTP/1.1 endpoint for REST API
-    options.ListenAnyIP(80, o => o.Protocols = 
+    options.ListenAnyIP(80, o => o.Protocols =
         Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1);
 });
 
@@ -55,6 +56,8 @@ app.MapGet("/api/content", (string? userId, IContentRepository repository) =>
     var items = string.IsNullOrEmpty(userId) ? repository.GetAll() : repository.GetByUserId(userId);
     return Results.Json(items);
 });
+
+app.MapPost("/api/content/template/{id:guid}/generate", ContentHandlers.HandleGenerateFromTemplate);
 
 app.Urls.Add("http://*:80");
 app.Urls.Add("http://*:8080");

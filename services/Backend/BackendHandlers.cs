@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using MyService.Data;
 using MyService.Models;
+using System.Text;
+using System.Text.Json;
 
 public static class BackendHandlers
 {
@@ -168,5 +170,29 @@ public static class BackendHandlers
     db.Templates.Remove(tpl);
     await db.SaveChangesAsync();
     return Results.NoContent();
+  }
+
+  public static async Task<IResult> GenerateTemplateData(Guid id, AppDbContext db, HttpClient httpClient)
+  {
+    var template = await db.Templates.FindAsync(id);
+    if (template is null) return Results.NotFound();
+
+    var requestBody = new { Schema = JsonSerializer.Serialize(template.Schema) };
+    var content = new StringContent(
+        JsonSerializer.Serialize(requestBody),
+        Encoding.UTF8,
+        "application/json");
+
+    var response = await httpClient.PostAsync(
+        $"http://content/api/content/template/{id}/generate",
+        content);
+
+    if (!response.IsSuccessStatusCode)
+    {
+      return Results.StatusCode((int)response.StatusCode);
+    }
+
+    var generatedContent = await response.Content.ReadAsStringAsync();
+    return Results.Ok(JsonSerializer.Deserialize<object>(generatedContent));
   }
 }
