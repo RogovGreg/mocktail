@@ -3,6 +3,7 @@ using MyService.Data;
 using MyService.Models;
 using System.Text;
 using System.Text.Json;
+using Shared.Content.Protos;
 
 public static class BackendHandlers
 {
@@ -172,27 +173,30 @@ public static class BackendHandlers
     return Results.NoContent();
   }
 
-  public static async Task<IResult> GenerateTemplateData(Guid id, AppDbContext db, HttpClient httpClient)
+  public static async Task<IResult> GenerateTemplateData(Guid id, AppDbContext db, ContentService.ContentServiceClient client)
   {
     var template = await db.Templates.FindAsync(id);
     if (template is null) return Results.NotFound();
 
-    var requestBody = new { Schema = JsonSerializer.Serialize(template.Schema) };
-    var content = new StringContent(
-        JsonSerializer.Serialize(requestBody),
-        Encoding.UTF8,
-        "application/json");
-
-    var response = await httpClient.PostAsync(
-        $"http://content/api/content/template/{id}/generate",
-        content);
-
-    if (!response.IsSuccessStatusCode)
+    var request = new GenerateRequest
     {
-      return Results.StatusCode((int)response.StatusCode);
-    }
+      TemplateId = id.ToString(),
+      Schema = JsonSerializer.Serialize(template.Schema)
+    };
 
-    var generatedContent = await response.Content.ReadAsStringAsync();
-    return Results.Ok(JsonSerializer.Deserialize<object>(generatedContent));
+    try
+    {
+      var response = await client.GenerateFromTemplateAsync(request);
+      return Results.Ok(new
+      {
+        message = response.Message,
+        templateId = response.TemplateId,
+        schema = response.Schema
+      });
+    }
+    catch (Exception)
+    {
+      return Results.StatusCode(StatusCodes.Status500InternalServerError);
+    }
   }
 }

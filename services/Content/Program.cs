@@ -57,8 +57,6 @@ app.MapGet("/api/content", (string? userId, IContentRepository repository) =>
     return Results.Json(items);
 });
 
-app.MapPost("/api/content/template/{id:guid}/generate", ContentHandlers.HandleGenerateFromTemplate);
-
 app.Urls.Add("http://*:80");
 app.Urls.Add("http://*:8080");
 

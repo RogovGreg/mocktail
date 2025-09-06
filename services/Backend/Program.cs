@@ -8,16 +8,15 @@ using Microsoft.AspNetCore.Http.Json;
 using Backend.Serialization;
 using Shared.Content.Protos;
 using Microsoft.Extensions.DependencyInjection;
+using Grpc.Net.Client;
+using Grpc.Net.ClientFactory;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add gRPC client for Content service
-builder.Services.AddHttpClient();
-builder.Services.AddSingleton<ContentService.ContentServiceClient>(provider =>
+builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>
 {
-    var httpClient = provider.GetRequiredService<HttpClient>();
-    var channel = Grpc.Net.Client.GrpcChannel.ForAddress("http://content:8080");
-    return new ContentService.ContentServiceClient(channel);
+    options.Address = new Uri("http://content:8080");
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
