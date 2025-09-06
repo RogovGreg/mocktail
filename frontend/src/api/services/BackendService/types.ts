@@ -156,6 +156,24 @@ export type TUpdateTemplateAPIMethod = TUnifiedApiMethod<
   TCreateTemplateAPIMethodResponse
 >;
 
+// ====================== generateDataByTemplateID ======================
+
+export type TGenerateDataByTemplateIDAPIMethodQueryParams = Pick<
+  TTemplate,
+  'id'
+>;
+export type TGenerateDataByTemplateIDAPIMethodResponse = Readonly<{
+  message: string;
+  id: string;
+  schema: string;
+}>;
+export type TGenerateDataByTemplateIDAPIMethod = TUnifiedApiMethod<
+  TGenerateDataByTemplateIDAPIMethodQueryParams,
+  void,
+  void,
+  TGenerateDataByTemplateIDAPIMethodResponse
+>;
+
 // ========================== TBackendService ===========================
 
 export type TBackendService = Readonly<{
@@ -169,6 +187,7 @@ export type TBackendService = Readonly<{
 
   createTemplate: TCreateTemplateAPIMethod;
   deleteTemplate: TDeleteTemplateAPIMethod;
+  generateDataByTemplateID: TGenerateDataByTemplateIDAPIMethod;
   getTemplateByID: GetTemplateByIDMethod;
   getTemplatesList: GetTemplatesListMethod;
   updateTemplate: TUpdateTemplateAPIMethod;

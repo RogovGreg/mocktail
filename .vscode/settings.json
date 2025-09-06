@@ -14,5 +14,8 @@
   "cSpell.language": "en-GB",
   "cSpell.words": [
     "Mocktail"
+  ],
+  "cSpell.ignoreWords": [
+    "IDAPI"
   ]
 }
