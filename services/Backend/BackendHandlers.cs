@@ -187,12 +187,7 @@ public static class BackendHandlers
     try
     {
       var response = await client.GenerateFromTemplateAsync(request);
-      return Results.Ok(new
-      {
-        message = response.Message,
-        templateId = response.TemplateId,
-        schema = response.Schema
-      });
+      return Results.Ok(response);
     }
     catch (Exception)
     {
