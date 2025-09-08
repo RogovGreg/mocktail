@@ -1,10 +1,10 @@
-using Shared.Content.Protos;
 using Grpc.Core;
+using Shared.Content.Protos;
 using Content.Repositories;
 
 namespace Content.Services;
 
-public class ContentServiceImpl : Shared.Content.Protos.ContentService.ContentServiceBase
+public class ContentServiceImpl : ContentService.ContentServiceBase
 {
     private readonly ILogger<ContentServiceImpl> _logger;
     private readonly IContentRepository _repository;
@@ -13,6 +13,18 @@ public class ContentServiceImpl : Shared.Content.Protos.ContentService.ContentSe
     {
         _logger = logger;
         _repository = repository;
+    }
+
+    public override Task<GenerateResponse> GenerateFromTemplate(GenerateRequest request, ServerCallContext context)
+    {
+        var response = new GenerateResponse
+        {
+            Message = $"Request received by gRPC to generate content using template {request.TemplateId} with the provided Schema",
+            TemplateId = request.TemplateId,
+            Schema = request.Schema
+        };
+
+        return Task.FromResult(response);
     }
 
     public override Task<ListContentResponse> ListContent(ListContentRequest request, ServerCallContext context)

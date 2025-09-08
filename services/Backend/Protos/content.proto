@@ -7,6 +7,7 @@ package content;
 service ContentService {
   rpc ListContent (ListContentRequest) returns (ListContentResponse);
   rpc CreateContent (CreateContentRequest) returns (CreateContentResponse);
+  rpc GenerateFromTemplate (GenerateRequest) returns (GenerateResponse);
 }
 
 message ContentItem {
@@ -31,4 +32,15 @@ message CreateContentRequest {
 
 message CreateContentResponse {
   ContentItem item = 1;
+}
+
+message GenerateRequest {
+  string template_id = 1;
+  string schema = 2;
+}
+
+message GenerateResponse {
+  string message = 1;
+  string template_id = 2;
+  string schema = 3;
 }
