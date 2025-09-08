@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.Data.SqlClient;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +20,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
+    options.UseNpgsql(
         connectionString
     ));
 
@@ -67,7 +67,7 @@ using (var scope = app.Services.CreateScope())
     {
         db.Database.Migrate();
     }
-    catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 1801)
+    catch (Npgsql.PostgresException ex) when (ex.SqlState == "42P04")
     {
         Console.WriteLine("Database already exists, skipping CREATE DATABASE.");
         var pending = db.Database.GetPendingMigrations();

@@ -1,19 +1,18 @@
 services:
-  mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    hostname: mssql
-    container_name: mssql
-    platform: linux/amd64
+  postgres:
+    image: postgres:16-alpine
+    hostname: postgres
+    container_name: postgres
     ports:
-      - 1433:1433
+      - 5432:5432
     environment:
-      ACCEPT_EULA: Y
-      SA_PASSWORD: Admin@123
-      MSSQL_SA_PASSWORD: Admin@123
+      POSTGRES_DB: mocktail
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Admin@123
     volumes:
-      - mssqldata:/var/opt/mssql
+      - postgresdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/1433'"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 2s
       retries: 12
@@ -24,7 +23,7 @@ services:
       dockerfile: Docker/Dockerfile
     container_name: backend
     depends_on:
-      - mssql
+      - postgres
     environment:
       - ConnectionStrings__BackendDb=${ConnectionStrings__BackendDb}
 
@@ -50,7 +49,7 @@ services:
     environment:
       ConnectionStrings__AuthDb: ${ConnectionStrings__AuthDb}
     depends_on:
-      mssql:
+      postgres:
         condition: service_healthy
 
   gateway:
@@ -73,5 +72,5 @@ services:
       - gateway
 
 volumes:
-  mssqldata:
+  postgresdata:
     external: true
