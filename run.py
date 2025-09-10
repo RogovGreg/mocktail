@@ -46,7 +46,7 @@ def get_connection_string(service_name):
                 break
 
     if connection_string:
-        return connection_string.replace("mssql", "localhost")
+        return connection_string.replace("postgres", "localhost", 1)
     else:
         print(f"⚠️ Warning: Connection string '{db_key}' not found in {env_file}.")
         return None
@@ -158,9 +158,9 @@ def run_migrations():
 
 
 def start_docker():
-    print("Creating mssqldata volume...")
+    print("Creating postgresdata volume...")
     subprocess.run(
-        ["docker", "volume", "create", "mssqldata"],
+        ["docker", "volume", "create", "postgresdata"],
         check=True,
     )
     print("Starting Docker containers...")

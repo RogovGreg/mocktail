@@ -4,9 +4,6 @@ services:
       dockerfile: Docker/Dockerfile.dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=mssql;Database=BackendDb;User ID=sa;Password=Admin@123;TrustServerCertificate=True;
-    depends_on:
-      - mssql
     ports:
       - "5001:80"
     volumes:
