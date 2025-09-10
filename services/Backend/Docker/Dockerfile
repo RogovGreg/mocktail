@@ -15,7 +15,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish ./
 
-ENV ConnectionStrings__DefaultConnection="Server=mssql;Database=BackendDb;User=sa;Password=Admin@123;TrustServerCertificate=True;"
+ENV ConnectionStrings__DefaultConnection="Host=postgres;Database=mocktail_backend;Username=postgres;Password=Admin@123"
 
 # ENTRYPOINT ["sh", "-c", "dotnet ef database update --no-build && dotnet Backend.dll"]
 ENTRYPOINT ["dotnet", "Backend.dll"]

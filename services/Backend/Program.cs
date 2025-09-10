@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MyService.Data;
-using Microsoft.Data.SqlClient;
+using Npgsql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -51,7 +51,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
 }
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
+    options.UseNpgsql(
         connectionString
     ));
 
