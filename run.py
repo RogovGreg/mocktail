@@ -2,7 +2,6 @@
 import os
 import subprocess
 import argparse
-from datetime import datetime
 
 DESCRIPTION = """
 This script manages the lifecycle of a .NET application with multiple microservices.\n
@@ -73,7 +72,6 @@ def run_migrations():
         except Exception as read_error:
             print(f"⚠️ Could not read {csproj_path}: {read_error}. Skipping.")
             continue
-        migrations_path = os.path.join(service_path, "Migrations")
         connection_string = get_connection_string(service)
 
         if connection_string is None:
@@ -81,15 +79,6 @@ def run_migrations():
             continue
 
         print(f"🔧 Using connection string for {service}: {connection_string}")
-
-        initial_migration_needed = not os.path.isdir(migrations_path) or not os.listdir(migrations_path)
-        
-        if initial_migration_needed:
-            print(f"📦 No migrations found for {service}. Creating initial migration...")
-            migration_name = "InitialCreate"
-        else:
-            print(f"📦 Creating automatic migration for {service}...")
-            migration_name = f"AutoMigration{datetime.now().strftime('%Y%m%d_%H%M')}"
 
         env = os.environ.copy()
         env[f"ConnectionStrings__{service}Db"] = connection_string
@@ -118,24 +107,6 @@ def run_migrations():
                 continue
         except Exception as list_error:
             print(f"⚠️ Could not enumerate DbContexts for {service}: {list_error}. Skipping.")
-            continue
-
-        try:
-            subprocess.run(
-                [
-                    "dotnet",
-                    "ef",
-                    "migrations",
-                    "add",
-                    migration_name,
-                ],
-                cwd=service_path,
-                check=True,
-                env=env,
-            )
-            print(f"✅ Migration '{migration_name}' for {service} created successfully.")
-        except subprocess.CalledProcessError as error:
-            print(f"❌ Failed to create migration for {service}: {error}")
             continue
 
         print(f"🚀 Applying migrations for {service}...")
