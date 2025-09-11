@@ -15,7 +15,9 @@ namespace MyService.Models
     [Required]
     public string Name { get; set; } = default!;
 
-    public List<string> KeyWords { get; set; } = new();
+    public List<string> Tags { get; set; } = [];
+
+    public string? Path { get; set; }
 
     public string? Description { get; set; }
 
@@ -29,6 +31,6 @@ namespace MyService.Models
 
     public Guid RelatedProjectId { get; set; }
 
-    public List<Guid> UsedIn { get; set; } = new();
+    public List<Guid> UsedIn { get; set; } = [];
   }
 }

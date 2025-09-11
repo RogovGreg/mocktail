@@ -78,7 +78,13 @@ def run_migrations():
             print(f"⚠️ Warning: connection string is not found for {service}. Skipping migrations.")
             continue
 
-        print(f"🔧 Using connection string for {service}: {connection_string}")
+        # Mask password
+        masked = connection_string
+        if "Password=" in masked:
+            masked = masked.replace(
+                masked.split("Password=", 1)[1].split(";", 1)[0], "****"
+            )
+        print(f"🔧 Using connection string for {service}: {masked}")
 
         env = os.environ.copy()
         env[f"ConnectionStrings__{service}Db"] = connection_string
