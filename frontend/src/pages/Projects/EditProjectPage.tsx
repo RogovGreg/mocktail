@@ -28,6 +28,9 @@ export const EditProjectPage: FC = () => {
     const formData = new FormData(event.currentTarget);
     const values: TCreateProjectAPIMethodPayload = {
       description: String(formData.get('description') ?? ''),
+      keyWords: String(formData.get('keyWords') ?? '')
+        .split(',')
+        .map(tag => tag.trim()),
       title: String(formData.get('title') ?? ''),
     };
 
@@ -58,6 +61,18 @@ export const EditProjectPage: FC = () => {
             name='title'
             required
             defaultValue={initialStateOfEditedProject?.title}
+          />
+        </label>
+
+        <label
+          htmlFor='keyWords'
+          style={{ display: 'flex', justifyContent: 'space-between' }}
+        >
+          Key Words (comma-separated)
+          <input
+            type='text'
+            name='keyWords'
+            defaultValue={initialStateOfEditedProject?.keyWords || undefined}
           />
         </label>
 

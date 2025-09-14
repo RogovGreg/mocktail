@@ -19,9 +19,10 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
     {
         var response = new GenerateResponse
         {
-            Message = $"Request received by gRPC to generate content using template {request.TemplateId} with the provided Schema",
+            Message = $"Request received by gRPC to generate content using template {request.TemplateId} with the provided Schema and Path",
             TemplateId = request.TemplateId,
-            Schema = request.Schema
+            Schema = request.Schema,
+            Path = request.Path
         };
 
         return Task.FromResult(response);

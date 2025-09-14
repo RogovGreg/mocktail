@@ -37,10 +37,12 @@ message CreateContentResponse {
 message GenerateRequest {
   string template_id = 1;
   string schema = 2;
+  string path = 3;
 }
 
 message GenerateResponse {
   string message = 1;
   string template_id = 2;
   string schema = 3;
+  string path = 4;
 }

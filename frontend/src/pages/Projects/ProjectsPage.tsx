@@ -35,7 +35,21 @@ export const ProjectsPage = () => {
   };
 
   const onSearch = useCallback((values: TProjectFiltersFormValues): void => {
-    BackendService.getProjectsList({ query: { params: values } })
+    const { searchString, updatedAt, createdAt, updatedBy, createdBy, member } =
+      values || {};
+
+    BackendService.getProjectsList({
+      query: {
+        params: {
+          createdAt,
+          createdBy,
+          member,
+          searchString,
+          updatedAt,
+          updatedBy,
+        },
+      },
+    })
       .then(response => {
         setProjects(response.data);
       })
@@ -68,11 +82,11 @@ export const ProjectsPage = () => {
       </div>
       <div>
         <Form<TProjectFiltersFormValues> layout='inline' onFinish={onSearch}>
-          <Form.Item name='id' label='Search by ID'>
-            <Input placeholder='Project ID' />
-          </Form.Item>
-          <Form.Item name='title' label='Search by Title'>
-            <Input placeholder='Project Title' />
+          <Form.Item
+            name='searchString'
+            label='Search (by project ID, title or key words)'
+          >
+            <Input placeholder='Search projects...' />
           </Form.Item>
           <Form.Item name='member' label='Search by Member'>
             <Input placeholder='Member' />

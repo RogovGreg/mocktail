@@ -181,7 +181,8 @@ public static class BackendHandlers
     var request = new GenerateRequest
     {
       TemplateId = id.ToString(),
-      Schema = JsonSerializer.Serialize(template.Schema)
+      Schema = JsonSerializer.Serialize(template.Schema),
+      Path = template.Path ?? string.Empty,
     };
 
     try
