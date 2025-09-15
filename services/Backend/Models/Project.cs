@@ -1,5 +1,3 @@
-
-
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -12,7 +10,7 @@ namespace MyService.Models
 
     public required string Title { get; set; }
 
-    public List<string> KeyWords { get; set; } = [];
+    public string[] KeyWords { get; set; } = Array.Empty<string>();
 
     public string? Description { get; set; }
 
