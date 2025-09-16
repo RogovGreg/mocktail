@@ -17,5 +17,4 @@ COPY --from=build /app/publish ./
 
 ENV ConnectionStrings__DefaultConnection="Host=postgres;Database=mocktail_backend;Username=postgres;Password=Admin@123"
 
-# ENTRYPOINT ["sh", "-c", "dotnet ef database update --no-build && dotnet Backend.dll"]
 ENTRYPOINT ["dotnet", "Backend.dll"]

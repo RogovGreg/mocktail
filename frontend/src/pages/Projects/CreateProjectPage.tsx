@@ -11,6 +11,9 @@ export const CreateProjectPage: FC = () => {
     const formData = new FormData(event.currentTarget);
     const values: TCreateProjectAPIMethodPayload = {
       description: String(formData.get('description') ?? ''),
+      keyWords: String(formData.get('keyWords') ?? '')
+        .split(',')
+        .map(tag => tag.trim()),
       title: String(formData.get('title') ?? ''),
     };
     BackendService.createProject({ body: { data: values } })
@@ -33,6 +36,14 @@ export const CreateProjectPage: FC = () => {
         >
           Title
           <input type='text' name='title' required />
+        </label>
+
+        <label
+          htmlFor='keyWords'
+          style={{ display: 'flex', justifyContent: 'space-between' }}
+        >
+          Key Words (comma-separated)
+          <input type='text' name='keyWords' />
         </label>
 
         <label

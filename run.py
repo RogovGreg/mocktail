@@ -56,6 +56,10 @@ def run_migrations():
 
     for service in os.listdir(services_dir):
         service_path = os.path.join(services_dir, service)
+
+        if not os.path.isdir(service_path):
+            continue
+
         # Only process directories that contain a .csproj.
         csproj_files = [f for f in os.listdir(service_path) if f.endswith(".csproj")]
         if not csproj_files:
@@ -72,13 +76,20 @@ def run_migrations():
         except Exception as read_error:
             print(f"⚠️ Could not read {csproj_path}: {read_error}. Skipping.")
             continue
+
         connection_string = get_connection_string(service)
 
         if connection_string is None:
             print(f"⚠️ Warning: connection string is not found for {service}. Skipping migrations.")
             continue
 
-        print(f"🔧 Using connection string for {service}: {connection_string}")
+        # Mask password for display
+        masked = connection_string
+        if "Password=" in masked:
+            masked = masked.replace(
+                masked.split("Password=", 1)[1].split(";", 1)[0], "****"
+            )
+        print(f"🔧 Using connection string for {service}: {masked}")
 
         env = os.environ.copy()
         env[f"ConnectionStrings__{service}Db"] = connection_string

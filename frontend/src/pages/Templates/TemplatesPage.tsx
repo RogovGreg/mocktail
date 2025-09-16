@@ -29,22 +29,14 @@ export const TemplatesPage: FC = () => {
   }, [projectId]);
 
   const onFinish = (values: TFilterTemplateFormValues) => {
-    const {
-      createdAt,
-      createdBy,
-      id,
-      searchString,
-      updatedAt,
-      updatedBy,
-      usedIn,
-    } = values || {};
+    const { createdAt, createdBy, searchString, updatedAt, updatedBy, usedIn } =
+      values || {};
 
     BackendService.getTemplatesList({
       query: {
         params: {
           createdAt: createdAt ? new Date(createdAt).toISOString() : undefined,
           createdBy,
-          id,
           relatedProjectId: projectId,
           searchString,
           updatedAt: updatedAt ? new Date(updatedAt).toISOString() : undefined,
@@ -98,9 +90,6 @@ export const TemplatesPage: FC = () => {
         </Form.Item>
         <Form.Item label='Used In' name='usedIn'>
           <Input type='text' placeholder='Used In...' />
-        </Form.Item>
-        <Form.Item label='ID' name='id'>
-          <Input type='text' placeholder='ID...' />
         </Form.Item>
         <Form.Item>
           <Button type='primary' htmlType='submit'>

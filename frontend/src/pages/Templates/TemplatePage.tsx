@@ -38,11 +38,14 @@ export const TemplatePage: FC = () => {
             <strong>Name:</strong> {template.name}
           </li>
           <li>
-            <strong>Description:</strong>{' '}
-            {template.description || 'No description'}
+            <strong>Tags:</strong> {template.tags?.join(', ') || 'None'}
           </li>
           <li>
-            <strong>Keywords:</strong> {template.keyWords?.join(', ') || 'None'}
+            <strong>Path:</strong> {template.path || 'No path'}
+          </li>
+          <li>
+            <strong>Description:</strong>{' '}
+            {template.description || 'No description'}
           </li>
           <li>
             <strong>Related Project ID:</strong> {template.relatedProjectId}
