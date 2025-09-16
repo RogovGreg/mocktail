@@ -15,7 +15,7 @@ namespace MyService.Models
     [Required]
     public string Name { get; set; } = default!;
 
-    public List<string> Tags { get; set; } = [];
+    public string[] Tags { get; set; } = Array.Empty<string>();
 
     public string? Path { get; set; }
 
@@ -31,6 +31,6 @@ namespace MyService.Models
 
     public Guid RelatedProjectId { get; set; }
 
-    public List<Guid> UsedIn { get; set; } = [];
+    public Guid[] UsedIn { get; set; } = Array.Empty<Guid>();
   }
 }

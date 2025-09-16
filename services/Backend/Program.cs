@@ -10,9 +10,6 @@ using Shared.Content.Protos;
 using Microsoft.Extensions.DependencyInjection;
 using Grpc.Net.Client;
 using Grpc.Net.ClientFactory;
-using DotNetEnv;
-
-Env.Load("../../.env");
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -2,7 +2,6 @@
 import os
 import subprocess
 import argparse
-import datetime
 
 DESCRIPTION = """
 This script manages the lifecycle of a .NET application with multiple microservices.\n
@@ -17,111 +16,6 @@ Features:
 
 """
 
-def create_migration_if_needed(container_name, service):
-    """Creates migration if there are changes in the model"""
-    from datetime import datetime
-
-    # Generate migration name with current date/time
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    migration_name = f"AutoMigration_{timestamp}"
-    
-    print(f"🔍 Checking if migration is needed for {service}...")
-    
-    try:
-        # Check for pending changes
-        result = subprocess.run(
-            [
-                "docker",
-                "exec",
-                container_name,
-                "dotnet",
-                "ef",
-                "migrations",
-                "has-pending-model-changes",
-            ],
-            check=False,
-            capture_output=True,
-            text=True,
-        )
-
-        # If there are pending changes (exit code 1) or no migrations at all
-        if result.returncode == 1:
-            print(f"📝 Creating new migration '{migration_name}' for {service}...")
-            
-            try:
-                subprocess.run(
-                    [
-                        "docker",
-                        "exec",
-                        container_name,
-                        "dotnet",
-                        "ef",
-                        "migrations",
-                        "add",
-                        migration_name,
-                    ],
-                    check=True,
-                    capture_output=True,
-                    text=True,
-                )
-                print(f"✅ Migration '{migration_name}' created successfully for {service}")
-                return True
-            except subprocess.CalledProcessError as error:
-                print(f"❌ Failed to create migration for {service}: {error}")
-                return False
-                
-        elif result.returncode == 0:
-            print(f"✅ No pending model changes for {service}")
-            return True
-            
-        else:
-            # If there are no migrations at all, create initial.
-            print(f"📝 Creating initial migration for {service}...")
-            try:
-                subprocess.run(
-                    [
-                        "docker",
-                        "exec",
-                        container_name,
-                        "dotnet",
-                        "ef",
-                        "migrations",
-                        "add",
-                        "InitialCreate",
-                    ],
-                    check=True,
-                    capture_output=True,
-                    text=True,
-                )
-                print(f"✅ Initial migration created successfully for {service}")
-                return True
-            except subprocess.CalledProcessError as error:
-                print(f"❌ Failed to create initial migration for {service}: {error}")
-                return False
-                
-    except Exception as error:
-        print(f"⚠️ Could not check migration status for {service}: {error}")
-        # Try to create migration anyway
-        try:
-            subprocess.run(
-                [
-                    "docker",
-                    "exec",
-                    container_name,
-                    "dotnet",
-                    "ef",
-                    "migrations",
-                    "add",
-                    migration_name,
-                ],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
-            print(f"✅ Migration '{migration_name}' created for {service}")
-            return True
-        except:
-            return False
 
 def get_connection_string(service_name):
     env_file = ".env"
@@ -162,7 +56,7 @@ def run_migrations():
 
     for service in os.listdir(services_dir):
         service_path = os.path.join(services_dir, service)
-        
+
         if not os.path.isdir(service_path):
             continue
 
@@ -184,52 +78,9 @@ def run_migrations():
             continue
 
         connection_string = get_connection_string(service)
+
         if connection_string is None:
             print(f"⚠️ Warning: connection string is not found for {service}. Skipping migrations.")
-            continue
-
-        # Check the container is running
-        container_name = service.lower()
-        try:
-            result = subprocess.run(
-                ["docker", "ps", "--filter", f"name={container_name}", "--format", "{{.Names}}"],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            if container_name not in result.stdout:
-                print(f"⚠️ Container {container_name} is not running. Skipping migrations for {service}.")
-                continue
-        except subprocess.CalledProcessError:
-            print(f"❌ Failed to check container status for {service}. Skipping.")
-            continue
-
-        # Check for DbContext presence inside the container
-        try:
-            result = subprocess.run(
-                [
-                    "docker",
-                    "exec",
-                    container_name,
-                    "dotnet",
-                    "ef",
-                    "dbcontext",
-                    "list",
-                ],
-                check=False,
-                capture_output=True,
-                text=True,
-            )
-            dbcontexts_output = (result.stdout or "") + (result.stderr or "")
-            has_dbcontext = result.returncode == 0 and any(
-                line.strip() and not line.lower().startswith("build") and line.strip() 
-                for line in dbcontexts_output.splitlines()
-            )
-            if not has_dbcontext:
-                print(f"⏭️  Skipping {service}: no DbContext found.")
-                continue
-        except Exception as list_error:
-            print(f"⚠️ Could not enumerate DbContexts for {service}: {list_error}. Skipping.")
             continue
 
         # Mask password for display
@@ -240,8 +91,33 @@ def run_migrations():
             )
         print(f"🔧 Using connection string for {service}: {masked}")
 
-        if not create_migration_if_needed(container_name, service):
-            print(f"❌ Failed to create migration for {service}. Skipping database update.")
+        env = os.environ.copy()
+        env[f"ConnectionStrings__{service}Db"] = connection_string
+
+        # Verify there is at least one DbContext. If not, skip this service.
+        try:
+            result = subprocess.run(
+                [
+                    "dotnet",
+                    "ef",
+                    "dbcontext",
+                    "list",
+                ],
+                cwd=service_path,
+                check=False,
+                env=env,
+                capture_output=True,
+                text=True,
+            )
+            dbcontexts_output = (result.stdout or "") + (result.stderr or "")
+            has_dbcontext = result.returncode == 0 and any(
+                line.strip() and not line.lower().startswith("build") for line in dbcontexts_output.splitlines()
+            )
+            if not has_dbcontext:
+                print(f"⏭️  Skipping {service}: no DbContext found.")
+                continue
+        except Exception as list_error:
+            print(f"⚠️ Could not enumerate DbContexts for {service}: {list_error}. Skipping.")
             continue
 
         print(f"🚀 Applying migrations for {service}...")
@@ -249,15 +125,14 @@ def run_migrations():
         try:
             subprocess.run(
                 [
-                    "docker",
-                    "exec",
-                    service.lower(),
                     "dotnet",
                     "ef",
                     "database",
                     "update",
                 ],
+                cwd=service_path,
                 check=True,
+                env=env,
             )
             print(f"✅ Migrations for {service} applied successfully.\n")
         except subprocess.CalledProcessError as error:

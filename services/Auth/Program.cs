@@ -6,9 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Npgsql;
-using DotNetEnv;
-
-Env.Load("../../.env");
 
 var builder = WebApplication.CreateBuilder(args);
 
