@@ -173,22 +173,80 @@ public static class BackendHandlers
     return Results.NoContent();
   }
 
-  public static async Task<IResult> GenerateTemplateData(Guid id, AppDbContext db, ContentService.ContentServiceClient client)
+  public static async Task<IResult> GenerateTemplateData(Guid id, AppDbContext db, ContentService.ContentServiceClient client, HttpContext context)
   {
     var template = await db.Templates.FindAsync(id);
     if (template is null) return Results.NotFound();
 
-    var request = new GenerateRequest
+    // Get user ID from JWT token
+    var userId = context.User.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(userId))
+    {
+      return Results.Unauthorized();
+    }
+
+    // Create a new GeneratedContent record in Backend database to track the generation request
+    var generatedContent = new GeneratedContent
+    {
+      Id = Guid.NewGuid(),
+      TemplateId = id,
+      ProjectId = template.RelatedProjectId,
+      EndpointPath = template.Path ?? "",
+      UserId = Guid.Parse(userId),
+      Status = "Pending",
+      CreatedAt = DateTimeOffset.UtcNow,
+      UpdatedAt = DateTimeOffset.UtcNow
+    };
+
+    // Store in Backend database
+    db.GeneratedContent.Add(generatedContent);
+    await db.SaveChangesAsync();
+    var request = new GenerateFromTemplateRequest
     {
       TemplateId = id.ToString(),
-      Schema = JsonSerializer.Serialize(template.Schema),
-      Path = template.Path ?? string.Empty,
+      UserId = userId
     };
 
     try
     {
       var response = await client.GenerateFromTemplateAsync(request);
-      return Results.Ok(response);
+      return Results.Ok(new
+      {
+        GeneratedContentId = generatedContent.Id,
+        ContentServiceResponse = response
+      });
+    }
+    catch (Exception)
+    {
+      return Results.StatusCode(StatusCodes.Status500InternalServerError);
+    }
+  }
+
+  public static async Task<IResult> GetTemplateInfo(Guid id, ContentService.ContentServiceClient client)
+  {
+    try
+    {
+      var request = new GetTemplateRequest
+      {
+        TemplateId = id.ToString()
+      };
+
+      var response = await client.GetTemplateAsync(request);
+      
+      if (!response.Success)
+      {
+        return Results.NotFound(new { Message = response.ErrorMessage });
+      }
+
+      return Results.Ok(new
+      {
+        TemplateId = response.TemplateId,
+        Name = response.Name,
+        Schema = response.Schema,
+        Path = response.Path,
+        ProjectId = response.ProjectId,
+        ProjectTitle = response.ProjectTitle
+      });
     }
     catch (Exception)
     {

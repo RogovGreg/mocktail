@@ -6,6 +6,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Gateway.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +24,7 @@ builder.Services
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not found")))
         };
     })
     .AddJwtBearer("ContentBearer", options =>
@@ -37,12 +38,22 @@ builder.Services
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:ContentAudience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not found")))
         };
     });
 
 // This line was missing and caused the error
 builder.Services.AddAuthorization();
+
+// Add HTTP client for API token validation
+builder.Services.AddHttpClient("AuthService", client =>
+{
+    client.BaseAddress = new Uri("http://auth:80");
+});
+
+// Add API Token authentication
+builder.Services.AddAuthentication("ApiToken")
+    .AddScheme<ApiTokenAuthenticationSchemeOptions, ApiTokenAuthenticationHandler>("ApiToken", options => { });
 
 // Add Ocelot
 builder.Services.AddOcelot(builder.Configuration);

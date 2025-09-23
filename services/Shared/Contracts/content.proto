@@ -7,6 +7,8 @@ package content;
 service ContentService {
   rpc ListContent (ListContentRequest) returns (ListContentResponse);
   rpc CreateContent (CreateContentRequest) returns (CreateContentResponse);
+  rpc GenerateFromTemplate (GenerateFromTemplateRequest) returns (GenerateFromTemplateResponse);
+  rpc GetTemplate (GetTemplateRequest) returns (GetTemplateResponse);
 }
 
 message ContentItem {
@@ -31,4 +33,34 @@ message CreateContentRequest {
 
 message CreateContentResponse {
   ContentItem item = 1;
+}
+
+// New messages for template-based generation flow
+message GenerateFromTemplateRequest {
+  string template_id = 1;  // Template ID from Backend service
+  string user_id = 2;      // User who initiated the generation
+}
+
+message GenerateFromTemplateResponse {
+  string content_id = 1;     // ID of the generated content
+  string status = 2;         // Status: "Pending", "Completed", "Failed"
+  string message = 3;        // Status message or error details
+  string template_id = 4;    // Original template ID
+  string project_id = 5;     // Project ID for the generated content
+  string endpoint_path = 6;  // Endpoint path for serving the content
+}
+
+message GetTemplateRequest {
+  string template_id = 1;  // Template ID to fetch
+}
+
+message GetTemplateResponse {
+  string template_id = 1;
+  string name = 2;
+  string schema = 3;        // JSON schema for generation
+  string path = 4;          // Endpoint path
+  string project_id = 5;    // Project ID
+  string project_title = 6; // Project title for reference
+  bool success = 7;         // Whether template was found
+  string error_message = 8; // Error message if template not found
 }

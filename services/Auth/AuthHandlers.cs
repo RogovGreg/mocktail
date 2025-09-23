@@ -1,4 +1,5 @@
 using Auth.Entities;
+using Auth.Services;
 using Microsoft.AspNetCore.Identity;
 using MyService.Entities;
 
@@ -165,6 +166,9 @@ public static class AuthHandlers
             return Results.Unauthorized();
 
         var userName = context.User.Identity.Name;
+        if (string.IsNullOrEmpty(userName))
+            return Results.Unauthorized();
+            
         var user = await userManager.FindByNameAsync(userName);
         if (user == null)
             return Results.NotFound();
@@ -189,6 +193,9 @@ public static class AuthHandlers
             return Results.Unauthorized();
 
         var userName = context.User.Identity.Name;
+        if (string.IsNullOrEmpty(userName))
+            return Results.Unauthorized();
+            
         var user = await userManager.FindByNameAsync(userName);
         if (user == null)
             return Results.NotFound();
@@ -208,6 +215,9 @@ public static class AuthHandlers
             return Results.Unauthorized();
 
         var userName = context.User.Identity.Name;
+        if (string.IsNullOrEmpty(userName))
+            return Results.Unauthorized();
+            
         var user = await userManager.FindByNameAsync(userName);
         if (user == null)
             return Results.NotFound();
@@ -232,6 +242,9 @@ public static class AuthHandlers
             return Results.Unauthorized();
 
         var userName = context.User.Identity.Name;
+        if (string.IsNullOrEmpty(userName))
+            return Results.Unauthorized();
+            
         var user = await userManager.FindByNameAsync(userName);
         if (user == null)
             return Results.NotFound();
@@ -254,6 +267,9 @@ public static class AuthHandlers
             return Results.Unauthorized();
 
         var userName = context.User.Identity.Name;
+        if (string.IsNullOrEmpty(userName))
+            return Results.Unauthorized();
+            
         var user = await userManager.FindByNameAsync(userName);
         if (user == null)
             return Results.NotFound();
@@ -284,8 +300,141 @@ public static class AuthHandlers
             timestamp = DateTime.UtcNow.ToString("o")
         });
     }
+
+    // API Token handlers
+    public static async Task<IResult> CreateApiTokenHandler(
+        HttpContext context,
+        CreateApiTokenRequest request,
+        IApiTokenService apiTokenService
+    )
+    {
+        if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
+            return Results.Unauthorized();
+
+        var userId = context.User.FindFirst("sub")?.Value;
+        if (userId == null)
+            return Results.Unauthorized();
+
+        var result = await apiTokenService.CreateTokenAsync(
+            userId, 
+            request.ProjectId, 
+            request.Name, 
+            request.ExpiresAt);
+
+        if (!result.Success)
+        {
+            return Results.BadRequest(new { Message = result.ErrorMessage });
+        }
+
+        return Results.Ok(new
+        {
+            Token = result.Token,
+            TokenId = result.TokenId,
+            Name = request.Name,
+            ProjectId = request.ProjectId,
+            ExpiresAt = request.ExpiresAt
+        });
+    }
+
+    public static async Task<IResult> GetApiTokensHandler(
+        HttpContext context,
+        IApiTokenService apiTokenService
+    )
+    {
+        if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
+            return Results.Unauthorized();
+
+        var userId = context.User.FindFirst("sub")?.Value;
+        if (userId == null)
+            return Results.Unauthorized();
+
+        var tokens = await apiTokenService.GetUserTokensAsync(userId);
+        
+        return Results.Ok(tokens.Select(t => new
+        {
+            t.Id,
+            t.Name,
+            t.ProjectId,
+            t.CreatedAt,
+            t.ExpiresAt,
+            t.IsActive
+        }));
+    }
+
+    public static async Task<IResult> DeleteApiTokenHandler(
+        HttpContext context,
+        Guid tokenId,
+        IApiTokenService apiTokenService
+    )
+    {
+        if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
+            return Results.Unauthorized();
+
+        var userId = context.User.FindFirst("sub")?.Value;
+        if (userId == null)
+            return Results.Unauthorized();
+
+        var success = await apiTokenService.DeleteTokenAsync(tokenId, userId);
+        if (!success)
+        {
+            return Results.NotFound();
+        }
+
+        return Results.Ok(new { Message = "API token deleted successfully" });
+    }
+
+    public static async Task<IResult> RevokeApiTokenHandler(
+        HttpContext context,
+        RevokeApiTokenRequest request,
+        IApiTokenService apiTokenService
+    )
+    {
+        if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
+            return Results.Unauthorized();
+
+        var userId = context.User.FindFirst("sub")?.Value;
+        if (userId == null)
+            return Results.Unauthorized();
+
+        var success = await apiTokenService.RevokeTokenAsync(request.Token);
+        if (!success)
+        {
+            return Results.NotFound();
+        }
+
+        return Results.Ok(new { Message = "API token revoked successfully" });
+    }
+
+    public static async Task<IResult> ValidateApiTokenHandler(
+        HttpContext context,
+        IApiTokenService apiTokenService
+    )
+    {
+        var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
+        if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+        {
+            return Results.Unauthorized();
+        }
+
+        var token = authHeader.Substring("Bearer ".Length);
+        var result = await apiTokenService.ValidateTokenAsync(token);
+
+        if (!result.IsValid)
+        {
+            return Results.Unauthorized();
+        }
+
+        return Results.Ok(new
+        {
+            IsValid = true,
+            UserId = result.UserId,
+            ProjectId = result.ProjectId
+        });
+    }
 }
 
 public record RegisterRequest(string Email, string Password);
 public record LoginRequest(string Email, string Password);
 public record RefreshTokenRequest(string UserId);
+public record CreateApiTokenRequest(Guid ProjectId, string Name, DateTimeOffset? ExpiresAt = null);
+public record RevokeApiTokenRequest(string Token);

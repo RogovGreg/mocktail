@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option csharp_namespace = "Generator.Protos";
+
+package generator;
+
+service GeneratorService {
+  rpc GenerateContent (GenerateContentRequest) returns (GenerateContentResponse);
+}
+
+message GenerateContentRequest {
+  string schema = 1;  // JSON schema for content generation
+}
+
+message GenerateContentResponse {
+  bool success = 1;
+  string generated_data = 2;  // Generated JSON content
+  string error_message = 3;   // Error message if generation failed
+}

@@ -79,7 +79,8 @@ app.MapGet("/templates/{id:guid}", BackendHandlers.GetTemplateById);
 app.MapPost("/templates", BackendHandlers.CreateTemplate);
 app.MapPut("/templates/{id:guid}", BackendHandlers.UpdateTemplate);
 app.MapDelete("/templates/{id:guid}", BackendHandlers.DeleteTemplate);
-app.MapPost("/templates/{id:guid}/generate", BackendHandlers.GenerateTemplateData);
+app.MapPost("/templates/{id:guid}/generate", BackendHandlers.GenerateTemplateData).RequireAuthorization();
+app.MapGet("/templates/{id:guid}/info", BackendHandlers.GetTemplateInfo);
 
 // Content endpoints that communicate with Content service via gRPC
 app.MapGet("/content", async (string? userId, ContentService.ContentServiceClient client) =>

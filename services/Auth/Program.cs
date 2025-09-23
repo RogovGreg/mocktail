@@ -1,5 +1,6 @@
 using Auth.Data;
 using Auth.Entities;
+using Auth.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -56,6 +57,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<IApiTokenService, ApiTokenService>();
 
 var app = builder.Build();
 
@@ -91,8 +93,17 @@ app.MapPost("/logout", AuthHandlers.LogoutHandler).RequireAuthorization();
 app.MapPost("/refresh-token", AuthHandlers.RefreshTokenHandler).AllowAnonymous();
 app.MapGet("/profile", AuthHandlers.ProfileHandler).RequireAuthorization();
 app.MapPatch("/profile/update", AuthHandlers.ProfileUpdateHandler).RequireAuthorization();
+app.MapPost("/bookmarks", AuthHandlers.AddBookmarkHandler).RequireAuthorization();
+app.MapDelete("/bookmarks/{bookmarkId:guid}", AuthHandlers.RemoveBookmarkHandler).RequireAuthorization();
 app.MapGet("/check-status", AuthHandlers.CheckStatusHandler).RequireAuthorization();
 app.MapGet("/check-availability", AuthHandlers.CheckAvailability).RequireAuthorization();
+
+// API Token routes
+app.MapPost("/api-tokens", AuthHandlers.CreateApiTokenHandler).RequireAuthorization();
+app.MapGet("/api-tokens", AuthHandlers.GetApiTokensHandler).RequireAuthorization();
+app.MapDelete("/api-tokens/{tokenId:guid}", AuthHandlers.DeleteApiTokenHandler).RequireAuthorization();
+app.MapPost("/api-tokens/revoke", AuthHandlers.RevokeApiTokenHandler).RequireAuthorization();
+app.MapPost("/api-tokens/validate", AuthHandlers.ValidateApiTokenHandler).AllowAnonymous();
 
 app.Urls.Add("http://*:80");
 app.Run();

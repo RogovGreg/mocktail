@@ -53,6 +53,26 @@
       "DisabledAuthenticationOptions": {
         "AuthenticationProviderKey": "ContentBearer"
       }
+    },
+    {
+      "DownstreamPathTemplate": "/api/mock/{projectId}/{endpointPath}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "content", "Port": 80 }],
+      "UpstreamPathTemplate": "/v1/mock/{projectId}/{endpointPath}",
+      "UpstreamHttpMethod": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "ApiToken"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/generated/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "content", "Port": 80 }],
+      "UpstreamPathTemplate": "/v1/generated/{everything}",
+      "UpstreamHttpMethod": ["GET"],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     }
   ],
   "GlobalConfiguration": {

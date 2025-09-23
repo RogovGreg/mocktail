@@ -22,6 +22,8 @@ namespace MyService.Data
 
     public DbSet<Template> Templates { get; set; } = null!;
 
+    public DbSet<GeneratedContent> GeneratedContent { get; set; } = null!;
+
     public async Task<int> SaveProjectChangesAsync(CancellationToken ct = default)
     {
       var now = DateTimeOffset.UtcNow.UtcDateTruncateToMilliseconds();
