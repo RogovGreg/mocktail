@@ -37,6 +37,8 @@ services:
       context: services/Content
       dockerfile: Docker/Dockerfile
     container_name: content
+    environment:
+      - ConnectionStrings__ContentDb=${ConnectionStrings__ContentDb}
 
   generator:
     build:

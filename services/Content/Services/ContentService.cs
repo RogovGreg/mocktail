@@ -80,21 +80,7 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
                 };
             }
 
-            // Generate content using Generator service
-            var generationResult = await _generatorService.GenerateContentAsync(templateData.Schema);
-            if (!generationResult.Success)
-            {
-                return new GenerateFromTemplateResponse
-                {
-                    Status = "Failed",
-                    Message = generationResult.ErrorMessage ?? "Content generation failed",
-                    TemplateId = request.TemplateId,
-                    ProjectId = templateData.ProjectId.ToString(),
-                    EndpointPath = templateData.Path
-                };
-            }
-
-            // Store generated content in database
+            // Create pending content entry first
             var generatedContent = new GeneratedContent
             {
                 Id = Guid.NewGuid(),
@@ -102,23 +88,67 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
                 ProjectId = templateData.ProjectId,
                 EndpointPath = templateData.Path,
                 UserId = userId,
-                GeneratedData = generationResult.GeneratedData!,
+                GeneratedData = "{}", // Empty JSON object initially
                 Schema = templateData.Schema,
-                Status = "Completed",
+                Status = "Pending",
                 TemplateName = templateData.Name,
-                ProjectTitle = templateData.ProjectTitle
+                ProjectTitle = templateData.ProjectTitle,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
             };
 
             await _generatedContentRepository.AddAsync(generatedContent);
-
-            _logger.LogInformation("Successfully generated and stored content {ContentId} for template {TemplateId}", 
+            _logger.LogInformation("Created pending content entry {ContentId} for template {TemplateId}", 
                 generatedContent.Id, request.TemplateId);
 
+            // Start generation asynchronously
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    _logger.LogInformation("Starting async generation for content {ContentId}", generatedContent.Id);
+                    
+                    // Generate content using Generator service
+                    var generationResult = await _generatorService.GenerateContentAsync(templateData.Schema);
+                    
+                    if (generationResult.Success)
+                    {
+                        // Update the content with generated data
+                        await _generatedContentRepository.UpdateStatusAndDataAsync(generatedContent.Id, "Completed", generationResult.GeneratedData!);
+                        
+                        _logger.LogInformation("Successfully generated and updated content {ContentId}", generatedContent.Id);
+                    }
+                    else
+                    {
+                        // Update status to Failed
+                        await _generatedContentRepository.UpdateStatusAndDataAsync(generatedContent.Id, "Failed", "{}");
+                        
+                        _logger.LogError("Failed to generate content {ContentId}: {Error}", 
+                            generatedContent.Id, generationResult.ErrorMessage);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during async generation for content {ContentId}", generatedContent.Id);
+                    
+                    try
+                    {
+                        // Update status to Failed
+                        await _generatedContentRepository.UpdateStatusAndDataAsync(generatedContent.Id, "Failed", "{}");
+                    }
+                    catch (Exception updateEx)
+                    {
+                        _logger.LogError(updateEx, "Failed to update status to Failed for content {ContentId}", generatedContent.Id);
+                    }
+                }
+            });
+
+            // Return immediately with pending status
             return new GenerateFromTemplateResponse
             {
                 ContentId = generatedContent.Id.ToString(),
-                Status = "Completed",
-                Message = "Content generated successfully",
+                Status = "Pending",
+                Message = "Content generation started. Check status later.",
                 TemplateId = request.TemplateId,
                 ProjectId = templateData.ProjectId.ToString(),
                 EndpointPath = templateData.Path
@@ -176,6 +206,54 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
         {
             _logger.LogError(ex, "Error fetching template {TemplateId}", request.TemplateId);
             return new GetTemplateResponse
+            {
+                Success = false,
+                ErrorMessage = $"Internal error: {ex.Message}"
+            };
+        }
+    }
+
+    public override async Task<GetGeneratedContentStatusResponse> GetGeneratedContentStatus(GetGeneratedContentStatusRequest request, ServerCallContext context)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching status for generated content {ContentId}", request.ContentId);
+
+            if (!Guid.TryParse(request.ContentId, out var contentId))
+            {
+                return new GetGeneratedContentStatusResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Invalid content ID format"
+                };
+            }
+
+            var content = await _generatedContentRepository.GetByIdAsync(contentId);
+            if (content == null)
+            {
+                return new GetGeneratedContentStatusResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Generated content not found"
+                };
+            }
+
+            return new GetGeneratedContentStatusResponse
+            {
+                ContentId = content.Id.ToString(),
+                Status = content.Status,
+                TemplateId = content.TemplateId.ToString(),
+                ProjectId = content.ProjectId.ToString(),
+                EndpointPath = content.EndpointPath,
+                CreatedAt = content.CreatedAt.ToUnixTimeMilliseconds(),
+                UpdatedAt = content.UpdatedAt.ToUnixTimeMilliseconds(),
+                Success = true
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching generated content status {ContentId}", request.ContentId);
+            return new GetGeneratedContentStatusResponse
             {
                 Success = false,
                 ErrorMessage = $"Internal error: {ex.Message}"

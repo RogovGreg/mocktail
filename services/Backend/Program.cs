@@ -6,6 +6,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Http.Json;
 using Backend.Serialization;
+using Shared.Content.Protos;
+using Microsoft.Extensions.DependencyInjection;
+using Grpc.Net.Client;
+using Grpc.Net.ClientFactory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +20,11 @@ builder.Configuration
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
+// Add gRPC client for Content service
+builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>
+{
+    options.Address = new Uri("http://content:8080");
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -77,6 +86,8 @@ app.MapPut("/templates/{id:guid}", BackendHandlers.UpdateTemplate);
 app.MapDelete("/templates/{id:guid}", BackendHandlers.DeleteTemplate);
 app.MapPost("/templates/{id:guid}/generate", BackendHandlers.GenerateTemplateData).RequireAuthorization();
 
+// Generated content endpoints
+app.MapGet("/generated-content/{id:guid}/status", BackendHandlers.GetGeneratedContentStatus).RequireAuthorization();
 
 app.MapGet("/check-availability", () =>
 {

@@ -70,6 +70,19 @@ public class GeneratedContentRepository : IGeneratedContentRepository
         return content;
     }
 
+    public async Task UpdateStatusAndDataAsync(Guid id, string status, string generatedData)
+    {
+        var content = await _context.GeneratedContent.FindAsync(id);
+        if (content != null)
+        {
+            content.Status = status;
+            content.GeneratedData = generatedData;
+            content.UpdatedAt = DateTimeOffset.UtcNow;
+            
+            await _context.SaveChangesAsync();
+        }
+    }
+
     public async Task<bool> DeleteAsync(Guid id)
     {
         var content = await _context.GeneratedContent.FindAsync(id);

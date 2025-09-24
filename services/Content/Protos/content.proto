@@ -5,10 +5,36 @@ option csharp_namespace = "Shared.Content.Protos";
 package content;
 
 service ContentService {
+  rpc ListContent (ListContentRequest) returns (ListContentResponse);
+  rpc CreateContent (CreateContentRequest) returns (CreateContentResponse);
   rpc GenerateFromTemplate (GenerateFromTemplateRequest) returns (GenerateFromTemplateResponse);
   rpc GetTemplate (GetTemplateRequest) returns (GetTemplateResponse);
+  rpc GetGeneratedContentStatus (GetGeneratedContentStatusRequest) returns (GetGeneratedContentStatusResponse);
 }
 
+message ContentItem {
+  string id = 1;
+  string user_id = 2;
+  string content_body = 3;
+  string created_at = 4;
+}
+
+message ListContentRequest {
+  string user_id = 1; // Optional filter by user
+}
+
+message ListContentResponse {
+  repeated ContentItem items = 1;
+}
+
+message CreateContentRequest {
+  string user_id = 1;
+  string content_body = 2;
+}
+
+message CreateContentResponse {
+  ContentItem item = 1;
+}
 
 // New messages for template-based generation flow
 message GenerateFromTemplateRequest {
@@ -43,4 +69,20 @@ message GetTemplateResponse {
   string project_title = 6; // Project title for reference
   bool success = 7;         // Whether template was found
   string error_message = 8; // Error message if template not found
+}
+
+message GetGeneratedContentStatusRequest {
+  string content_id = 1;   // Generated content ID to check status for
+}
+
+message GetGeneratedContentStatusResponse {
+  string content_id = 1;    // Generated content ID
+  string status = 2;        // Status: "Pending", "Completed", "Failed"
+  string template_id = 3;   // Template ID
+  string project_id = 4;   // Project ID
+  string endpoint_path = 5; // Endpoint path
+  int64 created_at = 6;     // Creation timestamp (Unix milliseconds)
+  int64 updated_at = 7;     // Last update timestamp (Unix milliseconds)
+  bool success = 8;         // Whether content was found
+  string error_message = 9; // Error message if content not found
 }

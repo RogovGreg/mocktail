@@ -11,6 +11,7 @@ public interface IGeneratedContentRepository
     Task<IEnumerable<GeneratedContent>> GetByTemplateIdAsync(Guid templateId);
     Task<GeneratedContent> AddAsync(GeneratedContent content);
     Task<GeneratedContent> UpdateAsync(GeneratedContent content);
+    Task UpdateStatusAndDataAsync(Guid id, string status, string generatedData);
     Task<bool> DeleteAsync(Guid id);
     Task<bool> ExistsAsync(Guid projectId, string endpointPath);
 }

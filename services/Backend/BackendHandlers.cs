@@ -192,30 +192,12 @@ public static class BackendHandlers
       return Results.Unauthorized();
     }
 
-    // Create a new GeneratedContent record in Backend database to track the generation request
-    var generatedContent = new GeneratedContent
-    {
-      Id = Guid.NewGuid(),
-      TemplateId = id,
-      ProjectId = template.RelatedProjectId,
-      EndpointPath = template.Path ?? "",
-      UserId = Guid.Parse(userId),
-      Status = "Pending",
-      CreatedAt = DateTimeOffset.UtcNow,
-      UpdatedAt = DateTimeOffset.UtcNow
-    };
-
     // Get project title
     Console.WriteLine($"Looking up project {template.RelatedProjectId}");
     var project = await db.Projects.FindAsync(template.RelatedProjectId);
     Console.WriteLine($"Project found: {project?.Title ?? "Unknown Project"}");
     var projectTitle = project?.Title ?? "Unknown Project";
 
-    // Store in Backend database
-    Console.WriteLine("Adding GeneratedContent to database");
-    db.GeneratedContent.Add(generatedContent);
-    Console.WriteLine("Saving changes to database");
-    await db.SaveChangesAsync();
     Console.WriteLine("Creating GenerateFromTemplateRequest");
     var request = new GenerateFromTemplateRequest
     {
@@ -232,16 +214,55 @@ public static class BackendHandlers
     {
       Console.WriteLine($"Calling Content service with request: TemplateId={request.TemplateId}, UserId={request.UserId}");
       var response = await client.GenerateFromTemplateAsync(request);
-      Console.WriteLine($"Content service responded successfully");
+      Console.WriteLine($"Content service responded: Status={response.Status}");
+      
       return Results.Ok(new
       {
-        GeneratedContentId = generatedContent.Id,
-        ContentServiceResponse = response
+        ContentId = response.ContentId,
+        Status = response.Status,
+        Message = response.Message,
+        TemplateId = response.TemplateId,
+        ProjectId = response.ProjectId,
+        EndpointPath = response.EndpointPath
       });
     }
     catch (Exception ex)
     {
       Console.WriteLine($"Error calling Content service: {ex.Message}");
+      return Results.StatusCode(StatusCodes.Status500InternalServerError);
+    }
+  }
+
+  public static async Task<IResult> GetGeneratedContentStatus(Guid id, ContentService.ContentServiceClient client)
+  {
+    try
+    {
+      var request = new GetGeneratedContentStatusRequest
+      {
+        ContentId = id.ToString()
+      };
+
+      var response = await client.GetGeneratedContentStatusAsync(request);
+      
+      if (!response.Success)
+      {
+        return Results.NotFound(new { Message = response.ErrorMessage });
+      }
+
+      return Results.Ok(new
+      {
+        ContentId = response.ContentId,
+        Status = response.Status,
+        TemplateId = response.TemplateId,
+        ProjectId = response.ProjectId,
+        EndpointPath = response.EndpointPath,
+        CreatedAt = response.CreatedAt,
+        UpdatedAt = response.UpdatedAt
+      });
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine($"Error getting generated content status: {ex.Message}");
       return Results.StatusCode(StatusCodes.Status500InternalServerError);
     }
   }
