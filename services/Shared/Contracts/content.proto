@@ -37,8 +37,13 @@ message CreateContentResponse {
 
 // New messages for template-based generation flow
 message GenerateFromTemplateRequest {
-  string template_id = 1;  // Template ID from Backend service
-  string user_id = 2;      // User who initiated the generation
+  string template_id = 1;     // Template ID from Backend service
+  string user_id = 2;         // User who initiated the generation
+  string template_name = 3;   // Template name
+  string schema = 4;          // JSON schema for generation
+  string path = 5;            // Endpoint path
+  string project_id = 6;      // Project ID
+  string project_title = 7;   // Project title for reference
 }
 
 message GenerateFromTemplateResponse {

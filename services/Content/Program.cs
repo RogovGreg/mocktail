@@ -29,7 +29,6 @@ builder.Services.AddDbContext<ContentDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 // Register repositories
-builder.Services.AddScoped<IContentRepository, InMemoryContentRepository>();
 builder.Services.AddScoped<IGeneratedContentRepository, GeneratedContentRepository>();
 
 // Register HTTP clients for external services
@@ -49,7 +48,6 @@ builder.Services.AddGrpcClient<Generator.Protos.GeneratorService.GeneratorServic
 builder.Services.Configure<BackendServiceOptions>(builder.Configuration.GetSection("BackendService"));
 
 // Register services
-builder.Services.AddScoped<IBackendService, BackendService>();
 builder.Services.AddScoped<IGeneratorService, GeneratorService>();
 
 // Configure Kestrel specifically for gRPC
@@ -86,12 +84,6 @@ app.MapGet("/check-availability", () =>
     });
 });
 
-// REST API endpoint to list content with optional userId filter
-app.MapGet("/api/content", (string? userId, IContentRepository repository) =>
-{
-    var items = string.IsNullOrEmpty(userId) ? repository.GetAll() : repository.GetByUserId(userId);
-    return Results.Json(items);
-});
 
 // Mock API endpoints for serving generated content
 app.MapGet("/api/mock/{projectId}/{endpointPath}", async (string projectId, string endpointPath, IGeneratedContentRepository repository) =>
@@ -152,8 +144,3 @@ app.Urls.Add("http://*:80");
 app.Urls.Add("http://*:8080");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

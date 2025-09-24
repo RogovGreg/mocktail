@@ -5,40 +5,20 @@ option csharp_namespace = "Shared.Content.Protos";
 package content;
 
 service ContentService {
-  rpc ListContent (ListContentRequest) returns (ListContentResponse);
-  rpc CreateContent (CreateContentRequest) returns (CreateContentResponse);
   rpc GenerateFromTemplate (GenerateFromTemplateRequest) returns (GenerateFromTemplateResponse);
   rpc GetTemplate (GetTemplateRequest) returns (GetTemplateResponse);
 }
 
-message ContentItem {
-  string id = 1;
-  string user_id = 2;
-  string content_body = 3;
-  string created_at = 4;
-}
-
-message ListContentRequest {
-  string user_id = 1; // Optional filter by user
-}
-
-message ListContentResponse {
-  repeated ContentItem items = 1;
-}
-
-message CreateContentRequest {
-  string user_id = 1;
-  string content_body = 2;
-}
-
-message CreateContentResponse {
-  ContentItem item = 1;
-}
 
 // New messages for template-based generation flow
 message GenerateFromTemplateRequest {
-  string template_id = 1;  // Template ID from Backend service
-  string user_id = 2;      // User who initiated the generation
+  string template_id = 1;     // Template ID from Backend service
+  string user_id = 2;         // User who initiated the generation
+  string template_name = 3;   // Template name
+  string schema = 4;          // JSON schema for generation
+  string path = 5;            // Endpoint path
+  string project_id = 6;      // Project ID
+  string project_title = 7;   // Project title for reference
 }
 
 message GenerateFromTemplateResponse {

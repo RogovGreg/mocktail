@@ -6,23 +6,20 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Http.Json;
 using Backend.Serialization;
-using Shared.Content.Protos;
-using Microsoft.Extensions.DependencyInjection;
-using Grpc.Net.Client;
-using Grpc.Net.ClientFactory;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add gRPC client for Content service
-builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>
-{
-    options.Address = new Uri("http://content:8080");
-});
+// Add configuration files
+builder.Configuration
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = "http://auth";
         options.RequireHttpsMetadata = false;
 
         options.TokenValidationParameters = new TokenValidationParameters
@@ -42,7 +39,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
-builder.Configuration.AddEnvironmentVariables();
 
 var connectionString = builder.Configuration.GetConnectionString("BackendDb");
 if (string.IsNullOrWhiteSpace(connectionString))
@@ -80,18 +76,7 @@ app.MapPost("/templates", BackendHandlers.CreateTemplate);
 app.MapPut("/templates/{id:guid}", BackendHandlers.UpdateTemplate);
 app.MapDelete("/templates/{id:guid}", BackendHandlers.DeleteTemplate);
 app.MapPost("/templates/{id:guid}/generate", BackendHandlers.GenerateTemplateData).RequireAuthorization();
-app.MapGet("/templates/{id:guid}/info", BackendHandlers.GetTemplateInfo);
 
-// Content endpoints that communicate with Content service via gRPC
-app.MapGet("/content", async (string? userId, ContentService.ContentServiceClient client) =>
-    await ContentHandlers.GetContent(userId ?? "", client));
-
-// Support path parameter variant: /content/{userId}
-app.MapGet("/content/{userId}", async (string userId, ContentService.ContentServiceClient client) =>
-    await ContentHandlers.GetContent(userId, client));
-
-app.MapPost("/content", async (CreateContentRequest request, ContentService.ContentServiceClient client) =>
-    await ContentHandlers.CreateContent(request, client));
 
 app.MapGet("/check-availability", () =>
 {

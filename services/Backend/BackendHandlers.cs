@@ -175,11 +175,18 @@ public static class BackendHandlers
 
   public static async Task<IResult> GenerateTemplateData(Guid id, AppDbContext db, ContentService.ContentServiceClient client, HttpContext context)
   {
+    Console.WriteLine($"GenerateTemplateData called for template ID: {id}");
     var template = await db.Templates.FindAsync(id);
-    if (template is null) return Results.NotFound();
+    if (template is null) 
+    {
+      Console.WriteLine($"Template {id} not found");
+      return Results.NotFound();
+    }
+    Console.WriteLine($"Template {id} found: {template.Name}");
 
     // Get user ID from JWT token
-    var userId = context.User.FindFirst("sub")?.Value;
+    var userId = context.User.FindFirst("sub")?.Value ?? 
+                 context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
     if (string.IsNullOrEmpty(userId))
     {
       return Results.Unauthorized();
@@ -198,59 +205,45 @@ public static class BackendHandlers
       UpdatedAt = DateTimeOffset.UtcNow
     };
 
+    // Get project title
+    Console.WriteLine($"Looking up project {template.RelatedProjectId}");
+    var project = await db.Projects.FindAsync(template.RelatedProjectId);
+    Console.WriteLine($"Project found: {project?.Title ?? "Unknown Project"}");
+    var projectTitle = project?.Title ?? "Unknown Project";
+
     // Store in Backend database
+    Console.WriteLine("Adding GeneratedContent to database");
     db.GeneratedContent.Add(generatedContent);
+    Console.WriteLine("Saving changes to database");
     await db.SaveChangesAsync();
+    Console.WriteLine("Creating GenerateFromTemplateRequest");
     var request = new GenerateFromTemplateRequest
     {
       TemplateId = id.ToString(),
-      UserId = userId
+      UserId = userId,
+      TemplateName = template.Name,
+      Schema = template.Schema,
+      Path = template.Path ?? "",
+      ProjectId = template.RelatedProjectId.ToString(),
+      ProjectTitle = projectTitle
     };
 
     try
     {
+      Console.WriteLine($"Calling Content service with request: TemplateId={request.TemplateId}, UserId={request.UserId}");
       var response = await client.GenerateFromTemplateAsync(request);
+      Console.WriteLine($"Content service responded successfully");
       return Results.Ok(new
       {
         GeneratedContentId = generatedContent.Id,
         ContentServiceResponse = response
       });
     }
-    catch (Exception)
+    catch (Exception ex)
     {
+      Console.WriteLine($"Error calling Content service: {ex.Message}");
       return Results.StatusCode(StatusCodes.Status500InternalServerError);
     }
   }
 
-  public static async Task<IResult> GetTemplateInfo(Guid id, ContentService.ContentServiceClient client)
-  {
-    try
-    {
-      var request = new GetTemplateRequest
-      {
-        TemplateId = id.ToString()
-      };
-
-      var response = await client.GetTemplateAsync(request);
-      
-      if (!response.Success)
-      {
-        return Results.NotFound(new { Message = response.ErrorMessage });
-      }
-
-      return Results.Ok(new
-      {
-        TemplateId = response.TemplateId,
-        Name = response.Name,
-        Schema = response.Schema,
-        Path = response.Path,
-        ProjectId = response.ProjectId,
-        ProjectTitle = response.ProjectTitle
-      });
-    }
-    catch (Exception)
-    {
-      return Results.StatusCode(StatusCodes.Status500InternalServerError);
-    }
-  }
 }

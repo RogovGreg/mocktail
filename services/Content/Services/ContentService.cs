@@ -8,20 +8,17 @@ namespace Content.Services;
 public class ContentServiceImpl : ContentService.ContentServiceBase
 {
     private readonly ILogger<ContentServiceImpl> _logger;
-    private readonly IContentRepository _repository;
     private readonly IGeneratedContentRepository _generatedContentRepository;
     private readonly IBackendService _backendService;
     private readonly IGeneratorService _generatorService;
 
     public ContentServiceImpl(
         ILogger<ContentServiceImpl> logger, 
-        IContentRepository repository,
         IGeneratedContentRepository generatedContentRepository,
         IBackendService backendService,
         IGeneratorService generatorService)
     {
         _logger = logger;
-        _repository = repository;
         _generatedContentRepository = generatedContentRepository;
         _backendService = backendService;
         _generatorService = generatorService;
@@ -55,37 +52,36 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
                 };
             }
 
-            // Fetch template from Backend service
-            var template = await _backendService.GetTemplateAsync(templateId);
-            if (template == null)
+            // Use template data from the request instead of fetching from Backend
+            var templateData = new
             {
-                return new GenerateFromTemplateResponse
-                {
-                    Status = "Failed",
-                    Message = "Template not found",
-                    TemplateId = request.TemplateId
-                };
-            }
+                Id = templateId,
+                Name = request.TemplateName,
+                Schema = request.Schema,
+                Path = request.Path,
+                ProjectId = Guid.Parse(request.ProjectId),
+                ProjectTitle = request.ProjectTitle
+            };
 
             // Check if content already exists for this project and endpoint
-            var existingContent = await _generatedContentRepository.GetByProjectAndPathAsync(template.ProjectId, template.Path ?? "");
+            var existingContent = await _generatedContentRepository.GetByProjectAndPathAsync(templateData.ProjectId, templateData.Path);
             if (existingContent != null)
             {
                 _logger.LogInformation("Content already exists for project {ProjectId} and path {Path}", 
-                    template.ProjectId, template.Path);
+                    templateData.ProjectId, templateData.Path);
                 return new GenerateFromTemplateResponse
                 {
                     ContentId = existingContent.Id.ToString(),
                     Status = "AlreadyExists",
                     Message = "Content already exists for this template",
                     TemplateId = request.TemplateId,
-                    ProjectId = template.ProjectId.ToString(),
-                    EndpointPath = template.Path ?? ""
+                    ProjectId = templateData.ProjectId.ToString(),
+                    EndpointPath = templateData.Path
                 };
             }
 
             // Generate content using Generator service
-            var generationResult = await _generatorService.GenerateContentAsync(template.Schema);
+            var generationResult = await _generatorService.GenerateContentAsync(templateData.Schema);
             if (!generationResult.Success)
             {
                 return new GenerateFromTemplateResponse
@@ -93,8 +89,8 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
                     Status = "Failed",
                     Message = generationResult.ErrorMessage ?? "Content generation failed",
                     TemplateId = request.TemplateId,
-                    ProjectId = template.ProjectId.ToString(),
-                    EndpointPath = template.Path ?? ""
+                    ProjectId = templateData.ProjectId.ToString(),
+                    EndpointPath = templateData.Path
                 };
             }
 
@@ -103,14 +99,14 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
             {
                 Id = Guid.NewGuid(),
                 TemplateId = templateId,
-                ProjectId = template.ProjectId,
-                EndpointPath = template.Path ?? "",
+                ProjectId = templateData.ProjectId,
+                EndpointPath = templateData.Path,
                 UserId = userId,
                 GeneratedData = generationResult.GeneratedData!,
-                Schema = template.Schema,
+                Schema = templateData.Schema,
                 Status = "Completed",
-                TemplateName = template.Name,
-                ProjectTitle = template.ProjectTitle
+                TemplateName = templateData.Name,
+                ProjectTitle = templateData.ProjectTitle
             };
 
             await _generatedContentRepository.AddAsync(generatedContent);
@@ -124,8 +120,8 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
                 Status = "Completed",
                 Message = "Content generated successfully",
                 TemplateId = request.TemplateId,
-                ProjectId = template.ProjectId.ToString(),
-                EndpointPath = template.Path ?? ""
+                ProjectId = templateData.ProjectId.ToString(),
+                EndpointPath = templateData.Path
             };
         }
         catch (Exception ex)
@@ -187,29 +183,4 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
         }
     }
 
-    public override Task<ListContentResponse> ListContent(ListContentRequest request, ServerCallContext context)
-    {
-        _logger.LogInformation("Listing content for user: {UserId}", request.UserId);
-        var items = string.IsNullOrEmpty(request.UserId)
-            ? _repository.GetAll()
-            : _repository.GetByUserId(request.UserId);
-
-        return Task.FromResult(new ListContentResponse
-        {
-            Items = { items }
-        });
-    }
-
-    public override Task<CreateContentResponse> CreateContent(CreateContentRequest request, ServerCallContext context)
-    {
-        _logger.LogInformation("Creating content for user: {UserId}", request.UserId);
-
-        var newItem = _repository.Add(request.UserId, request.ContentBody);
-        _logger.LogInformation("Added new content item with ID: {Id} and content: {Content}", newItem.Id, newItem.ContentBody);
-
-        return Task.FromResult(new CreateContentResponse
-        {
-            Item = newItem
-        });
-    }
 }
