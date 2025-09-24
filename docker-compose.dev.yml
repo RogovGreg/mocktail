@@ -24,6 +24,7 @@ services:
   generator:
     build:
       dockerfile: Docker/Dockerfile.dev
+    # platform: linux/amd64  # Override platform for ARM64 compatibility
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:

@@ -35,7 +35,4 @@ app.MapGrpcService<GeneratorServiceImpl>();
 app.MapPost("/prompt", (Delegate)OpenAIIntegration.Prompt);
 app.MapPost("/generate", (Delegate)OpenAIIntegration.Generate);
 
-app.Urls.Add("http://*:80");
-app.Urls.Add("http://*:8080");
-
 app.Run();
