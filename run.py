@@ -2,7 +2,6 @@
 import os
 import subprocess
 import argparse
-from datetime import datetime
 
 DESCRIPTION = """
 This script manages the lifecycle of a .NET application with multiple microservices.\n
@@ -46,7 +45,7 @@ def get_connection_string(service_name):
                 break
 
     if connection_string:
-        return connection_string.replace("mssql", "localhost")
+        return connection_string.replace("postgres", "localhost", 1)
     else:
         print(f"⚠️ Warning: Connection string '{db_key}' not found in {env_file}.")
         return None
@@ -57,6 +56,10 @@ def run_migrations():
 
     for service in os.listdir(services_dir):
         service_path = os.path.join(services_dir, service)
+
+        if not os.path.isdir(service_path):
+            continue
+
         # Only process directories that contain a .csproj.
         csproj_files = [f for f in os.listdir(service_path) if f.endswith(".csproj")]
         if not csproj_files:
@@ -73,23 +76,20 @@ def run_migrations():
         except Exception as read_error:
             print(f"⚠️ Could not read {csproj_path}: {read_error}. Skipping.")
             continue
-        migrations_path = os.path.join(service_path, "Migrations")
+
         connection_string = get_connection_string(service)
 
         if connection_string is None:
             print(f"⚠️ Warning: connection string is not found for {service}. Skipping migrations.")
             continue
 
-        print(f"🔧 Using connection string for {service}: {connection_string}")
-
-        initial_migration_needed = not os.path.isdir(migrations_path) or not os.listdir(migrations_path)
-        
-        if initial_migration_needed:
-            print(f"📦 No migrations found for {service}. Creating initial migration...")
-            migration_name = "InitialCreate"
-        else:
-            print(f"📦 Creating automatic migration for {service}...")
-            migration_name = f"AutoMigration{datetime.now().strftime('%Y%m%d_%H%M')}"
+        # Mask password for display
+        masked = connection_string
+        if "Password=" in masked:
+            masked = masked.replace(
+                masked.split("Password=", 1)[1].split(";", 1)[0], "****"
+            )
+        print(f"🔧 Using connection string for {service}: {masked}")
 
         env = os.environ.copy()
         env[f"ConnectionStrings__{service}Db"] = connection_string
@@ -120,24 +120,6 @@ def run_migrations():
             print(f"⚠️ Could not enumerate DbContexts for {service}: {list_error}. Skipping.")
             continue
 
-        try:
-            subprocess.run(
-                [
-                    "dotnet",
-                    "ef",
-                    "migrations",
-                    "add",
-                    migration_name,
-                ],
-                cwd=service_path,
-                check=True,
-                env=env,
-            )
-            print(f"✅ Migration '{migration_name}' for {service} created successfully.")
-        except subprocess.CalledProcessError as error:
-            print(f"❌ Failed to create migration for {service}: {error}")
-            continue
-
         print(f"🚀 Applying migrations for {service}...")
 
         try:
@@ -158,9 +140,9 @@ def run_migrations():
 
 
 def start_docker():
-    print("Creating mssqldata volume...")
+    print("Creating postgresdata volume...")
     subprocess.run(
-        ["docker", "volume", "create", "mssqldata"],
+        ["docker", "volume", "create", "postgresdata"],
         check=True,
     )
     print("Starting Docker containers...")

@@ -12,17 +12,17 @@ namespace MyService.Models
 
     public required string Title { get; set; }
 
+    public string[] KeyWords { get; set; } = Array.Empty<string>();
+
     public string? Description { get; set; }
 
     public byte[]? Logo { get; set; }
 
-    public List<Guid> templates { get; set; } = new();
+    public Guid[] Templates { get; set; } = Array.Empty<Guid>();
 
     public bool WithMockServer { get; set; } = false;
 
-    public List<Guid> Members { get; set; } = new();
-
-    public List<Guid>? Endpoints { get; set; } = new();
+    public Guid[] Members { get; set; } = Array.Empty<Guid>();
 
     public DateTimeOffset CreatedAt { get; set; }
 

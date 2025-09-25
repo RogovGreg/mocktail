@@ -1,33 +1,39 @@
 import { FormEvent } from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import { BackendService, TCreateTemplateAPIMethodPayload } from '#api';
 
 export const CreateTemplatePage = () => {
   const { projectId } = useParams();
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
 
     const values: TCreateTemplateAPIMethodPayload = {
       description: String(form.get('description') ?? ''),
-      keyWords: String(form.get('keyWords') ?? '')
-        .split(',')
-        .map(s => s.trim()),
       name: String(form.get('name') ?? ''),
+      path: String(form.get('path') ?? ''),
       relatedProjectId: String(projectId),
       schema: String(form.get('schema') ?? ''),
+      tags: String(form.get('tags') ?? '')
+        .split(',')
+        .map(tag => tag.trim()),
     };
 
-    try {
-      const created = await BackendService.createTemplate({
-        body: { data: values },
+    await BackendService.createTemplate({
+      body: { data: values },
+    })
+      .then(response => {
+        // eslint-disable-next-line no-console
+        console.log('Created:', response.data);
+        navigate(`/app/projects/${projectId}/templates/${response.data.id}`);
+      })
+      .catch(err => {
+        // eslint-disable-next-line no-console
+        console.error(err);
       });
-      console.log('Created:', created);
-    } catch (err) {
-      console.error(err);
-    }
   };
 
   return (
@@ -46,19 +52,27 @@ export const CreateTemplatePage = () => {
         </label>
 
         <label
+          htmlFor='tags'
+          style={{ display: 'flex', justifyContent: 'space-between' }}
+        >
+          Tags (comma-separated)
+          <input type='text' name='tags' />
+        </label>
+
+        <label
+          htmlFor='path'
+          style={{ display: 'flex', justifyContent: 'space-between' }}
+        >
+          Path
+          <input type='text' name='path' />
+        </label>
+
+        <label
           htmlFor='description'
           style={{ display: 'flex', justifyContent: 'space-between' }}
         >
           Description
           <input type='text' name='description' />
-        </label>
-
-        <label
-          htmlFor='keyWords'
-          style={{ display: 'flex', justifyContent: 'space-between' }}
-        >
-          Key Words (comma-separated)
-          <input type='text' name='keyWords' />
         </label>
 
         <label

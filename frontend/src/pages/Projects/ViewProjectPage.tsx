@@ -31,7 +31,13 @@ export const ViewProjectPage: FC = () => {
       {project ? (
         <div>
           <h2>{project.title}</h2>
-          <p>{project.description || 'No description'}</p>
+          <p>
+            <strong>Key words:</strong> {project.keyWords?.join(', ') || 'None'}
+          </p>
+          <p>
+            <strong>Description: </strong>
+            {project.description || 'No description'}
+          </p>
         </div>
       ) : (
         <p>Loading project...</p>

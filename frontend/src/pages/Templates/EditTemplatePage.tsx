@@ -31,12 +31,13 @@ export const EditTemplatePage = () => {
 
     const values: TCreateTemplateAPIMethodPayload = {
       description: String(form.get('description') ?? ''),
-      keyWords: String(form.get('keyWords') ?? '')
-        .split(',')
-        .map(s => s.trim()),
       name: String(form.get('name') ?? ''),
+      path: String(form.get('path') ?? ''),
       relatedProjectId: String(projectId),
       schema: String(form.get('schema') ?? ''),
+      tags: String(form.get('tags') ?? '')
+        .split(',')
+        .map(tag => tag.trim()),
     };
 
     try {
@@ -73,6 +74,30 @@ export const EditTemplatePage = () => {
         </label>
 
         <label
+          htmlFor='tags'
+          style={{ display: 'flex', justifyContent: 'space-between' }}
+        >
+          Tags (comma-separated)
+          <input
+            type='text'
+            name='tags'
+            defaultValue={initialStateOfEditedTemplate?.tags || undefined}
+          />
+        </label>
+
+        <label
+          htmlFor='path'
+          style={{ display: 'flex', justifyContent: 'space-between' }}
+        >
+          Path
+          <input
+            type='text'
+            name='path'
+            defaultValue={initialStateOfEditedTemplate?.path || undefined}
+          />
+        </label>
+
+        <label
           htmlFor='description'
           style={{ display: 'flex', justifyContent: 'space-between' }}
         >
@@ -83,18 +108,6 @@ export const EditTemplatePage = () => {
             defaultValue={
               initialStateOfEditedTemplate?.description || undefined
             }
-          />
-        </label>
-
-        <label
-          htmlFor='keyWords'
-          style={{ display: 'flex', justifyContent: 'space-between' }}
-        >
-          Key Words (comma-separated)
-          <input
-            type='text'
-            name='keyWords'
-            defaultValue={initialStateOfEditedTemplate?.keyWords || undefined}
           />
         </label>
 

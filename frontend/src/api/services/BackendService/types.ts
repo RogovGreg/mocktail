@@ -5,19 +5,28 @@ import { TCheckServiceAvailability } from '../types';
 // =========================== common ===========================
 
 export type TProject = Readonly<{
+  createdAt: string;
+  createdBy: string;
+  description?: string | null;
   id: string;
+  keyWords?: Array<string> | null;
   title: string;
-  description: string | null;
+  updatedAt: string;
+  updatedBy: string;
 }>;
 
 export type TTemplate = Readonly<{
-  id: string;
-  schema: string;
-  name: string;
-  keyWords: Array<string> | null;
+  createdAt: string;
+  createdBy: string;
   description: string | null;
-  updatedAt: string;
+  id: string;
+  name: string;
+  path: string | null;
   relatedProjectId: string;
+  schema: string;
+  tags: Array<string> | null;
+  updatedAt: string;
+  updatedBy: string;
   usedIn: Array<string>;
 }>;
 
@@ -25,7 +34,7 @@ export type TTemplate = Readonly<{
 
 export type TCreateProjectAPIMethodPayload = Pick<
   TProject,
-  'title' | 'description'
+  'title' | 'description' | 'keyWords'
 >;
 export type TCreateProjectAPIMethodResponse = TProject;
 export type TCreateProjectAPIMethod = TUnifiedApiMethod<
@@ -55,8 +64,7 @@ export type TGetProjectByIDMethod = TUnifiedApiMethod<
 // ========================== getProjectsList ==========================
 
 export type TGetProjectsListMethodQueryParams = Readonly<{
-  id?: string;
-  title?: string;
+  searchString?: string;
   member?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -87,7 +95,7 @@ export type TUpdateProjectAPIMethod = TUnifiedApiMethod<
 
 export type TCreateTemplateAPIMethodPayload = Pick<
   TTemplate,
-  'name' | 'description' | 'keyWords' | 'schema' | 'relatedProjectId'
+  'name' | 'description' | 'tags' | 'schema' | 'relatedProjectId' | 'path'
 >;
 export type TCreateTemplateAPIMethodResponse = TTemplate;
 export type TCreateTemplateAPIMethod = TUnifiedApiMethod<
@@ -106,18 +114,7 @@ export type TDeleteTemplateAPIMethod =
 // =========================== getTemplateByID ==========================
 
 export type TGetTemplateByIDMethodQueryParams = Pick<TTemplate, 'id'>;
-
-// TODO: Fix this type
-export type TGetTemplateByIDMethodResponse = Readonly<{
-  id: string;
-  schema: string;
-  name: string;
-  keyWords: Array<string> | null;
-  description: string | null;
-  updatedAt: string;
-  relatedProjectId: string;
-  usedIn: Array<string>;
-}>;
+export type TGetTemplateByIDMethodResponse = TTemplate;
 export type GetTemplateByIDMethod = TUnifiedApiMethod<
   TGetTemplateByIDMethodQueryParams,
   void,
@@ -128,7 +125,6 @@ export type GetTemplateByIDMethod = TUnifiedApiMethod<
 // ========================== getTemplatesList ==========================
 
 export type TGetTemplatesListMethodQueryParams = Readonly<{
-  id?: string;
   searchString?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -156,6 +152,24 @@ export type TUpdateTemplateAPIMethod = TUnifiedApiMethod<
   TCreateTemplateAPIMethodResponse
 >;
 
+// ====================== generateDataByTemplateID ======================
+
+export type TGenerateDataByTemplateIDAPIMethodQueryParams = Pick<
+  TTemplate,
+  'id'
+>;
+export type TGenerateDataByTemplateIDAPIMethodResponse = Readonly<{
+  message: string;
+  id: string;
+  schema: string;
+}>;
+export type TGenerateDataByTemplateIDAPIMethod = TUnifiedApiMethod<
+  TGenerateDataByTemplateIDAPIMethodQueryParams,
+  void,
+  void,
+  TGenerateDataByTemplateIDAPIMethodResponse
+>;
+
 // ========================== TBackendService ===========================
 
 export type TBackendService = Readonly<{
@@ -169,6 +183,7 @@ export type TBackendService = Readonly<{
 
   createTemplate: TCreateTemplateAPIMethod;
   deleteTemplate: TDeleteTemplateAPIMethod;
+  generateDataByTemplateID: TGenerateDataByTemplateIDAPIMethod;
   getTemplateByID: GetTemplateByIDMethod;
   getTemplatesList: GetTemplatesListMethod;
   updateTemplate: TUpdateTemplateAPIMethod;

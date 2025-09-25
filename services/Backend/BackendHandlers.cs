@@ -1,13 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using MyService.Data;
 using MyService.Models;
+using System.Text;
+using System.Text.Json;
+using Shared.Content.Protos;
 
 public static class BackendHandlers
 {
   public class ProjectFilterParameters
   {
-    public Guid? Id { get; set; }
-    public string? Title { get; set; }
+    public string? SearchString { get; set; }
     public Guid? Member { get; set; }
     public DateTimeOffset? CreatedAt { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
@@ -17,7 +19,6 @@ public static class BackendHandlers
 
   public class TemplateFilterParameters
   {
-    public Guid? Id { get; set; }
     public string? SearchString { get; set; }
     public DateTimeOffset? CreatedAt { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
@@ -33,11 +34,12 @@ public static class BackendHandlers
   {
     var query = db.Projects.AsQueryable();
 
-    if (filters.Id.HasValue)
-      query = query.Where(project => project.Id == filters.Id);
-
-    if (!string.IsNullOrEmpty(filters.Title))
-      query = query.Where(project => project.Title.Contains(filters.Title));
+    if (!string.IsNullOrEmpty(filters.SearchString))
+      query = query.Where(project =>
+        project.Title.Contains(filters.SearchString) ||
+        project.Id.ToString().Contains(filters.SearchString) ||
+        project.KeyWords.Any(k => k == filters.SearchString)
+      );
 
     if (filters.Member.HasValue)
       query = query.Where(project => project.Members.Contains(filters.Member.Value));
@@ -97,12 +99,13 @@ public static class BackendHandlers
   {
     var query = db.Templates.AsQueryable();
 
-    if (filters.Id.HasValue)
-      query = query.Where(t => t.Id == filters.Id);
-
     if (!string.IsNullOrEmpty(filters.SearchString))
-      query = query.Where(t => t.Name.Contains(filters.SearchString) ||
-                              t.KeyWords.Any(k => k == filters.SearchString));
+      query = query.Where(template =>
+        template.Name.Contains(filters.SearchString) ||
+        template.Id.ToString().Contains(filters.SearchString) ||
+        (template.Path != null && template.Path.Contains(filters.SearchString)) ||
+        template.Tags.Any(tag => tag == filters.SearchString)
+      );
 
     if (filters.CreatedAt.HasValue)
       query = query.Where(template => template.CreatedAt == filters.CreatedAt);
@@ -168,5 +171,28 @@ public static class BackendHandlers
     db.Templates.Remove(tpl);
     await db.SaveChangesAsync();
     return Results.NoContent();
+  }
+
+  public static async Task<IResult> GenerateTemplateData(Guid id, AppDbContext db, ContentService.ContentServiceClient client)
+  {
+    var template = await db.Templates.FindAsync(id);
+    if (template is null) return Results.NotFound();
+
+    var request = new GenerateRequest
+    {
+      TemplateId = id.ToString(),
+      Schema = JsonSerializer.Serialize(template.Schema),
+      Path = template.Path ?? string.Empty,
+    };
+
+    try
+    {
+      var response = await client.GenerateFromTemplateAsync(request);
+      return Results.Ok(response);
+    }
+    catch (Exception)
+    {
+      return Results.StatusCode(StatusCodes.Status500InternalServerError);
+    }
   }
 }
