@@ -12,6 +12,7 @@ type TOverlayProps = {
 
 type TPageContainerStyledProps = Readonly<{
   isAuthorized: boolean;
+  darkMode: boolean;
 }>;
 
 export const PageContainerStyled = styled.div<TPageContainerStyledProps>`
@@ -41,7 +42,9 @@ export const PageContainerStyled = styled.div<TPageContainerStyledProps>`
     position: absolute;
     bottom: 0;
     height: 25px;
-    background-color: var(--mt-color-1);
+    color: var(--mt-inverse-text-color);
+    background-color: ${({ darkMode }) =>
+      darkMode ? 'var(--mt-color-tertiary-1)' : 'var(--mt-color-tertiary-8)'};
     display: flex;
     justify-content: center;
     align-items: center;

@@ -1,14 +1,17 @@
 import { useContext } from 'react';
 import { Outlet } from 'react-router';
 
-import { Header } from '#src/common-components/PageContainer/elements';
 import { useSidebar } from '#src/common-functions';
 import { AuthContext } from '#src/global-contexts/AuthContext/AuthContext';
+import { useTheme } from '#src/theme';
 
+import { Header } from './Header';
 import { HorizontalSidebar, Overlay, PageContainerStyled } from './styled';
+import packageInfo from '../../../package.json';
 
 export const RootLayout = () => {
   const { isAuthorized } = useContext(AuthContext);
+  const { darkMode } = useTheme();
 
   const {
     closeBothSidebars,
@@ -22,7 +25,10 @@ export const RootLayout = () => {
   const { Component: LeftSidebarBody } = leftSidebarConfig || {};
 
   return (
-    <PageContainerStyled isAuthorized={Boolean(isAuthorized)}>
+    <PageContainerStyled
+      isAuthorized={Boolean(isAuthorized)}
+      darkMode={darkMode}
+    >
       <HorizontalSidebar side='left' active={isLeftSidebarOpen}>
         {LeftSidebarBody ? <LeftSidebarBody /> : null}
       </HorizontalSidebar>
@@ -36,7 +42,7 @@ export const RootLayout = () => {
       <Header />
       <main>
         <Outlet />
-        <footer>MockTail | 2024-2025</footer>
+        <footer>v{packageInfo.version} | 2024-2025</footer>
       </main>
     </PageContainerStyled>
   );

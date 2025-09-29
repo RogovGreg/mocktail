@@ -1,5 +1,5 @@
 import { ReactNode, useContext, useMemo } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 // import { UserOutlined } from '@ant-design/icons';
 import { Button, Tooltip } from 'antd';
 
@@ -29,34 +29,35 @@ export const Header = () => {
   } = useContext(AuthContext);
   const { userName } = authorizedUserData || {};
 
+  const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const { toggleTheme } = useTheme();
+  const { darkMode, toggleTheme } = useTheme();
 
   const leftElementsGroup = useMemo<THeaderNavigationPanel>(
     () => [
       {
         href: ERoutes.About,
-        isActive: false,
+        isActive: pathname.includes(ERoutes.About),
         label: 'About',
       },
       {
         href: ERoutes.Docs,
-        isActive: false,
+        isActive: pathname.includes(ERoutes.Docs),
         label: 'Docs',
       },
       {
         href: ERoutes.Support,
-        isActive: false,
+        isActive: pathname.includes(ERoutes.Support),
         label: 'Support',
       },
       {
         href: ERoutes.Dashboard,
-        isActive: false,
+        isActive: pathname.includes(ERoutes.WebApp),
         label: 'Web App',
       },
     ],
-    [],
+    [pathname],
   );
 
   const userProfilePanel = useMemo<ReactNode>(
@@ -114,13 +115,13 @@ export const Header = () => {
   );
 
   return (
-    <HeaderStyled isAuthorized={Boolean(isAuthorized)}>
+    <HeaderStyled isAuthorized={Boolean(isAuthorized)} darkMode={darkMode}>
       <div>
         <h1
           style={{ alignSelf: 'center', display: 'flex', marginLeft: '10px' }}
         >
-          <span style={{ color: 'aqua' }}>Mock</span>
-          <span style={{ color: 'orangered' }}>Tail</span>
+          <span style={{ color: 'var(--mt-color-secondary-1)' }}>Mock</span>
+          <span style={{ color: 'var(--mt-color-primary-1)' }}>Tail</span>
         </h1>
         <HeaderNavigationPanelStyled>
           {leftElementsGroup.map(item => {
@@ -131,6 +132,7 @@ export const Header = () => {
                 key={label}
                 type='button'
                 isActive={isActive}
+                darkMode={darkMode}
                 onClick={() => navigate(href)}
               >
                 {label}

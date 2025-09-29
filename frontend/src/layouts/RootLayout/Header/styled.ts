@@ -2,14 +2,16 @@ import styled from '@emotion/styled';
 
 type THeaderStyledProps = Readonly<{
   isAuthorized: boolean;
+  darkMode: boolean;
 }>;
 
 type THeaderNavigationItemStyledProps = Readonly<{
-  isActive?: boolean;
+  isActive: boolean;
+  darkMode: boolean;
 }>;
 
 export const HeaderStyled = styled.header<THeaderStyledProps>`
-  height: ${props => (props.isAuthorized ? '50px' : '70px')};
+  height: ${props => (props.isAuthorized ? '40px' : '50px')};
 
   transition: all 1s ease;
 
@@ -18,7 +20,8 @@ export const HeaderStyled = styled.header<THeaderStyledProps>`
   display: flex;
   justify-content: space-between;
   width: 100%;
-  background-color: var(--mt-color-1);
+  background-color: ${({ darkMode }) =>
+    darkMode ? 'var(--mt-color-tertiary-1)' : 'var(--mt-color-tertiary-8)'};
 
   div {
     display: flex;
@@ -40,34 +43,32 @@ export const HeaderNavigationItemStyled = styled.button<THeaderNavigationItemSty
   background-color: transparent;
   border-radius: 0;
   border: 0;
-  font-weight: 600;
+  color: ${props => (props.isActive ? 'var(--mt-color-primary-1)' : 'inherit')};
+  font-weight: 900;
+  font-size: 16px;
+  cursor: pointer;
+  box-sizing: border-box;
+  border: 2px solid transparent;
 
   &:hover,
   &:focus,
   &:active {
-    color: var(--mt-color-tail);
-    border: 0;
+    color: var(--mt-color-primary-1);
+    border: 2px solid transparent;
     outline: none;
   }
 
   &:hover {
-    background-color: #1A1B1F;
-    color: var(--mt-color-tail);
-    border: 0;
-    outline: none;
+    color: var(--mt-color-primary-1);
+    background-color: ${props => (props.darkMode ? 'var(--mt-color-tertiary-0)' : 'var(--mt-color-tertiary-7)')};
   }
 
   &:active {
-    background-color: #FF5900;
-    color: #0B0C10;
-    transform: translateY(1px);
-    border: 0;
-    outline: none;
+    color: var(--mt-color-primary-2);
   }
 
   &:focus-visible {
-    border: 0;
-    outline: 2px solid #FF5900;
+    border: 2px solid var(--mt-color-primary-1);
     outline-offset: 2px;
   }
 }
