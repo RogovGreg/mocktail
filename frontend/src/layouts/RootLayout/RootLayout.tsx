@@ -42,7 +42,7 @@ export const RootLayout = () => {
       <Header />
       <main>
         <Outlet />
-        <footer>v{packageInfo.version} | 2024-2025</footer>
+        <footer>MockTail v{packageInfo.version} | 2024-2025</footer>
       </main>
     </PageContainerStyled>
   );

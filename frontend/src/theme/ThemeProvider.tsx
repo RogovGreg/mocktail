@@ -62,12 +62,7 @@ export const ThemeProvider: React.FC<React.PropsWithChildren> = ({
         ? antdTheme.darkAlgorithm
         : antdTheme.defaultAlgorithm,
       token: {
-        colorBgBase: darkMode ? '#141414' : '#ffffff',
-        colorBgContainer: darkMode ? '#1f1f1f' : '#ffffff',
-        colorBgElevated: darkMode ? '#262626' : '#ffffff',
-        colorBorder: darkMode ? '#424242' : '#d9d9d9',
-        colorPrimary: '#1890ff',
-        colorTextBase: darkMode ? '#ffffff' : '#000000',
+        colorError: 'var(--mt-color-primary-2)',
       },
 
       components: {
@@ -78,6 +73,36 @@ export const ThemeProvider: React.FC<React.PropsWithChildren> = ({
         Menu: {
           itemBg: darkMode ? '#1f1f1f' : '#ffffff',
           subMenuItemBg: darkMode ? '#1f1f1f' : '#ffffff',
+        },
+
+        Input: {
+          colorBorder: darkMode
+            ? 'var(--mt-color-tertiary-4)'
+            : 'var(--mt-color-tertiary-3)',
+
+          activeBorderColor: darkMode
+            ? 'var(--mt-color-tertiary-2)'
+            : 'var(--mt-color-tertiary-5)',
+
+          hoverBorderColor: darkMode
+            ? 'var(--mt-color-tertiary-2)'
+            : 'var(--mt-color-tertiary-5)',
+
+          activeShadow: darkMode
+            ? '0 0 0 1px var(--mt-color-tertiary-2)'
+            : '0 0 0 1px var(--mt-color-tertiary-5)',
+
+          colorBgContainer: darkMode
+            ? 'var(--mt-color-tertiary-5)'
+            : 'var(--mt-color-tertiary-2)',
+
+          errorActiveShadow: '0 0 0 2px var(--mt-color-primary-2)',
+        },
+
+        Form: {
+          labelColor: 'var(--mt-main-text-color)',
+          labelRequiredMarkColor: 'var(--mt-color-primary-2)',
+          verticalLabelPadding: '0 0 3px',
         },
       },
     }),

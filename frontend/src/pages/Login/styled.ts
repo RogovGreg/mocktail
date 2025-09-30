@@ -14,10 +14,6 @@ export const LoginCardStyled = styled.div`
     gap: 8px;
   }
 
-  label {
-    color: white !important;
-  }
-
   svg {
     width: 24px;
     height: 24px;
