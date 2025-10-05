@@ -13,7 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
 var connectionString = builder.Configuration.GetConnectionString("AuthDb");
-Console.WriteLine("Auth service. connectionString: ", connectionString);
 
 if (string.IsNullOrWhiteSpace(connectionString))
 {
@@ -71,11 +70,10 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Npgsql.PostgresException ex) when (ex.SqlState == "42P04")
     {
-        Console.WriteLine("Database already exists, skipping CREATE DATABASE.");
+        // Database already exists, apply pending migrations
         var pending = db.Database.GetPendingMigrations();
         if (pending.Any())
         {
-            Console.WriteLine($"Applying {pending.Count()} pending migrations...");
             db.Database.Migrate();
         }
     }

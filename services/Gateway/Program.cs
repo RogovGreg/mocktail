@@ -10,6 +10,12 @@ using Gateway.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add configuration files - only ocelot.json and environment variables
+builder.Configuration
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
 // Add services to the container
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -57,14 +63,6 @@ builder.Services.AddAuthentication("ApiToken")
 
 // Add Ocelot
 builder.Services.AddOcelot(builder.Configuration);
-
-// Add configuration files
-builder.Configuration
-    .SetBasePath(builder.Environment.ContentRootPath)
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
-    .AddEnvironmentVariables();
 
 var app = builder.Build();
 

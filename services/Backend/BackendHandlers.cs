@@ -175,14 +175,11 @@ public static class BackendHandlers
 
   public static async Task<IResult> GenerateTemplateData(Guid id, AppDbContext db, ContentService.ContentServiceClient client, HttpContext context)
   {
-    Console.WriteLine($"GenerateTemplateData called for template ID: {id}");
     var template = await db.Templates.FindAsync(id);
     if (template is null) 
     {
-      Console.WriteLine($"Template {id} not found");
       return Results.NotFound();
     }
-    Console.WriteLine($"Template {id} found: {template.Name}");
 
     // Get user ID from JWT token
     var userId = context.User.FindFirst("sub")?.Value ?? 
@@ -193,12 +190,8 @@ public static class BackendHandlers
     }
 
     // Get project title
-    Console.WriteLine($"Looking up project {template.RelatedProjectId}");
     var project = await db.Projects.FindAsync(template.RelatedProjectId);
-    Console.WriteLine($"Project found: {project?.Title ?? "Unknown Project"}");
     var projectTitle = project?.Title ?? "Unknown Project";
-
-    Console.WriteLine("Creating GenerateFromTemplateRequest");
     var request = new GenerateFromTemplateRequest
     {
       TemplateId = id.ToString(),
@@ -212,9 +205,7 @@ public static class BackendHandlers
 
     try
     {
-      Console.WriteLine($"Calling Content service with request: TemplateId={request.TemplateId}, UserId={request.UserId}");
       var response = await client.GenerateFromTemplateAsync(request);
-      Console.WriteLine($"Content service responded: Status={response.Status}");
       
       return Results.Ok(new
       {

@@ -13,12 +13,7 @@ using Grpc.Net.ClientFactory;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add configuration files
-builder.Configuration
-    .SetBasePath(builder.Environment.ContentRootPath)
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .AddEnvironmentVariables();
+builder.Configuration.AddEnvironmentVariables();
 
 // Add gRPC client for Content service
 builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>

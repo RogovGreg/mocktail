@@ -25,20 +25,16 @@ services:
     container_name: backend
     depends_on:
       - postgres
-    environment:
-      - ConnectionStrings__BackendDb=${ConnectionStrings__BackendDb}
-      - Jwt__Secret=${JWT_SECRET}
-      - Jwt__Issuer=${JWT_ISSUER}
-      - Jwt__Audience=${JWT_AUDIENCE}
-      - Jwt__ExpirationHours=${JWT_EXPIRATION_HOURS}
+    env_file:
+      - .env
 
   content:
     build:
       context: services/Content
       dockerfile: Docker/Dockerfile
     container_name: content
-    environment:
-      - ConnectionStrings__ContentDb=${ConnectionStrings__ContentDb}
+    env_file:
+      - .env
 
   generator:
     build:
@@ -53,12 +49,8 @@ services:
       context: services/Auth
       dockerfile: Docker/Dockerfile
     container_name: auth
-    environment:
-      ConnectionStrings__AuthDb: ${ConnectionStrings__AuthDb}
-      Jwt__Secret: ${JWT_SECRET}
-      Jwt__Issuer: ${JWT_ISSUER}
-      Jwt__Audience: ${JWT_AUDIENCE}
-      Jwt__ExpirationHours: ${JWT_EXPIRATION_HOURS}
+    env_file:
+      - .env
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,11 +60,8 @@ services:
       context: services/Gateway
       dockerfile: Dockerfile
     container_name: gateway
-    environment:
-      - Jwt__Secret=${JWT_SECRET}
-      - Jwt__Issuer=${JWT_ISSUER}
-      - Jwt__Audience=${JWT_AUDIENCE}
-      - Jwt__ContentAudience=${JWT_CONTENT_AUDIENCE}
+    env_file:
+      - .env
     depends_on:
       - backend
       - content

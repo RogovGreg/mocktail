@@ -3,6 +3,8 @@ using Generator.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Services.AddOpenApi();
 
 // Add gRPC support

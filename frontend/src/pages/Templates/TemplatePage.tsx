@@ -81,9 +81,8 @@ export const TemplatePage: FC = () => {
             BackendService.generateDataByTemplateID({
               path: { params: { id: String(templateId) } },
             })
-              .then(response => {
-                // eslint-disable-next-line no-console
-                console.log('Generated data:', response.data);
+              .then(() => {
+                // Success - could add user feedback here
               })
               .catch(error => {
                 // eslint-disable-next-line no-console
