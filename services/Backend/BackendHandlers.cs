@@ -136,20 +136,27 @@ public static class BackendHandlers
 
   public static async Task<IResult> CreateTemplate(Template template, AppDbContext db)
   {
-    var projectExists = await db.Projects.AnyAsync(p => p.Id == template.RelatedProjectId);
-    if (!projectExists)
+    var project = await db.Projects.FindAsync(template.RelatedProjectId);
+    if (project == null)
     {
       return Results.BadRequest($"Project with Id '{template.RelatedProjectId}' does not exist.");
     }
+    
     db.Templates.Add(template);
+    
+    // Add template ID to project's templates array
+    var templatesList = project.Templates.ToList();
+    templatesList.Add(template.Id);
+    project.Templates = templatesList.ToArray();
+    
     await db.SaveChangesAsync();
     return Results.Created($"/templates/{template.Id}", template);
   }
 
-  public static async Task<IResult> UpdateTemplate(Guid id, Template template, AppDbContext db)
+  public static async Task<IResult> UpdateTemplate(Guid id, Template template, AppDbContext db, ContentService.ContentServiceClient client)
   {
-    var exists = await db.Templates.AnyAsync(t => t.Id == id);
-    if (!exists) return Results.NotFound();
+    var existingTemplate = await db.Templates.FindAsync(id);
+    if (existingTemplate == null) return Results.NotFound();
 
     var projectExists = await db.Projects.AnyAsync(p => p.Id == template.RelatedProjectId);
     if (!projectExists)
@@ -157,8 +164,42 @@ public static class BackendHandlers
       return Results.BadRequest($"Project with Id '{template.RelatedProjectId}' does not exist.");
     }
 
+    // Check if schema or other generation-relevant fields changed
+    bool schemaChanged = existingTemplate.Schema != template.Schema;
+    bool pathChanged = existingTemplate.Path != template.Path;
+    
+    if (schemaChanged || pathChanged)
+    {
+      // Increment version when schema or path changes
+      template.Version = existingTemplate.Version + 1;
+      
+      // Mark old content as stale in Content service
+      try
+      {
+        var markStaleRequest = new MarkContentAsStaleRequest
+        {
+          TemplateId = id.ToString(),
+          FromVersion = existingTemplate.Version
+        };
+        await client.MarkContentAsStaleAsync(markStaleRequest);
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine($"Warning: Failed to mark content as stale: {ex.Message}");
+        // Continue with template update even if stale marking fails
+      }
+    }
+    else
+    {
+      // Keep the same version for non-generation changes
+      template.Version = existingTemplate.Version;
+    }
+
     template.Id = id;
-    db.Entry(template).State = EntityState.Modified;
+    template.CreatedAt = existingTemplate.CreatedAt;
+    template.CreatedBy = existingTemplate.CreatedBy;
+    
+    db.Entry(existingTemplate).CurrentValues.SetValues(template);
     await db.SaveChangesAsync();
     return Results.NoContent();
   }
@@ -167,6 +208,15 @@ public static class BackendHandlers
   {
     var tpl = await db.Templates.FindAsync(id);
     if (tpl is null) return Results.NotFound();
+
+    // Remove template ID from project's templates array
+    var project = await db.Projects.FindAsync(tpl.RelatedProjectId);
+    if (project != null)
+    {
+      var templatesList = project.Templates.ToList();
+      templatesList.Remove(id);
+      project.Templates = templatesList.ToArray();
+    }
 
     db.Templates.Remove(tpl);
     await db.SaveChangesAsync();
@@ -192,9 +242,11 @@ public static class BackendHandlers
     // Get project title
     var project = await db.Projects.FindAsync(template.RelatedProjectId);
     var projectTitle = project?.Title ?? "Unknown Project";
+    
     var request = new GenerateFromTemplateRequest
     {
       TemplateId = id.ToString(),
+      TemplateVersion = template.Version,
       UserId = userId,
       TemplateName = template.Name,
       Schema = template.Schema,
@@ -207,12 +259,18 @@ public static class BackendHandlers
     {
       var response = await client.GenerateFromTemplateAsync(request);
       
+      // Update template with generation tracking
+      template.LastGeneratedAt = DateTimeOffset.UtcNow;
+      template.LatestGeneratedVersion = template.Version;
+      await db.SaveChangesAsync();
+      
       return Results.Ok(new
       {
         ContentId = response.ContentId,
         Status = response.Status,
         Message = response.Message,
         TemplateId = response.TemplateId,
+        TemplateVersion = response.TemplateVersion,
         ProjectId = response.ProjectId,
         EndpointPath = response.EndpointPath
       });
@@ -224,7 +282,7 @@ public static class BackendHandlers
     }
   }
 
-  public static async Task<IResult> GetGeneratedContentStatus(Guid id, ContentService.ContentServiceClient client)
+  public static async Task<IResult> GetGeneratedContentStatus(Guid id, AppDbContext db, ContentService.ContentServiceClient client)
   {
     try
     {
@@ -240,15 +298,29 @@ public static class BackendHandlers
         return Results.NotFound(new { Message = response.ErrorMessage });
       }
 
+      // Get the template to check if content is stale
+      var template = await db.Templates.FindAsync(Guid.Parse(response.TemplateId));
+      var isStale = template != null && response.TemplateVersion < template.Version;
+
+      // Determine the effective status
+      string effectiveStatus = response.Status;
+      if (isStale && response.Status == "Completed")
+      {
+        effectiveStatus = "Stale";
+      }
+
       return Results.Ok(new
       {
         ContentId = response.ContentId,
-        Status = response.Status,
+        Status = effectiveStatus,
         TemplateId = response.TemplateId,
+        TemplateVersion = response.TemplateVersion,
         ProjectId = response.ProjectId,
         EndpointPath = response.EndpointPath,
         CreatedAt = response.CreatedAt,
-        UpdatedAt = response.UpdatedAt
+        UpdatedAt = response.UpdatedAt,
+        IsStale = isStale,
+        LatestTemplateVersion = template?.Version ?? response.TemplateVersion
       });
     }
     catch (Exception ex)

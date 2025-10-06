@@ -12,6 +12,9 @@ public class GeneratedContent
     public Guid TemplateId { get; set; }
 
     [Required]
+    public int TemplateVersion { get; set; }
+
+    [Required]
     public Guid ProjectId { get; set; }
 
     [Required]
@@ -28,13 +31,13 @@ public class GeneratedContent
     [Required]
     public string Schema { get; set; } = string.Empty;
 
+    [Required]
+    [MaxLength(20)]
+    public string Status { get; set; } = "Pending"; // Pending, Completed, Failed
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
-
-    [Required]
-    [MaxLength(20)]
-    public string Status { get; set; } = "Completed";
 
     // Navigation properties (if needed for future queries)
     public string TemplateName { get; set; } = string.Empty;

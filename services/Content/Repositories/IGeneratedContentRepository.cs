@@ -14,4 +14,5 @@ public interface IGeneratedContentRepository
     Task UpdateStatusAndDataAsync(Guid id, string status, string generatedData);
     Task<bool> DeleteAsync(Guid id);
     Task<bool> ExistsAsync(Guid projectId, string endpointPath);
+    Task<int> MarkAsStaleByTemplateAndVersionAsync(Guid templateId, int fromVersion);
 }

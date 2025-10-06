@@ -62,7 +62,6 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 var app = builder.Build();
-
 // Middleware
 app.UseHttpsRedirection();
 app.UseAuthentication();

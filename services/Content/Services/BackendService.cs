@@ -63,7 +63,8 @@ public class BackendService : IBackendService
                 template.Schema,
                 template.Path,
                 template.RelatedProjectId,
-                projectTitle
+                projectTitle,
+                template.Version
             );
         }
         catch (Exception ex)
@@ -78,7 +79,8 @@ public class BackendService : IBackendService
         string Name,
         string Schema,
         string? Path,
-        Guid RelatedProjectId
+        Guid RelatedProjectId,
+        int Version
     );
 
     private record ProjectDto(

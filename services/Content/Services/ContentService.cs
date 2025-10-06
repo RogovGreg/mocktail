@@ -85,6 +85,7 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
             {
                 Id = Guid.NewGuid(),
                 TemplateId = templateId,
+                TemplateVersion = request.TemplateVersion,
                 ProjectId = templateData.ProjectId,
                 EndpointPath = templateData.Path,
                 UserId = userId,
@@ -150,6 +151,7 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
                 Status = "Pending",
                 Message = "Content generation started. Check status later.",
                 TemplateId = request.TemplateId,
+                TemplateVersion = request.TemplateVersion,
                 ProjectId = templateData.ProjectId.ToString(),
                 EndpointPath = templateData.Path
             };
@@ -199,6 +201,7 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
                 Path = template.Path ?? "",
                 ProjectId = template.ProjectId.ToString(),
                 ProjectTitle = template.ProjectTitle,
+                Version = template.Version,
                 Success = true
             };
         }
@@ -243,6 +246,7 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
                 ContentId = content.Id.ToString(),
                 Status = content.Status,
                 TemplateId = content.TemplateId.ToString(),
+                TemplateVersion = content.TemplateVersion,
                 ProjectId = content.ProjectId.ToString(),
                 EndpointPath = content.EndpointPath,
                 CreatedAt = content.CreatedAt.ToUnixTimeMilliseconds(),
@@ -254,6 +258,42 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
         {
             _logger.LogError(ex, "Error fetching generated content status {ContentId}", request.ContentId);
             return new GetGeneratedContentStatusResponse
+            {
+                Success = false,
+                ErrorMessage = $"Internal error: {ex.Message}"
+            };
+        }
+    }
+
+    public override async Task<MarkContentAsStaleResponse> MarkContentAsStale(MarkContentAsStaleRequest request, ServerCallContext context)
+    {
+        try
+        {
+            _logger.LogInformation("Marking content as stale for template {TemplateId}, from version {FromVersion}", 
+                request.TemplateId, request.FromVersion);
+
+            if (!Guid.TryParse(request.TemplateId, out var templateId))
+            {
+                return new MarkContentAsStaleResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Invalid template ID format"
+                };
+            }
+
+            // Mark all content with template version <= fromVersion as stale
+            var affectedCount = await _generatedContentRepository.MarkAsStaleByTemplateAndVersionAsync(templateId, request.FromVersion);
+
+            return new MarkContentAsStaleResponse
+            {
+                AffectedCount = affectedCount,
+                Success = true
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error marking content as stale for template {TemplateId}", request.TemplateId);
+            return new MarkContentAsStaleResponse
             {
                 Success = false,
                 ErrorMessage = $"Internal error: {ex.Message}"

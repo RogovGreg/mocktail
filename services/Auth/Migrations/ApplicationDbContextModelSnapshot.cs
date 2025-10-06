@@ -58,7 +58,7 @@ namespace Auth.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ApiTokens");
+                    b.ToTable("ApiTokens", (string)null);
                 });
 
             modelBuilder.Entity("Auth.Entities.User", b =>
@@ -310,7 +310,7 @@ namespace Auth.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Bookmark");
+                    b.ToTable("Bookmark", (string)null);
                 });
 
             modelBuilder.Entity("Auth.Entities.ApiToken", b =>

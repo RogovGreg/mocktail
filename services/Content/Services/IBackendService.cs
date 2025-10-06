@@ -13,5 +13,6 @@ public record TemplateInfo(
     string Schema,
     string? Path,
     Guid ProjectId,
-    string ProjectTitle
+    string ProjectTitle,
+    int Version
 );

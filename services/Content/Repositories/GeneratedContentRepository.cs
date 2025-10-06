@@ -100,4 +100,17 @@ public class GeneratedContentRepository : IGeneratedContentRepository
         return await _context.GeneratedContent
             .AnyAsync(x => x.ProjectId == projectId && x.EndpointPath == endpointPath);
     }
+
+    public async Task<int> MarkAsStaleByTemplateAndVersionAsync(Guid templateId, int fromVersion)
+    {
+        // Since we removed the IsStale field, we'll delete old content instead
+        // This ensures only the latest version content exists
+        var contentsToDelete = await _context.GeneratedContent
+            .Where(x => x.TemplateId == templateId && x.TemplateVersion <= fromVersion)
+            .ToListAsync();
+
+        _context.GeneratedContent.RemoveRange(contentsToDelete);
+        await _context.SaveChangesAsync();
+        return contentsToDelete.Count;
+    }
 }

@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Admin@123
     volumes:
-      - postgresdata:/var/lib/postgresql/data
+      - mocktail_data:/var/lib/postgresql/data
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -24,7 +24,8 @@ services:
       dockerfile: Docker/Dockerfile
     container_name: backend
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     env_file:
       - .env
 
@@ -33,6 +34,9 @@ services:
       context: services/Content
       dockerfile: Docker/Dockerfile
     container_name: content
+    depends_on:
+      postgres:
+        condition: service_healthy
     env_file:
       - .env
 
@@ -49,11 +53,11 @@ services:
       context: services/Auth
       dockerfile: Docker/Dockerfile
     container_name: auth
-    env_file:
-      - .env
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - .env
 
   gateway:
     build:
@@ -77,5 +81,5 @@ services:
       - gateway
 
 volumes:
-  postgresdata:
+  mocktail_data:
     external: true
