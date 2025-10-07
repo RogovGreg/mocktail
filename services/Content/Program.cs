@@ -1,4 +1,8 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Content.Services;
 using Content.Repositories;
 using Content.Data;
@@ -19,6 +23,25 @@ builder.Services.AddOpenApi();
 
 // Add gRPC support
 builder.Services.AddGrpc();
+
+// Add authentication and authorization
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not found")))
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 // Add Entity Framework
 var connectionString = builder.Configuration.GetConnectionString("ContentDb");
@@ -72,6 +95,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Use authentication and authorization
+app.UseAuthentication();
+app.UseAuthorization();
+
 // Map gRPC service
 app.MapGrpcService<ContentServiceImpl>();
 
@@ -88,8 +115,21 @@ app.MapGet("/check-availability", () =>
 
 
 // Mock API endpoints for serving generated content
-app.MapGet("/api/mock/{projectId}/{endpointPath}", async (string projectId, string endpointPath, IGeneratedContentRepository repository) =>
+app.MapGet("/api/mock/{projectId}/{endpointPath}", 
+    [Authorize] // Requires authentication
+    async (string projectId, string endpointPath, 
+           IGeneratedContentRepository repository,
+           HttpContext context) =>
 {
+    // Extract project ID from token claims
+    var tokenProjectId = context.User.FindFirst("project_id")?.Value;
+    
+    // Validate authorization - ensure token is authorized for the requested project
+    if (string.IsNullOrEmpty(tokenProjectId) || tokenProjectId != projectId)
+    {
+        return Results.Forbidden("Token not authorized for this project");
+    }
+    
     if (!Guid.TryParse(projectId, out var projectGuid))
     {
         return Results.BadRequest("Invalid project ID format");
