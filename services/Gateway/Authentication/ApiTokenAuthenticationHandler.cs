@@ -17,10 +17,11 @@ public class ApiTokenAuthenticationHandler : AuthenticationHandler<ApiTokenAuthe
         IOptionsMonitor<ApiTokenAuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        HttpClient httpClient)
+        IHttpClientFactory httpClientFactory)
         : base(options, logger, encoder)
     {
-        _httpClient = httpClient;
+        // Use named client configured in Program.cs with base address http://auth:80
+        _httpClient = httpClientFactory.CreateClient("AuthService");
         _logger = logger.CreateLogger<ApiTokenAuthenticationHandler>();
     }
 
@@ -57,6 +58,7 @@ public class ApiTokenAuthenticationHandler : AuthenticationHandler<ApiTokenAuthe
             // Create claims identity
             var claims = new[]
             {
+                new Claim(ClaimTypes.NameIdentifier, validationResult.UserId!),
                 new Claim("sub", validationResult.UserId!),
                 new Claim("project_id", validationResult.ProjectId.ToString()!),
                 new Claim("type", "api_token")

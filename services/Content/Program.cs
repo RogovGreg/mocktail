@@ -1,17 +1,14 @@
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Content.Services;
 using Content.Repositories;
 using Content.Data;
 using Content.Entities;
 using Shared.Content.Protos;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.OpenApi;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,24 +21,7 @@ builder.Services.AddOpenApi();
 // Add gRPC support
 builder.Services.AddGrpc();
 
-// Add authentication and authorization
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not found")))
-        };
-    });
-
-builder.Services.AddAuthorization();
+// No authentication needed - Gateway handles it and forwards headers
 
 // Add Entity Framework
 var connectionString = builder.Configuration.GetConnectionString("ContentDb");
@@ -56,21 +36,11 @@ builder.Services.AddDbContext<ContentDbContext>(options =>
 // Register repositories
 builder.Services.AddScoped<IGeneratedContentRepository, GeneratedContentRepository>();
 
-// Register HTTP clients for external services
-builder.Services.AddHttpClient<IBackendService, BackendService>((serviceProvider, client) =>
-{
-    var options = serviceProvider.GetRequiredService<IOptions<BackendServiceOptions>>();
-    client.BaseAddress = new Uri(options.Value.BaseUrl);
-});
-
 // Register gRPC client for Generator service
 builder.Services.AddGrpcClient<Generator.Protos.GeneratorService.GeneratorServiceClient>(options =>
 {
     options.Address = new Uri("http://generator:8080");
 });
-
-// Register service options
-builder.Services.Configure<BackendServiceOptions>(builder.Configuration.GetSection("BackendService"));
 
 // Register services
 builder.Services.AddScoped<IGeneratorService, GeneratorService>();
@@ -95,9 +65,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// Use authentication and authorization
-app.UseAuthentication();
-app.UseAuthorization();
 
 // Map gRPC service
 app.MapGrpcService<ContentServiceImpl>();
@@ -115,27 +82,37 @@ app.MapGet("/check-availability", () =>
 
 
 // Mock API endpoints for serving generated content
-app.MapGet("/api/mock/{projectId}/{endpointPath}", 
-    [Authorize] // Requires authentication
-    async (string projectId, string endpointPath, 
-           IGeneratedContentRepository repository,
+app.MapGet("/api/mock/{projectId}/{*endpointPath}", 
+    async Task<IResult> (string projectId, string endpointPath, 
+IGeneratedContentRepository repository,
            HttpContext context) =>
 {
-    // Extract project ID from token claims
-    var tokenProjectId = context.User.FindFirst("project_id")?.Value;
+    // Get project ID from forwarded header (Gateway forwards claims as headers)
+    var tokenProjectId = context.Request.Headers["X-Project-Id"].FirstOrDefault();
     
-    // Validate authorization - ensure token is authorized for the requested project
-    if (string.IsNullOrEmpty(tokenProjectId) || tokenProjectId != projectId)
+    // Validate authorization - ensure token is authorized for the requested project (guid-safe)
+    if (string.IsNullOrEmpty(tokenProjectId))
     {
-        return Results.Forbidden("Token not authorized for this project");
+        return Results.Problem("Token not authorized for this project", statusCode: 403);
     }
-    
+
     if (!Guid.TryParse(projectId, out var projectGuid))
     {
         return Results.BadRequest("Invalid project ID format");
     }
 
-    var content = await repository.GetByProjectAndPathAsync(projectGuid, endpointPath);
+    if (!Guid.TryParse(tokenProjectId, out var tokenProjectGuid) || tokenProjectGuid != projectGuid)
+    {
+        return Results.Problem("Token not authorized for this project", statusCode: 403);
+    }
+
+    // Get the latest content for this project and path
+    var allContent = await repository.GetByProjectIdAsync(projectGuid);
+    var content = allContent
+        .Where(c => c.EndpointPath == endpointPath)
+        .OrderByDescending(c => c.CreatedAt)
+        .FirstOrDefault();
+    
     if (content == null)
     {
         return Results.NotFound($"No content found for project {projectId} and path {endpointPath}");
@@ -145,42 +122,6 @@ app.MapGet("/api/mock/{projectId}/{endpointPath}",
     return Results.Content(content.GeneratedData, "application/json");
 });
 
-// Additional endpoints for content management
-app.MapGet("/api/generated/{contentId}", async (string contentId, IGeneratedContentRepository repository) =>
-{
-    if (!Guid.TryParse(contentId, out var contentGuid))
-    {
-        return Results.BadRequest("Invalid content ID format");
-    }
-
-    var content = await repository.GetByIdAsync(contentGuid);
-    if (content == null)
-    {
-        return Results.NotFound($"Content with ID {contentId} not found");
-    }
-
-    return Results.Json(content);
-});
-
-app.MapGet("/api/generated", async (string? userId, string? projectId, IGeneratedContentRepository repository) =>
-{
-    IEnumerable<GeneratedContent> content;
-    
-    if (!string.IsNullOrEmpty(userId) && Guid.TryParse(userId, out var userGuid))
-    {
-        content = await repository.GetByUserIdAsync(userGuid);
-    }
-    else if (!string.IsNullOrEmpty(projectId) && Guid.TryParse(projectId, out var projectGuid))
-    {
-        content = await repository.GetByProjectIdAsync(projectGuid);
-    }
-    else
-    {
-        return Results.BadRequest("Either userId or projectId must be provided");
-    }
-
-    return Results.Json(content);
-});
 
 app.Urls.Add("http://*:80");
 app.Urls.Add("http://*:8080");

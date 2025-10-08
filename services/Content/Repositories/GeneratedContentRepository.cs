@@ -25,6 +25,22 @@ public class GeneratedContentRepository : IGeneratedContentRepository
             .FirstOrDefaultAsync(x => x.ProjectId == projectId && x.EndpointPath == endpointPath);
     }
 
+    public async Task<GeneratedContent?> GetLatestByTemplateAndVersionAsync(Guid templateId, int templateVersion)
+    {
+        return await _context.GeneratedContent
+            .Where(x => x.TemplateId == templateId && x.TemplateVersion == templateVersion)
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<GeneratedContent?> GetLatestByTemplateIdAsync(Guid templateId)
+    {
+        return await _context.GeneratedContent
+            .Where(x => x.TemplateId == templateId)
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<IEnumerable<GeneratedContent>> GetByUserIdAsync(Guid userId)
     {
         return await _context.GeneratedContent

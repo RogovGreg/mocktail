@@ -6,6 +6,8 @@ public interface IGeneratedContentRepository
 {
     Task<GeneratedContent?> GetByIdAsync(Guid id);
     Task<GeneratedContent?> GetByProjectAndPathAsync(Guid projectId, string endpointPath);
+    Task<GeneratedContent?> GetLatestByTemplateAndVersionAsync(Guid templateId, int templateVersion);
+    Task<GeneratedContent?> GetLatestByTemplateIdAsync(Guid templateId);
     Task<IEnumerable<GeneratedContent>> GetByUserIdAsync(Guid userId);
     Task<IEnumerable<GeneratedContent>> GetByProjectIdAsync(Guid projectId);
     Task<IEnumerable<GeneratedContent>> GetByTemplateIdAsync(Guid templateId);

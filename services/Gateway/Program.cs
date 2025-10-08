@@ -16,6 +16,17 @@ builder.Configuration
     .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
 
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+// Add HTTP client for API token validation
+builder.Services.AddHttpClient("AuthService", client =>
+{
+    client.BaseAddress = new Uri("http://auth:80");
+});
+
 // Add services to the container
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -28,38 +39,18 @@ builder.Services
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidAudiences = new[] { 
+                builder.Configuration["Jwt:Issuer"], 
+                builder.Configuration["Jwt:Audience"]
+            },
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not found")))
         };
     })
-    .AddJwtBearer("ContentBearer", options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:ContentAudience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not found")))
-        };
-    });
+    .AddScheme<ApiTokenAuthenticationSchemeOptions, ApiTokenAuthenticationHandler>("ContentBearer", options => { });
 
 // This line was missing and caused the error
 builder.Services.AddAuthorization();
-
-// Add HTTP client for API token validation
-builder.Services.AddHttpClient("AuthService", client =>
-{
-    client.BaseAddress = new Uri("http://auth:80");
-});
-
-// Add API Token authentication
-builder.Services.AddAuthentication("ApiToken")
-    .AddScheme<ApiTokenAuthenticationSchemeOptions, ApiTokenAuthenticationHandler>("ApiToken", options => { });
 
 // Add Ocelot
 builder.Services.AddOcelot(builder.Configuration);

@@ -36,9 +36,8 @@ public class ContentDbContext : DbContext
             entity.Property(e => e.EndpointPath)
                 .HasMaxLength(500);
 
-            // Create unique index for project + endpoint combination
+            // Create index for project + endpoint combination (not unique to allow multiple versions)
             entity.HasIndex(e => new { e.ProjectId, e.EndpointPath })
-                .IsUnique()
                 .HasDatabaseName("IX_GeneratedContent_ProjectId_EndpointPath");
 
             // Create indexes for performance

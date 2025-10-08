@@ -8,8 +8,7 @@ service ContentService {
   rpc ListContent (ListContentRequest) returns (ListContentResponse);
   rpc CreateContent (CreateContentRequest) returns (CreateContentResponse);
   rpc GenerateFromTemplate (GenerateFromTemplateRequest) returns (GenerateFromTemplateResponse);
-  rpc GetTemplate (GetTemplateRequest) returns (GetTemplateResponse);
-  rpc GetGeneratedContentStatus (GetGeneratedContentStatusRequest) returns (GetGeneratedContentStatusResponse);
+  rpc GetLatestContentByTemplate (GetLatestContentByTemplateRequest) returns (GetLatestContentByTemplateResponse);
   rpc MarkContentAsStale (MarkContentAsStaleRequest) returns (MarkContentAsStaleResponse);
 }
 
@@ -59,30 +58,15 @@ message GenerateFromTemplateResponse {
   string endpoint_path = 7;  // Endpoint path for serving the content
 }
 
-message GetTemplateRequest {
-  string template_id = 1;  // Template ID to fetch
+// New messages for getting latest content by template
+message GetLatestContentByTemplateRequest {
+  string template_id = 1;  // Template ID to get latest content for
 }
 
-message GetTemplateResponse {
-  string template_id = 1;
-  string name = 2;
-  string schema = 3;        // JSON schema for generation
-  string path = 4;          // Endpoint path
-  string project_id = 5;    // Project ID
-  string project_title = 6; // Project title for reference
-  int32 version = 7;        // Template version
-  bool success = 8;         // Whether template was found
-  string error_message = 9; // Error message if template not found
-}
-
-message GetGeneratedContentStatusRequest {
-  string content_id = 1;   // Generated content ID to check status for
-}
-
-message GetGeneratedContentStatusResponse {
+message GetLatestContentByTemplateResponse {
   string content_id = 1;    // Generated content ID
   string status = 2;        // Status: "Pending", "Completed", "Failed"
-  string template_id = 3;   // Template ID
+  string template_id = 3;  // Template ID
   int32 template_version = 4; // Template version used
   string project_id = 5;   // Project ID
   string endpoint_path = 6; // Endpoint path

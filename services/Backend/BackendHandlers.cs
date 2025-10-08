@@ -128,10 +128,89 @@ public static class BackendHandlers
     return await query.ToListAsync();
   }
 
-  public static async Task<IResult> GetTemplateById(Guid id, AppDbContext db)
+  public static async Task<IResult> GetTemplateById(Guid id, AppDbContext db, ContentService.ContentServiceClient client)
   {
-    var tpl = await db.Templates.FindAsync(id);
-    return tpl is not null ? Results.Ok(tpl) : Results.NotFound();
+    var template = await db.Templates.FindAsync(id);
+    if (template is null) return Results.NotFound();
+
+    try
+    {
+      // Get latest content status from Content service
+      var contentRequest = new GetLatestContentByTemplateRequest
+      {
+        TemplateId = id.ToString()
+      };
+
+      var contentResponse = await client.GetLatestContentByTemplateAsync(contentRequest);
+      
+      // Compute aggregated status
+      string effectiveStatus = template.Status;
+      
+      if (template.Status == "Draft")
+      {
+        // If Backend says Draft, it's always Draft regardless of Content state
+        effectiveStatus = "Draft";
+      }
+      else if (template.Status == "Published")
+      {
+        if (!contentResponse.Success)
+        {
+          // No content found - consider it Stale
+          effectiveStatus = "Stale";
+        }
+        else if (contentResponse.Status == "Pending" || contentResponse.Status == "Failed")
+        {
+          // Content is still generating or failed - consider it Stale
+          effectiveStatus = "Stale";
+        }
+        else if (contentResponse.Status == "Completed")
+        {
+          if (contentResponse.TemplateVersion < template.Version)
+          {
+            // Content is for an older version - consider it Stale
+            effectiveStatus = "Stale";
+          }
+          else
+          {
+            // Content is completed and matches current version - truly Published
+            effectiveStatus = "Published";
+          }
+        }
+      }
+
+      // Create response object with aggregated status
+      var response = new
+      {
+        Id = template.Id,
+        Schema = template.Schema,
+        Name = template.Name,
+        Tags = template.Tags,
+        Path = template.Path,
+        Description = template.Description,
+        Version = template.Version,
+        Status = effectiveStatus, // Use computed effective status
+        CreatedAt = template.CreatedAt,
+        UpdatedAt = template.UpdatedAt,
+        CreatedBy = template.CreatedBy,
+        UpdatedBy = template.UpdatedBy,
+        RelatedProjectId = template.RelatedProjectId,
+        UsedIn = template.UsedIn,
+        LatestGeneratedVersion = template.LatestGeneratedVersion,
+        LastGeneratedAt = template.LastGeneratedAt,
+        // Additional content information
+        ContentStatus = contentResponse.Success ? contentResponse.Status : null,
+        ContentVersion = contentResponse.Success ? contentResponse.TemplateVersion : (int?)null,
+        ContentId = contentResponse.Success ? contentResponse.ContentId : null
+      };
+
+      return Results.Ok(response);
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine($"Error fetching content status for template {id}: {ex.Message}");
+      // Return template with Backend status only if Content service call fails
+      return Results.Ok(template);
+    }
   }
 
   public static async Task<IResult> CreateTemplate(Template template, AppDbContext db)
@@ -172,27 +251,14 @@ public static class BackendHandlers
     {
       // Increment version when schema or path changes
       template.Version = existingTemplate.Version + 1;
-      
-      // Mark old content as stale in Content service
-      try
-      {
-        var markStaleRequest = new MarkContentAsStaleRequest
-        {
-          TemplateId = id.ToString(),
-          FromVersion = existingTemplate.Version
-        };
-        await client.MarkContentAsStaleAsync(markStaleRequest);
-      }
-      catch (Exception ex)
-      {
-        Console.WriteLine($"Warning: Failed to mark content as stale: {ex.Message}");
-        // Continue with template update even if stale marking fails
-      }
+      // Set status to Draft when template is updated
+      template.Status = "Draft";
     }
     else
     {
-      // Keep the same version for non-generation changes
+      // Keep the same version and status for non-generation changes
       template.Version = existingTemplate.Version;
+      template.Status = existingTemplate.Status;
     }
 
     template.Id = id;
@@ -243,10 +309,13 @@ public static class BackendHandlers
     var project = await db.Projects.FindAsync(template.RelatedProjectId);
     var projectTitle = project?.Title ?? "Unknown Project";
     
+    // Use current template version (don't increment)
+    var currentVersion = template.Version;
+    
     var request = new GenerateFromTemplateRequest
     {
       TemplateId = id.ToString(),
-      TemplateVersion = template.Version,
+      TemplateVersion = currentVersion,
       UserId = userId,
       TemplateName = template.Name,
       Schema = template.Schema,
@@ -259,9 +328,13 @@ public static class BackendHandlers
     {
       var response = await client.GenerateFromTemplateAsync(request);
       
+      // Update template status to Published after successful gRPC call
+      template.Status = "Published";
+      
       // Update template with generation tracking
       template.LastGeneratedAt = DateTimeOffset.UtcNow;
       template.LatestGeneratedVersion = template.Version;
+      template.UpdatedAt = DateTimeOffset.UtcNow;
       await db.SaveChangesAsync();
       
       return Results.Ok(new
@@ -270,7 +343,7 @@ public static class BackendHandlers
         Status = response.Status,
         Message = response.Message,
         TemplateId = response.TemplateId,
-        TemplateVersion = response.TemplateVersion,
+        TemplateVersion = template.Version, // Return the current version (not incremented)
         ProjectId = response.ProjectId,
         EndpointPath = response.EndpointPath
       });
@@ -278,54 +351,6 @@ public static class BackendHandlers
     catch (Exception ex)
     {
       Console.WriteLine($"Error calling Content service: {ex.Message}");
-      return Results.StatusCode(StatusCodes.Status500InternalServerError);
-    }
-  }
-
-  public static async Task<IResult> GetGeneratedContentStatus(Guid id, AppDbContext db, ContentService.ContentServiceClient client)
-  {
-    try
-    {
-      var request = new GetGeneratedContentStatusRequest
-      {
-        ContentId = id.ToString()
-      };
-
-      var response = await client.GetGeneratedContentStatusAsync(request);
-      
-      if (!response.Success)
-      {
-        return Results.NotFound(new { Message = response.ErrorMessage });
-      }
-
-      // Get the template to check if content is stale
-      var template = await db.Templates.FindAsync(Guid.Parse(response.TemplateId));
-      var isStale = template != null && response.TemplateVersion < template.Version;
-
-      // Determine the effective status
-      string effectiveStatus = response.Status;
-      if (isStale && response.Status == "Completed")
-      {
-        effectiveStatus = "Stale";
-      }
-
-      return Results.Ok(new
-      {
-        ContentId = response.ContentId,
-        Status = effectiveStatus,
-        TemplateId = response.TemplateId,
-        TemplateVersion = response.TemplateVersion,
-        ProjectId = response.ProjectId,
-        EndpointPath = response.EndpointPath,
-        CreatedAt = response.CreatedAt,
-        UpdatedAt = response.UpdatedAt,
-        IsStale = isStale,
-        LatestTemplateVersion = template?.Version ?? response.TemplateVersion
-      });
-    }
-    catch (Exception ex)
-    {
-      Console.WriteLine($"Error getting generated content status: {ex.Message}");
       return Results.StatusCode(StatusCodes.Status500InternalServerError);
     }
   }

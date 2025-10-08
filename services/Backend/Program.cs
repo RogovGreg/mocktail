@@ -80,9 +80,6 @@ app.MapPut("/templates/{id:guid}", BackendHandlers.UpdateTemplate);
 app.MapDelete("/templates/{id:guid}", BackendHandlers.DeleteTemplate);
 app.MapPost("/templates/{id:guid}/generate", BackendHandlers.GenerateTemplateData).RequireAuthorization();
 
-// Generated content endpoints
-app.MapGet("/generated-content/{id:guid}/status", BackendHandlers.GetGeneratedContentStatus).RequireAuthorization();
-
 app.MapGet("/check-availability", () =>
 {
     return Results.Json(new

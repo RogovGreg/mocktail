@@ -2,6 +2,7 @@ using Auth.Entities;
 using Auth.Services;
 using Microsoft.AspNetCore.Identity;
 using MyService.Entities;
+using System.Security.Claims;
 
 public static class AuthHandlers
 {
@@ -311,7 +312,7 @@ public static class AuthHandlers
         if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
             return Results.Unauthorized();
 
-        var userId = context.User.FindFirst("sub")?.Value;
+        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null)
             return Results.Unauthorized();
 
@@ -344,7 +345,7 @@ public static class AuthHandlers
         if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
             return Results.Unauthorized();
 
-        var userId = context.User.FindFirst("sub")?.Value;
+        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null)
             return Results.Unauthorized();
 
@@ -370,7 +371,7 @@ public static class AuthHandlers
         if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
             return Results.Unauthorized();
 
-        var userId = context.User.FindFirst("sub")?.Value;
+        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null)
             return Results.Unauthorized();
 
@@ -392,7 +393,7 @@ public static class AuthHandlers
         if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
             return Results.Unauthorized();
 
-        var userId = context.User.FindFirst("sub")?.Value;
+        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null)
             return Results.Unauthorized();
 
