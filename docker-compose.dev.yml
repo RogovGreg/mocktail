@@ -1,4 +1,14 @@
 services:
+  redis:
+    image: redis:7-alpine
+    hostname: redis
+    container_name: redis-dev
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_dev_data:/data
+
   backend:
     build:
       dockerfile: Docker/Dockerfile.dev
@@ -52,3 +62,6 @@ services:
       - NODE_ENV=development
     ports:
       - "80:80"
+
+volumes:
+  redis_dev_data:

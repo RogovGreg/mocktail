@@ -9,6 +9,7 @@ using Content.Repositories;
 using Content.Data;
 using Content.Entities;
 using Shared.Content.Protos;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,27 @@ builder.Services.AddDbContext<ContentDbContext>(options =>
 
 // Register repositories
 builder.Services.AddScoped<IGeneratedContentRepository, GeneratedContentRepository>();
+
+// Register Redis caching
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+if (string.IsNullOrWhiteSpace(redisConnectionString))
+{
+    throw new InvalidOperationException("Connection string 'Redis' not found. Make sure the environment variable 'ConnectionStrings__Redis' is set.");
+}
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnectionString;
+});
+
+// Register Redis connection for advanced operations
+builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
+{
+    return ConnectionMultiplexer.Connect(redisConnectionString);
+});
+
+// Register cache service
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 // Register gRPC client for Generator service
 builder.Services.AddGrpcClient<Generator.Protos.GeneratorService.GeneratorServiceClient>(options =>
@@ -85,6 +107,8 @@ app.MapGet("/check-availability", () =>
 app.MapGet("/api/mock/{projectId}/{*endpointPath}", 
     async Task<IResult> (string projectId, string endpointPath, 
 IGeneratedContentRepository repository,
+ICacheService cacheService,
+ILogger<Program> logger,
            HttpContext context) =>
 {
     // Get project ID from forwarded header (Gateway forwards claims as headers)
@@ -106,7 +130,14 @@ IGeneratedContentRepository repository,
         return Results.Problem("Token not authorized for this project", statusCode: 403);
     }
 
-    // Get the latest content for this project and path
+    // Try to get content from cache first
+    var cachedContent = await cacheService.GetCachedContentAsync(projectGuid, endpointPath);
+    if (cachedContent != null)
+    {
+        return Results.Content(cachedContent.GeneratedData, "application/json");
+    }
+
+    // Cache miss - get from database
     var allContent = await repository.GetByProjectIdAsync(projectGuid);
     var content = allContent
         .Where(c => c.EndpointPath == endpointPath)
@@ -115,8 +146,11 @@ IGeneratedContentRepository repository,
     
     if (content == null)
     {
+        logger.LogWarning("No content found in database for project {ProjectId} and path {EndpointPath}", projectGuid, endpointPath);
         return Results.NotFound($"No content found for project {projectId} and path {endpointPath}");
     }
+
+    await cacheService.SetCachedContentAsync(projectGuid, endpointPath, content);
 
     // Return the raw JSON data
     return Results.Content(content.GeneratedData, "application/json");
