@@ -13,6 +13,8 @@ using Grpc.Net.ClientFactory;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddEnvironmentVariables();
+
 // Add gRPC client for Content service
 builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>
 {
@@ -22,7 +24,6 @@ builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = "http://auth";
         options.RequireHttpsMetadata = false;
 
         options.TokenValidationParameters = new TokenValidationParameters
@@ -42,7 +43,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
-builder.Configuration.AddEnvironmentVariables();
 
 var connectionString = builder.Configuration.GetConnectionString("BackendDb");
 if (string.IsNullOrWhiteSpace(connectionString))
@@ -62,7 +62,6 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 var app = builder.Build();
-
 // Middleware
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -79,18 +78,7 @@ app.MapGet("/templates/{id:guid}", BackendHandlers.GetTemplateById);
 app.MapPost("/templates", BackendHandlers.CreateTemplate);
 app.MapPut("/templates/{id:guid}", BackendHandlers.UpdateTemplate);
 app.MapDelete("/templates/{id:guid}", BackendHandlers.DeleteTemplate);
-app.MapPost("/templates/{id:guid}/generate", BackendHandlers.GenerateTemplateData);
-
-// Content endpoints that communicate with Content service via gRPC
-app.MapGet("/content", async (string? userId, ContentService.ContentServiceClient client) =>
-    await ContentHandlers.GetContent(userId ?? "", client));
-
-// Support path parameter variant: /content/{userId}
-app.MapGet("/content/{userId}", async (string userId, ContentService.ContentServiceClient client) =>
-    await ContentHandlers.GetContent(userId, client));
-
-app.MapPost("/content", async (CreateContentRequest request, ContentService.ContentServiceClient client) =>
-    await ContentHandlers.CreateContent(request, client));
+app.MapPost("/templates/{id:guid}/generate", BackendHandlers.GenerateTemplateData).RequireAuthorization();
 
 app.MapGet("/check-availability", () =>
 {

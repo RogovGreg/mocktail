@@ -26,8 +26,6 @@ export const CreateTemplatePage = () => {
       body: { data: values },
     })
       .then(response => {
-        // eslint-disable-next-line no-console
-        console.log('Created:', response.data);
         navigate(`/app/projects/${projectId}/templates/${response.data.id}`);
       })
       .catch(err => {
