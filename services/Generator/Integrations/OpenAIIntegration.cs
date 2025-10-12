@@ -45,36 +45,40 @@ public class OpenAIIntegration
         }
     }
 
-    public static async Task<IResult> Generate(HttpContext context)
+    public static async Task<string> Generate(string schema, int amount = 10)
     {
+        if (string.IsNullOrEmpty(schema) || amount <= 0)
+        {
+            throw new ArgumentException("Invalid schema or amount");
+        }
+
+        string prompt =
+            $"Generate {amount} JSON objects that match the following typescript schema: \n```{schema}```\n"
+            + "The response should be a JSON array of objects, do not add any explanation text. \n";
+
+        logger.LogInformation("[LLM Prompt]: {Prompt}", prompt);
+
+        // Make the OpenAI request asynchronously
+        var completion = await client.CompleteChatAsync(prompt);
+        string response = completion.Value.Content[0].Text
+            .Replace("```json", string.Empty)
+            .Replace("```", string.Empty)
+            .Trim();
+
+        logger.LogInformation("[LLM Response]: {Response}", response);
+
+        // Validate that the response is valid JSON
         try
         {
-            var request = await JsonSerializer.DeserializeAsync<GenerateRequest>(context.Request.Body, jsonOptions);
-            if (request == null || string.IsNullOrEmpty(request.jsonSchema) || request.amount <= 0)
-            {
-                return Results.BadRequest("Invalid request");
-            }
-
-            string Prompt =
-                $"Generate {request.amount} JSON objects that match the following schema: \n```{request.jsonSchema}```\n"
-                + "The response should be a JSON array of objects, do not add any explanation text. \n";
-
-            logger.LogInformation("[LLM Prompt]: {Prompt}", Prompt);
-            string response = makeOpenAIRequest(Prompt)
-                .Replace("```json", string.Empty)
-                .Replace("```", string.Empty)
-                .Trim();
-
-            logger.LogInformation("[LLM Response]: {Response}", response);
-
-            var result = JsonSerializer.Deserialize<JsonElement>(response, jsonOptions);
-
-            return Results.Json(new { result });
+            JsonSerializer.Deserialize<JsonElement>(response, jsonOptions);
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
-            return Results.BadRequest("Invalid JSON");
+            logger.LogError(ex, "Generated content is not valid JSON");
+            throw new InvalidOperationException("OpenAI generated invalid JSON content", ex);
         }
+
+        return response;
     }
 }
 
