@@ -1,8 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS runtime
 WORKDIR /src
 
-# Set environment variable to avoid ARM64 protoc issues
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+# Simple: just install the native protobuf compiler
+RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
 
 COPY Generator.csproj .
 RUN dotnet restore
