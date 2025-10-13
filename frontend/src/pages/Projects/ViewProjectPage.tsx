@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 
 import { BackendService, TProject } from '#api';
 
@@ -8,7 +8,13 @@ export const ViewProjectPage: FC = () => {
 
   const navigate = useNavigate();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [project, setProject] = useState<TProject | null>(null);
+  const [editedProject, setEditedProject] = useState<TProject | null>(null);
+  const [newKeyword, setNewKeyword] = useState('');
+
+  const isEditing = Boolean(editedProject);
 
   useEffect(() => {
     if (!projectId) {
@@ -20,12 +26,66 @@ export const ViewProjectPage: FC = () => {
     BackendService.getProjectByID({ path: { params: { id: projectId } } })
       .then(response => {
         setProject(response.data);
+
+        if (searchParams.get('edit') === 'true') {
+          setEditedProject(response.data);
+        }
       })
       .catch(error => {
         // eslint-disable-next-line no-console
         console.error('Failed to fetch project', error);
       });
-  }, [projectId]);
+  }, [projectId, searchParams]);
+
+  const handleEditMode = () => {
+    if (project) {
+      setEditedProject({ ...project });
+      setSearchParams({ edit: 'true' });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditedProject(null);
+    setSearchParams({});
+    setNewKeyword('');
+  };
+
+  const handleSaveChanges = async () => {
+    if (!editedProject || !projectId) return;
+
+    try {
+      const response = await BackendService.updateProject({
+        body: { data: editedProject },
+        path: { params: { id: projectId } },
+      });
+
+      setProject(response.data);
+      setEditedProject(null);
+      setSearchParams({});
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to update project', error);
+    }
+  };
+
+  const handleAddKeyword = () => {
+    if (!newKeyword.trim() || !editedProject) return;
+
+    setEditedProject({
+      ...editedProject,
+      keyWords: [...(editedProject.keyWords || []), newKeyword.trim()],
+    });
+    setNewKeyword('');
+  };
+
+  const handleRemoveKeyword = (keyword: string) => {
+    if (!editedProject) return;
+
+    setEditedProject({
+      ...editedProject,
+      keyWords: editedProject.keyWords?.filter(kw => kw !== keyword) || [],
+    });
+  };
 
   if (!project) {
     return (
@@ -38,10 +98,24 @@ export const ViewProjectPage: FC = () => {
     );
   }
 
+  const currentProject: TProject = editedProject || project;
+
   return (
     <div className='container mx-auto p-6 w-full'>
       <div className='mb-8'>
-        <h1 className='text-4xl font-bold mb-2'>{project.title}</h1>
+        {isEditing ? (
+          <input
+            type='text'
+            value={currentProject.title}
+            onChange={e =>
+              setEditedProject({ ...editedProject!, title: e.target.value })
+            }
+            className='input input-bordered text-4xl font-bold mb-2 w-full'
+            placeholder='Project title'
+          />
+        ) : (
+          <h1 className='text-4xl font-bold mb-2'>{currentProject.title}</h1>
+        )}
         <div className='text-sm text-base-content/50'>ID: {project.id}</div>
       </div>
 
@@ -53,7 +127,6 @@ export const ViewProjectPage: FC = () => {
           </div>
           <div className='stat-desc'>by {project.createdBy}</div>
         </div>
-
         <div className='stat'>
           <div className='stat-title'>Last Updated</div>
           <div className='stat-value text-secondary text-lg'>
@@ -65,42 +138,124 @@ export const ViewProjectPage: FC = () => {
 
       <div className='mb-6'>
         <h3 className='text-lg font-semibold mb-3'>Keywords</h3>
-        <div className='flex flex-wrap gap-2'>
-          {project.keyWords && project.keyWords.length > 0 ? (
-            project.keyWords.map(keyword => (
-              <span key={keyword} className='badge badge-primary badge-outline'>
+        <div className='flex flex-wrap gap-2 mb-3'>
+          {currentProject.keyWords && currentProject.keyWords.length > 0 ? (
+            currentProject.keyWords.map(keyword => (
+              <span
+                key={keyword}
+                className='badge badge-primary badge-outline gap-2'
+              >
                 {keyword}
+                {isEditing && (
+                  <button
+                    type='button'
+                    onClick={() => handleRemoveKeyword(keyword)}
+                    className='btn btn-ghost btn-xs btn-circle'
+                  >
+                    ×
+                  </button>
+                )}
               </span>
             ))
           ) : (
             <span className='text-base-content/50 italic'>No keywords</span>
           )}
         </div>
+
+        {isEditing && (
+          <div className='flex gap-2'>
+            <input
+              type='text'
+              value={newKeyword}
+              onChange={e => setNewKeyword(e.target.value)}
+              onKeyPress={e => e.key === 'Enter' && handleAddKeyword()}
+              className='input input-bordered input-sm flex-1'
+              placeholder='Add new keyword'
+            />
+            <button
+              type='button'
+              onClick={handleAddKeyword}
+              className='btn btn-primary btn-sm'
+            >
+              Add
+            </button>
+          </div>
+        )}
       </div>
 
       <div className='space-y-8'>
         <div className='mb-6'>
           <h2 className='text-xl font-semibold mb-3'>Description</h2>
-          <p className='text-base-content/80 leading-relaxed'>
-            {project.description || (
-              <span className='text-base-content/50 italic'>
-                No description provided
-              </span>
-            )}
-          </p>
+          {isEditing ? (
+            <textarea
+              value={currentProject.description || ''}
+              onChange={e =>
+                setEditedProject({
+                  ...editedProject!,
+                  description: e.target.value,
+                })
+              }
+              className='textarea textarea-bordered w-full h-32'
+              placeholder='Project description'
+            />
+          ) : (
+            <p className='text-base-content/80 leading-relaxed'>
+              {currentProject.description || (
+                <span className='text-base-content/50 italic'>
+                  No description provided
+                </span>
+              )}
+            </p>
+          )}
         </div>
 
         <div className='flex justify-end gap-4'>
-          <button
-            type='button'
-            className='btn btn-outline'
-            onClick={() => navigate(`/app/projects/${projectId}/edit`)}
-          >
-            Edit Project
-          </button>
-          <button type='button' className='btn btn-outline' disabled>
-            Delete Project
-          </button>
+          {isEditing ? (
+            <>
+              <button
+                type='button'
+                className='btn btn-outline'
+                onClick={handleCancelEdit}
+              >
+                Cancel
+              </button>
+              <button
+                type='button'
+                className='btn btn-primary'
+                onClick={handleSaveChanges}
+              >
+                Save Changes
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type='button'
+                className='btn btn-outline'
+                onClick={() => navigate(`/app/projects/${projectId}/templates`)}
+              >
+                Go to project&apos;s templates
+              </button>
+              <button
+                type='button'
+                className='btn btn-outline'
+                onClick={handleEditMode}
+              >
+                Edit Project
+              </button>
+              <button
+                type='button'
+                className='btn btn-error'
+                onClick={() =>
+                  BackendService.deleteProject({
+                    path: { params: { id: projectId! } },
+                  }).then(() => navigate('/app/projects'))
+                }
+              >
+                Delete Project
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useContext, useMemo } from 'react';
+import { useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import { AuthService } from '#api';
@@ -16,7 +16,7 @@ import { ERoutes } from '#src/router';
 //   HeaderNavigationPanelStyled,
 //   HeaderStyled,
 // } from './styled';
-import { THeaderNavigationPanel } from './types';
+// import { THeaderNavigationPanel } from './types';
 
 export const Header = () => {
   const {
@@ -31,31 +31,18 @@ export const Header = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const leftElementsGroup = useMemo<THeaderNavigationPanel>(
-    () => [
-      // {
-      //   href: ERoutes.About,
-      //   isActive: pathname.includes(ERoutes.About),
-      //   label: 'About',
-      // },
-      // {
-      //   href: ERoutes.Docs,
-      //   isActive: pathname.includes(ERoutes.Docs),
-      //   label: 'Docs',
-      // },
-      // {
-      //   href: ERoutes.Support,
-      //   isActive: pathname.includes(ERoutes.Support),
-      //   label: 'Support',
-      // },
-      {
-        href: ERoutes.Dashboard,
-        isActive: pathname.includes(ERoutes.WebApp),
-        label: '/ Web App',
-      },
-    ],
-    [pathname],
-  );
+  const isWebAppActive = pathname.includes(ERoutes.WebApp);
+
+  // const leftElementsGroup = useMemo<THeaderNavigationPanel>(
+  //   () => [
+  //     {
+  //       href: ERoutes.Dashboard,
+  //       isActive: pathname.includes(ERoutes.WebApp),
+  //       label: '/ Web App',
+  //     },
+  //   ],
+  //   [pathname],
+  // );
 
   // const userProfilePanel = useMemo<ReactNode>(
   //   () => (
@@ -106,21 +93,21 @@ export const Header = () => {
           <span style={{ color: 'var(--mt-color-primary-1)' }}>Tail</span>
         </h1>
         <ul className='menu menu-horizontal px-1'>
-          {leftElementsGroup.map(item => {
-            const { label, href } = item;
-
-            return (
-              // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-              <li
-                key={label}
-                // isActive={isActive}
-                // darkMode={false}
-                onClick={() => navigate(href)}
-              >
-                <a>{label}</a>
-              </li>
-            );
-          })}
+          <li>
+            <button
+              type='button'
+              className='btn btn-ghost'
+              style={{
+                backgroundColor: isWebAppActive
+                  ? 'var(--mt-color-primary-1)'
+                  : 'transparent',
+                color: isWebAppActive ? 'white' : 'inherit',
+              }}
+              onClick={() => navigate(ERoutes.Dashboard)}
+            >
+              / Web App
+            </button>
+          </li>
         </ul>
       </div>
       <div className='navbar-end'>
@@ -170,9 +157,6 @@ export const Header = () => {
           >
             <li>
               <ThemeSwitcher />
-            </li>
-            <li>
-              <a>Language</a>
             </li>
             <li>
               <button

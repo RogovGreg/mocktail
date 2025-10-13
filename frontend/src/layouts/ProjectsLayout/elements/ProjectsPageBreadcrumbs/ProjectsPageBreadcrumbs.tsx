@@ -21,7 +21,7 @@ export const ProjectsPageBreadcrumbs: React.FC = () => {
     });
 
   return (
-    <div className='breadcrumbs text-sm p-4'>
+    <div className='breadcrumbs text-sm px-6 py-1'>
       <ul>
         {breadcrumbs.map(crumb => (
           <li key={crumb.path}>

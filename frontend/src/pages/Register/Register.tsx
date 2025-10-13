@@ -42,8 +42,8 @@ export const RegisterPage: FC = () => {
     const formData = new FormData(event.currentTarget);
     const values: TRegisterFormValues = {
       confirmPassword: String(formData.get('confirmPassword') ?? ''),
+      email: String(formData.get('email') ?? ''),
       password: String(formData.get('password') ?? ''),
-      userName: String(formData.get('userName') ?? ''),
     };
     const { confirmPassword, ...restFields } = values;
 
@@ -75,7 +75,7 @@ export const RegisterPage: FC = () => {
       >
         <CustomInput
           label='Email'
-          name='userName'
+          name='email'
           placeholder='Enter your email'
         />
         <CustomInput

@@ -62,14 +62,8 @@ export const ProjectsPage = () => {
   }, []);
 
   return (
-    <div
-      style={{
-        boxSizing: 'border-box',
-        padding: '0 5px 5px',
-        width: '100%',
-      }}
-    >
-      <form onSubmit={onSearch} className='flex justify-center mb-6'>
+    <div className='container mx-auto p-6 w-full box-border'>
+      <form onSubmit={onSearch} className='flex justify-center m-6'>
         <div className='join w-full max-w-2xl'>
           <CustomInput
             name='searchString'
@@ -127,7 +121,9 @@ export const ProjectsPage = () => {
         </div>
       </form>
       <div className='divider divider-start'>
-        {projects.length > 0 ? `Found ${projects.length} projects` : null}
+        {projects.length > 0
+          ? `Found ${projects.length} project${projects.length > 1 ? 's' : ''}`
+          : null}
       </div>
       {projects.length > 0 ? (
         <div className='overflow-x-auto'>
@@ -196,7 +192,7 @@ export const ProjectsPage = () => {
                         className='btn btn-ghost btn-sm btn-square tooltip tooltip-left'
                         data-tip='Edit'
                         onClick={() =>
-                          navigate(`/app/projects/${project.id}/edit`)
+                          navigate(`/app/projects/${project.id}?edit=true`)
                         }
                       >
                         <svg

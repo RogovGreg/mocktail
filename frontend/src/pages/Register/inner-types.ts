@@ -1,5 +1,5 @@
 export type TRegisterFormValues = Readonly<{
-  userName: string;
+  email: string;
   password: string;
   confirmPassword: string;
 }>;

@@ -24,6 +24,26 @@
   }
 }
 
+.menu li > .active {
+  background-color: hsl(var(--p) / 0.2);
+  color: hsl(var(--p));
+  font-weight: 600;
+}
+
+.menu li > .active:hover {
+  background-color: hsl(var(--p) / 0.3);
+}
+
+.menu li > details > summary.active {
+  background-color: hsl(var(--p) / 0.2);
+  color: hsl(var(--p));
+  font-weight: 600;
+}
+
+.menu li > details > summary.active:hover {
+  background-color: hsl(var(--p) / 0.3);
+}
+
 [data-theme="light"] {
   --p: 0 100% 50%;    /* primary: #FF3300 */
   --s: 199 100% 20%;  /* secondary: #006699 */

@@ -61,10 +61,7 @@ export type TAuthMethodRefreshToken = TUnifiedApiMethod<
 
 // ================= REGISTER =======================
 
-export type TAuthMethodRegisterRequest = Readonly<{
-  userName: string;
-  password: string;
-}>;
+export type TAuthMethodRegisterRequest = TLoginPassword;
 
 export type TAuthMethodRegister = TUnifiedApiMethod<
   void,

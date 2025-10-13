@@ -1,5 +1,11 @@
 import { BackendService } from '#api/services/BackendService/BackendService';
-import { ProjectLayout, ProtectedLayout, WebAppLayout } from '#layouts';
+import {
+  ProjectDetailLayout,
+  ProjectLayout,
+  ProtectedLayout,
+  TemplatesLayout,
+  WebAppLayout,
+} from '#layouts';
 
 import { ERoutes } from './routes-list';
 import { TLoaderData, TRouteObjectList, TRoutePath } from './types';
@@ -10,8 +16,6 @@ import {
   CreateTemplatePage,
   DashboardPage,
   DocsPage,
-  EditProjectPage,
-  EditTemplatePage,
   LandingPage,
   LoginPage,
   PageNotFoundPage,
@@ -144,7 +148,7 @@ export const ROUTES_LIST: TRouteObjectList = [
                     },
                   },
                   {
-                    Component: ViewProjectPage,
+                    Component: ProjectDetailLayout,
                     isOnAuthFlow: false,
                     isProtected: true,
                     path: ':projectId',
@@ -168,18 +172,13 @@ export const ROUTES_LIST: TRouteObjectList = [
 
                     children: [
                       {
-                        Component: EditProjectPage,
+                        Component: ViewProjectPage,
                         isOnAuthFlow: false,
                         isProtected: true,
-                        path: 'edit',
-
-                        handle: {
-                          crumb: () => 'Edit',
-                        },
+                        path: '',
                       },
-
                       {
-                        Component: TemplatesPage,
+                        Component: TemplatesLayout,
                         isOnAuthFlow: false,
                         isProtected: true,
                         path: 'templates',
@@ -200,13 +199,19 @@ export const ROUTES_LIST: TRouteObjectList = [
 
                         children: [
                           {
+                            Component: TemplatesPage,
+                            isOnAuthFlow: false,
+                            isProtected: true,
+                            path: '',
+                          },
+                          {
                             Component: CreateTemplatePage,
                             isOnAuthFlow: false,
                             isProtected: true,
                             path: 'create',
 
                             handle: {
-                              crumb: () => 'Create New Template',
+                              crumb: () => 'Create new template',
                             },
                           },
                           {
@@ -216,21 +221,16 @@ export const ROUTES_LIST: TRouteObjectList = [
                             path: ':templateId',
 
                             loader: async ({ params }) => {
-                              if (!params.projectId || !params.templateId) {
+                              if (!params.templateId) {
                                 return null;
                               }
 
-                              const [project, template] = await Promise.all([
-                                BackendService.getProjectByID({
-                                  path: { params: { id: params.projectId } },
-                                }),
-                                BackendService.getTemplateByID({
+                              const template =
+                                await BackendService.getTemplateByID({
                                   path: { params: { id: params.templateId } },
-                                }),
-                              ]);
+                                });
 
                               return {
-                                project: project.data,
                                 template: template.data,
                               } as TLoaderData;
                             },
@@ -240,19 +240,6 @@ export const ROUTES_LIST: TRouteObjectList = [
                                 data?.template?.name ||
                                 `Template ${params?.templateId}`,
                             },
-
-                            children: [
-                              {
-                                Component: EditTemplatePage,
-                                isOnAuthFlow: false,
-                                isProtected: true,
-                                path: 'edit',
-
-                                handle: {
-                                  crumb: () => 'Edit',
-                                },
-                              },
-                            ],
                           },
                         ],
                       },
