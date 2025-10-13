@@ -1,31 +1,38 @@
-import { Link, useLocation } from 'react-router';
+import { Link, useMatches } from 'react-router-dom';
 
-import { ProjectsPageBreadcrumbsStyled } from './styled';
+export const ProjectsPageBreadcrumbs: React.FC = () => {
+  const matches = useMatches();
 
-export const ProjectsPageBreadcrumbs = () => {
-  const location = useLocation();
-
-  const getBreadcrumbItems = () => {
-    const pathSnippets: Array<string> = location.pathname
-      .split('/')
-      .filter(i => i);
-
-    return pathSnippets.map((_, index) => {
-      const url = `/${pathSnippets.slice(0, index + 1).join('/')}`;
-      const title = pathSnippets[index];
+  const breadcrumbs = matches
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    .filter(match => match.handle?.crumb)
+    .map((match, index, filteredMatches) => {
+      const isLast = index === filteredMatches.length - 1;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const label = match.handle.crumb(match.data, match.params);
 
       return {
-        title:
-          index === pathSnippets.length - 1 ? (
-            title.charAt(0).toUpperCase() + title.slice(1)
-          ) : (
-            <Link to={url}>
-              {title.charAt(0).toUpperCase() + title.slice(1)}
-            </Link>
-          ),
+        isLast,
+        label,
+        path: match.pathname,
       };
     });
-  };
 
-  return <ProjectsPageBreadcrumbsStyled items={getBreadcrumbItems()} />;
+  return (
+    <div className='breadcrumbs text-sm p-4'>
+      <ul>
+        {breadcrumbs.map(crumb => (
+          <li key={crumb.path}>
+            {crumb.isLast ? (
+              <span>{crumb.label}</span>
+            ) : (
+              <Link to={crumb.path}>{crumb.label}</Link>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 };

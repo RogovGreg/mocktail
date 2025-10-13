@@ -1,22 +1,31 @@
 import { FC } from 'react';
-import { FormItemProps, Input, InputProps } from 'antd';
-
-import { FormItemStyled } from './styled';
 
 export type TCustomInputProps = Readonly<{
-  wrapperProps?: React.HTMLAttributes<HTMLDivElement>;
-  formItemProps: FormItemProps;
-  inputProps: InputProps;
+  wrapperProps?: React.HTMLAttributes<HTMLFieldSetElement>;
+  formItemProps?: Record<string, unknown>;
+  inputProps?: Record<string, unknown>;
+
+  name: string;
+  label?: string;
+  placeholder?: string;
+  helperText?: string;
 }>;
 
 export const CustomInput: FC<TCustomInputProps> = props => {
-  const { wrapperProps, formItemProps, inputProps } = props;
+  const { wrapperProps, inputProps, label, placeholder, helperText, name } =
+    props;
 
   return (
-    <div {...wrapperProps}>
-      <FormItemStyled {...formItemProps}>
-        <Input {...inputProps} />
-      </FormItemStyled>
-    </div>
+    <fieldset className='fieldset' {...wrapperProps}>
+      {label ? <legend className='fieldset-legend'>{label}</legend> : null}
+      <input
+        name={name}
+        type='text'
+        className='input'
+        placeholder={placeholder}
+        {...inputProps}
+      />
+      {helperText && <p className='helper-text'>{helperText}</p>}
+    </fieldset>
   );
 };

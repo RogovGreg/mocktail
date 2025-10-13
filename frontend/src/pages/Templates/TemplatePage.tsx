@@ -1,6 +1,5 @@
 import { FC, ReactNode, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
-import { Button } from 'antd';
 
 import { BackendService, TTemplate } from '#api';
 
@@ -74,8 +73,8 @@ export const TemplatePage: FC = () => {
   return (
     <div>
       {templateData}
-      <Button
-        type='primary'
+      <button
+        type='button'
         onClick={() => {
           if (templateId) {
             BackendService.generateDataByTemplateID({
@@ -93,7 +92,7 @@ export const TemplatePage: FC = () => {
         }}
       >
         Generate Data And Show The Result In The Console
-      </Button>
+      </button>
     </div>
   );
 };

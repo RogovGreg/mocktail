@@ -4,8 +4,10 @@ import { Outlet } from 'react-router-dom';
 import { AppNavigationPanel } from './elements';
 
 export const WebAppLayout: FC = () => (
-  <div style={{ display: 'flex' }}>
+  <div className='flex h-full w-full'>
     <AppNavigationPanel />
-    <Outlet />
+    <div className='flex-1 overflow-auto'>
+      <Outlet />
+    </div>
   </div>
 );

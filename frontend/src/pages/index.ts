@@ -3,7 +3,6 @@ export * from './Dashboard';
 export * from './Docs';
 export * from './Landing';
 export * from './Login';
-export * from './Members';
 export * from './PageNotFound';
 export * from './Profile';
 export * from './Projects';

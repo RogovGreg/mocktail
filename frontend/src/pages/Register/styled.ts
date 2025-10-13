@@ -1,6 +1,4 @@
-import styled from '@emotion/styled';
-
-export const RegisterCardStyled = styled.div`
+export const RegisterCardStyled = `
   display: flex;
   flex-direction: column;
   gap: 24px;

@@ -4,7 +4,7 @@ import { TCheckServiceAvailability } from '../types';
 // ================= Common Types =======================
 
 export type TLoginPassword = Readonly<{
-  login: string | null;
+  email: string | null;
   password: string | null;
 }>;
 
@@ -61,7 +61,10 @@ export type TAuthMethodRefreshToken = TUnifiedApiMethod<
 
 // ================= REGISTER =======================
 
-export type TAuthMethodRegisterRequest = TLoginPassword;
+export type TAuthMethodRegisterRequest = Readonly<{
+  userName: string;
+  password: string;
+}>;
 
 export type TAuthMethodRegister = TUnifiedApiMethod<
   void,

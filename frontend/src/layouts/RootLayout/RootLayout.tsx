@@ -1,49 +1,36 @@
-import { useContext } from 'react';
+// import { useContext } from 'react';
 import { Outlet } from 'react-router';
 
-import { useSidebar } from '#src/common-functions';
-import { AuthContext } from '#src/global-contexts/AuthContext/AuthContext';
-import { useTheme } from '#src/theme';
-
+import { Footer } from './Footer';
+// import { useSidebar } from '#src/common-functions';
+// import { AuthContext } from '#src/global-contexts/AuthContext/AuthContext';
 import { Header } from './Header';
-import { HorizontalSidebar, Overlay, PageContainerStyled } from './styled';
-import packageInfo from '../../../package.json';
+// import { HorizontalSidebar, Overlay, PageContainerStyled } from './styled';
+// import packageInfo from '../../../package.json';
 
-export const RootLayout = () => {
-  const { isAuthorized } = useContext(AuthContext);
-  const { darkMode } = useTheme();
+export const RootLayout = () => (
+  // const { isAuthorized } = useContext(AuthContext);
 
-  const {
-    closeBothSidebars,
-    isLeftSidebarOpen,
-    isRightSidebarOpen,
-    rightSidebarConfig,
-    leftSidebarConfig,
-  } = useSidebar();
+  // const {
+  //   closeBothSidebars,
+  //   isLeftSidebarOpen,
+  //   isRightSidebarOpen,
+  //   // rightSidebarConfig,
+  //   // leftSidebarConfig,
+  // } = useSidebar();
 
-  const { Component: RightSidebarBody } = rightSidebarConfig || {};
-  const { Component: LeftSidebarBody } = leftSidebarConfig || {};
+  // const { Component: RightSidebarBody } = rightSidebarConfig || {};
+  // const { Component: LeftSidebarBody } = leftSidebarConfig || {};
 
-  return (
-    <PageContainerStyled
-      isAuthorized={Boolean(isAuthorized)}
-      darkMode={darkMode}
-    >
-      <HorizontalSidebar side='left' active={isLeftSidebarOpen}>
-        {LeftSidebarBody ? <LeftSidebarBody /> : null}
-      </HorizontalSidebar>
-      <HorizontalSidebar side='right' active={isRightSidebarOpen}>
-        {RightSidebarBody ? <RightSidebarBody /> : null}
-      </HorizontalSidebar>
-      <Overlay
-        visible={isLeftSidebarOpen || isRightSidebarOpen}
+  <div className='h-screen flex flex-col'>
+    {/* <div
+        // visible={isLeftSidebarOpen || isRightSidebarOpen}
         onClick={closeBothSidebars}
-      />
-      <Header />
-      <main>
-        <Outlet />
-        <footer>MockTail v{packageInfo.version} | 2024-2025</footer>
-      </main>
-    </PageContainerStyled>
-  );
-};
+      /> */}
+    <Header />
+    <main className='flex flex-1 items-center justify-center'>
+      <Outlet />
+    </main>
+    <Footer />
+  </div>
+);

@@ -1,28 +1,27 @@
-import { ReactNode, useContext, useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-// import { UserOutlined } from '@ant-design/icons';
-import { Button, Tooltip } from 'antd';
 
-// import DropdownButton from 'antd/es/dropdown/dropdown-button';
-// import { StatusCodes } from 'http-status-codes';
 import { AuthService } from '#api';
-// import { AUTHORIZED_USER_ID_FIELD_NAME } from '#common-constants';
+// import { UserOutlined } from '@ant-design/icons';
+// import { StatusCodes } from 'http-status-codes';
+// import { AuthService } from '#api';
+import { ThemeSwitcher } from '#common-components';
 import { AuthContext } from '#src/global-contexts';
+// import { AUTHORIZED_USER_ID_FIELD_NAME } from '#common-constants';
+// import { AuthContext } from '#src/global-contexts';
 import { ERoutes } from '#src/router';
-import { useTheme } from '#src/theme';
 
-import { ThemeSwitcher } from './elements';
-import {
-  HeaderNavigationItemStyled,
-  HeaderNavigationPanelStyled,
-  HeaderStyled,
-} from './styled';
+// import {
+//   HeaderNavigationItemStyled,
+//   HeaderNavigationPanelStyled,
+//   HeaderStyled,
+// } from './styled';
 import { THeaderNavigationPanel } from './types';
 
 export const Header = () => {
   const {
     authorizedUserData,
-    isAuthorized,
+    // isAuthorized,
     // updateIsAuthorized,
     // updateAccessToken,
     // updateAuthorizedUserData,
@@ -32,118 +31,160 @@ export const Header = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const { darkMode, toggleTheme } = useTheme();
-
   const leftElementsGroup = useMemo<THeaderNavigationPanel>(
     () => [
-      {
-        href: ERoutes.About,
-        isActive: pathname.includes(ERoutes.About),
-        label: 'About',
-      },
-      {
-        href: ERoutes.Docs,
-        isActive: pathname.includes(ERoutes.Docs),
-        label: 'Docs',
-      },
-      {
-        href: ERoutes.Support,
-        isActive: pathname.includes(ERoutes.Support),
-        label: 'Support',
-      },
+      // {
+      //   href: ERoutes.About,
+      //   isActive: pathname.includes(ERoutes.About),
+      //   label: 'About',
+      // },
+      // {
+      //   href: ERoutes.Docs,
+      //   isActive: pathname.includes(ERoutes.Docs),
+      //   label: 'Docs',
+      // },
+      // {
+      //   href: ERoutes.Support,
+      //   isActive: pathname.includes(ERoutes.Support),
+      //   label: 'Support',
+      // },
       {
         href: ERoutes.Dashboard,
         isActive: pathname.includes(ERoutes.WebApp),
-        label: 'Web App',
+        label: '/ Web App',
       },
     ],
     [pathname],
   );
 
-  const userProfilePanel = useMemo<ReactNode>(
-    () => (
-      <div key='profile'>
-        {isAuthorized ? <span>{userName}</span> : <span>Guest</span>}
-        <Tooltip title={isAuthorized ? 'Logout' : 'Login'}>
-          {isAuthorized ? (
-            <Button
-              icon={
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  height='24px'
-                  viewBox='0 -960 960 960'
-                  width='24px'
-                  fill='#e3e3e3'
-                >
-                  <path d='M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z' />
-                </svg>
-              }
-              onClick={() =>
-                AuthService.logout().then(() => navigate(ERoutes.Landing))
-              }
-            />
-          ) : (
-            <Button
-              icon={
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  height='24px'
-                  viewBox='0 -960 960 960'
-                  width='24px'
-                  fill='#e3e3e3'
-                >
-                  <path d='M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z' />
-                </svg>
-              }
-              onClick={() => navigate(ERoutes.Login)}
-            />
-          )}
-        </Tooltip>
-      </div>
-    ),
-    [isAuthorized, userName],
-  );
-
-  const rightElementsGroup = useMemo<Array<ReactNode>>(
-    () => [
-      <div key='theme-switcher'>
-        <ThemeSwitcher />
-      </div>,
-      userProfilePanel,
-    ],
-    [isAuthorized, toggleTheme, userName],
-  );
+  // const userProfilePanel = useMemo<ReactNode>(
+  //   () => (
+  //     <div key='profile'>
+  //       {isAuthorized ? <span>{userName}</span> : <span>Guest</span>}
+  //       {/* <Tooltip title={isAuthorized ? 'Logout' : 'Login'}> */}
+  //       {isAuthorized ? (
+  //         <button
+  //           type='button'
+  //           onClick={() =>
+  //             AuthService.logout().then(() => navigate(ERoutes.Landing))
+  //           }
+  //         >
+  //           <svg
+  //             xmlns='http://www.w3.org/2000/svg'
+  //             height='24px'
+  //             viewBox='0 -960 960 960'
+  //             width='24px'
+  //             fill='#e3e3e3'
+  //           >
+  //             <path d='M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z' />
+  //           </svg>
+  //         </button>
+  //       ) : (
+  //         <button type='button' onClick={() => navigate(ERoutes.Login)}>
+  //           <svg
+  //             xmlns='http://www.w3.org/2000/svg'
+  //             height='24px'
+  //             viewBox='0 -960 960 960'
+  //             width='24px'
+  //             fill='#e3e3e3'
+  //           >
+  //             <path d='M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z' />
+  //           </svg>
+  //         </button>
+  //       )}
+  //     </div>
+  //   ),
+  //   [isAuthorized, userName],
+  // );
 
   return (
-    <HeaderStyled isAuthorized={Boolean(isAuthorized)} darkMode={darkMode}>
-      <div>
-        <h1
-          style={{ alignSelf: 'center', display: 'flex', marginLeft: '10px' }}
-        >
+    <div className='navbar bg-base-100 shadow-sm'>
+      <div className='navbar-start'>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+        <h1 className='btn btn-ghost text-xl' onClick={() => navigate('/')}>
           <span style={{ color: 'var(--mt-color-secondary-1)' }}>Mock</span>
           <span style={{ color: 'var(--mt-color-primary-1)' }}>Tail</span>
         </h1>
-        <HeaderNavigationPanelStyled>
+        <ul className='menu menu-horizontal px-1'>
           {leftElementsGroup.map(item => {
-            const { label, href, isActive } = item;
+            const { label, href } = item;
 
             return (
-              <HeaderNavigationItemStyled
+              // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+              <li
                 key={label}
-                type='button'
-                isActive={isActive}
-                darkMode={darkMode}
+                // isActive={isActive}
+                // darkMode={false}
                 onClick={() => navigate(href)}
               >
-                {label}
-              </HeaderNavigationItemStyled>
+                <a>{label}</a>
+              </li>
             );
           })}
-        </HeaderNavigationPanelStyled>
+        </ul>
       </div>
-      <div style={{ alignItems: 'center', display: 'flex' }}>
-        {rightElementsGroup}
+      <div className='navbar-end'>
+        <div>
+          <span>{userName || 'Guest'}</span>
+          <ThemeSwitcher />
+          {/* <button type='button' className='btn btn-ghost btn-circle'>
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              fill='none'
+              viewBox='0 0 24 24'
+              strokeWidth={1.5}
+              stroke='currentColor'
+              className='size-6'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                d='M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z'
+              />
+            </svg>
+          </button> */}
+        </div>
+        <button className='btn btn-ghost btn-circle' type='button'>
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            fill='none'
+            viewBox='0 0 24 24'
+            strokeWidth={1.5}
+            stroke='currentColor'
+            className='size-6'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              d='M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z'
+            />
+          </svg>
+        </button>
+        <div className='dropdown dropdown-end'>
+          <div tabIndex={0} role='button' className='btn m-1'>
+            Click ⬇️
+          </div>
+          <ul
+            tabIndex={-1}
+            className='dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm'
+          >
+            <li>
+              <ThemeSwitcher />
+            </li>
+            <li>
+              <a>Language</a>
+            </li>
+            <li>
+              <button
+                onClick={() => AuthService.logout().then(() => navigate('/'))}
+                type='button'
+              >
+                Logout
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
-    </HeaderStyled>
+    </div>
   );
 };
