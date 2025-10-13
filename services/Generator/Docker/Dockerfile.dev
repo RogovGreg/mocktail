@@ -1,6 +1,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS runtime
 WORKDIR /src
 
+# Set environment variable to avoid ARM64 protoc issues
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+
 COPY Generator.csproj .
 RUN dotnet restore
 

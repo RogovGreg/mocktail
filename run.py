@@ -140,9 +140,9 @@ def run_migrations():
 
 
 def start_docker():
-    print("Creating postgresdata volume...")
+    print("Creating mocktail_data volume...")
     subprocess.run(
-        ["docker", "volume", "create", "postgresdata"],
+        ["docker", "volume", "create", "mocktail_data"],
         check=True,
     )
     print("Starting Docker containers...")

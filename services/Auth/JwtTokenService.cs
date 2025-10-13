@@ -50,7 +50,7 @@ public class JwtTokenService
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(Convert.ToDouble(_config["Jwt:ExpirationHours"])).ToUniversalTime(),
+            expires: DateTime.UtcNow.AddHours(Convert.ToDouble(_config["Jwt:ExpirationHours"] ?? "24")).ToUniversalTime(),
             signingCredentials: creds
         );
 

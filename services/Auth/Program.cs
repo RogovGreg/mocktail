@@ -1,5 +1,6 @@
 using Auth.Data;
 using Auth.Entities;
+using Auth.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
 var connectionString = builder.Configuration.GetConnectionString("AuthDb");
-Console.WriteLine("Auth service. connectionString: ", connectionString);
 
 if (string.IsNullOrWhiteSpace(connectionString))
 {
@@ -47,7 +47,10 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidAudiences = new[] { 
+            builder.Configuration["Jwt:Issuer"], 
+            builder.Configuration["Jwt:Audience"]
+        },
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not found"))
         )
@@ -56,6 +59,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<IApiTokenService, ApiTokenService>();
 
 var app = builder.Build();
 
@@ -69,11 +73,10 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Npgsql.PostgresException ex) when (ex.SqlState == "42P04")
     {
-        Console.WriteLine("Database already exists, skipping CREATE DATABASE.");
+        // Database already exists, apply pending migrations
         var pending = db.Database.GetPendingMigrations();
         if (pending.Any())
         {
-            Console.WriteLine($"Applying {pending.Count()} pending migrations...");
             db.Database.Migrate();
         }
     }
@@ -91,8 +94,17 @@ app.MapPost("/logout", AuthHandlers.LogoutHandler).RequireAuthorization();
 app.MapPost("/refresh-token", AuthHandlers.RefreshTokenHandler).AllowAnonymous();
 app.MapGet("/profile", AuthHandlers.ProfileHandler).RequireAuthorization();
 app.MapPatch("/profile/update", AuthHandlers.ProfileUpdateHandler).RequireAuthorization();
+app.MapPost("/bookmarks", AuthHandlers.AddBookmarkHandler).RequireAuthorization();
+app.MapDelete("/bookmarks/{bookmarkId:guid}", AuthHandlers.RemoveBookmarkHandler).RequireAuthorization();
 app.MapGet("/check-status", AuthHandlers.CheckStatusHandler).RequireAuthorization();
 app.MapGet("/check-availability", AuthHandlers.CheckAvailability).RequireAuthorization();
+
+// API Token routes
+app.MapPost("/api-tokens", AuthHandlers.CreateApiTokenHandler).RequireAuthorization();
+app.MapGet("/api-tokens", AuthHandlers.GetApiTokensHandler).RequireAuthorization();
+app.MapDelete("/api-tokens/{tokenId:guid}", AuthHandlers.DeleteApiTokenHandler).RequireAuthorization();
+app.MapPost("/api-tokens/revoke", AuthHandlers.RevokeApiTokenHandler).RequireAuthorization();
+app.MapPost("/api-tokens/validate", AuthHandlers.ValidateApiTokenHandler).AllowAnonymous();
 
 app.Urls.Add("http://*:80");
 app.Run();

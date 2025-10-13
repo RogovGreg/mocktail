@@ -1,18 +1,35 @@
 {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/",
+      "DownstreamPathTemplate": "/login",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [{ "Host": "auth", "Port": 80 }],
-      "UpstreamPathTemplate": "/v1/auth",
-      "UpstreamHttpMethod": ["GET", "POST"]
+      "UpstreamPathTemplate": "/v1/auth/login",
+      "UpstreamHttpMethod": ["POST"]
+    },
+    {
+      "DownstreamPathTemplate": "/register",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "auth", "Port": 80 }],
+      "UpstreamPathTemplate": "/v1/auth/register",
+      "UpstreamHttpMethod": ["POST"]
+    },
+    {
+      "DownstreamPathTemplate": "/refresh-token",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "auth", "Port": 80 }],
+      "UpstreamPathTemplate": "/v1/auth/refresh-token",
+      "UpstreamHttpMethod": ["POST"]
     },
     {
       "DownstreamPathTemplate": "/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [{ "Host": "auth", "Port": 80 }],
       "UpstreamPathTemplate": "/v1/auth/{everything}",
-      "UpstreamHttpMethod": ["GET", "POST", "DELETE"]
+      "UpstreamHttpMethod": ["GET", "POST", "DELETE"],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     },
     {
       "DownstreamPathTemplate": "/",
@@ -35,23 +52,17 @@
       }
     },
     {
-      "DownstreamPathTemplate": "/",
+      "DownstreamPathTemplate": "/api/mock/{projectId}/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [{ "Host": "content", "Port": 80 }],
-      "UpstreamPathTemplate": "/v1/content",
-      "UpstreamHttpMethod": ["GET", "POST"],
-      "DisabledAuthenticationOptions": {
+      "UpstreamPathTemplate": "/v1/mock/{projectId}/{everything}",
+      "UpstreamHttpMethod": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+      "AuthenticationOptions": {
         "AuthenticationProviderKey": "ContentBearer"
-      }
-    },
-    {
-      "DownstreamPathTemplate": "/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [{ "Host": "content", "Port": 80 }],
-      "UpstreamPathTemplate": "/v1/content/{everything}",
-      "UpstreamHttpMethod": ["GET", "POST"],
-      "DisabledAuthenticationOptions": {
-        "AuthenticationProviderKey": "ContentBearer"
+      },
+      "AddHeadersToRequest": {
+        "X-User-Id": "Claims[sub] > value",
+        "X-Project-Id": "Claims[project_id] > value"
       }
     }
   ],
