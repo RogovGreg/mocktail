@@ -35,6 +35,5 @@ app.MapGrpcService<GeneratorServiceImpl>();
 
 // Routes
 app.MapPost("/prompt", (Delegate)OpenAIIntegration.Prompt);
-app.MapPost("/generate", (Delegate)OpenAIIntegration.Generate);
 
 app.Run();

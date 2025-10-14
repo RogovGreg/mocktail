@@ -1,5 +1,6 @@
 using Grpc.Core;
 using Generator.Protos;
+using Generator.Integrations;
 
 namespace Generator.Services;
 
@@ -12,21 +13,19 @@ public class GeneratorServiceImpl : GeneratorService.GeneratorServiceBase
         _logger = logger;
     }
 
-    public override Task<GenerateContentResponse> GenerateContent(GenerateContentRequest request, ServerCallContext context)
+    public override async Task<GenerateContentResponse> GenerateContent(GenerateContentRequest request, ServerCallContext context)
     {
         _logger.LogInformation("GenerateContent gRPC endpoint called with schema length: {Length}", request.Schema.Length);
 
-        // TODO: This is a placeholder implementation
-        // The actual generation logic should be implemented in another ticket
-        
-        var response = new GenerateContentResponse
+        // Use OpenAIIntegration.Generate to generate content based on the schema
+        var generatedContent = await OpenAIIntegration.Generate(request.Schema, 10);
+
+        _logger.LogInformation("Successfully generated content with length: {Length}", generatedContent.Length);
+
+        return new GenerateContentResponse
         {
             Success = true,
-            GeneratedData = "{\"message\": \"Generated content placeholder for testing\", \"status\": \"placeholder\", \"timestamp\": \"" + DateTimeOffset.UtcNow.ToString("O") + "\"}"
+            GeneratedData = generatedContent
         };
-
-        _logger.LogWarning("Generator service called but not implemented - returning placeholder response");
-
-        return Task.FromResult(response);
     }
 }
