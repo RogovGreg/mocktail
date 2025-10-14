@@ -12,6 +12,7 @@ public interface IApiTokenService
     Task<ApiTokenValidationResult> ValidateTokenAsync(string token);
     Task<bool> RevokeTokenAsync(string token);
     Task<IEnumerable<ApiToken>> GetUserTokensAsync(string userId);
+    Task<IEnumerable<ApiToken>> GetUserTokensByProjectAsync(string userId, Guid projectId);
     Task<bool> DeleteTokenAsync(Guid tokenId, string userId);
 }
 
@@ -128,6 +129,14 @@ public class ApiTokenService : IApiTokenService
     {
         return await _context.ApiTokens
             .Where(t => t.UserId == userId)
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<ApiToken>> GetUserTokensByProjectAsync(string userId, Guid projectId)
+    {
+        return await _context.ApiTokens
+            .Where(t => t.UserId == userId && t.ProjectId == projectId)
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
     }

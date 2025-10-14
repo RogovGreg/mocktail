@@ -339,7 +339,8 @@ public static class AuthHandlers
 
     public static async Task<IResult> GetApiTokensHandler(
         HttpContext context,
-        IApiTokenService apiTokenService
+        IApiTokenService apiTokenService,
+        Guid? projectId = null
     )
     {
         if (context.User?.Identity == null || !context.User.Identity.IsAuthenticated)
@@ -349,7 +350,16 @@ public static class AuthHandlers
         if (userId == null)
             return Results.Unauthorized();
 
-        var tokens = await apiTokenService.GetUserTokensAsync(userId);
+        IEnumerable<ApiToken> tokens;
+        
+        if (projectId.HasValue)
+        {
+            tokens = await apiTokenService.GetUserTokensByProjectAsync(userId, projectId.Value);
+        }
+        else
+        {
+            tokens = await apiTokenService.GetUserTokensAsync(userId);
+        }
         
         return Results.Ok(tokens.Select(t => new
         {
