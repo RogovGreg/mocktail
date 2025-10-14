@@ -18,6 +18,21 @@ services:
       timeout: 2s
       retries: 12
 
+  redis:
+    image: redis:7-alpine
+    hostname: redis
+    container_name: redis
+    ports:
+      - 6379:6379
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 12
+
   backend:
     build:
       context: services/Backend
@@ -36,6 +51,8 @@ services:
     container_name: content
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     env_file:
       - .env
@@ -83,3 +100,4 @@ services:
 volumes:
   mocktail_data:
     external: true
+  redis_data:

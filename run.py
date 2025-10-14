@@ -145,6 +145,11 @@ def start_docker():
         ["docker", "volume", "create", "mocktail_data"],
         check=True,
     )
+    print("Creating redis_data volume...")
+    subprocess.run(
+        ["docker", "volume", "create", "redis_data"],
+        check=True,
+    )
     print("Starting Docker containers...")
     subprocess.run(
         [

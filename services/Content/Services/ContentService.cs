@@ -11,17 +11,20 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
     private readonly IGeneratedContentRepository _generatedContentRepository;
     private readonly IGeneratorService _generatorService;
     private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly ICacheService _cacheService;
 
     public ContentServiceImpl(
         ILogger<ContentServiceImpl> logger, 
         IGeneratedContentRepository generatedContentRepository,
         IGeneratorService generatorService,
-        IServiceScopeFactory serviceScopeFactory)
+        IServiceScopeFactory serviceScopeFactory,
+        ICacheService cacheService)
     {
         _logger = logger;
         _generatedContentRepository = generatedContentRepository;
         _generatorService = generatorService;
         _serviceScopeFactory = serviceScopeFactory;
+        _cacheService = cacheService;
     }
 
     public override async Task<GenerateFromTemplateResponse> GenerateFromTemplate(GenerateFromTemplateRequest request, ServerCallContext context)
@@ -116,6 +119,7 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
                 using var scope = _serviceScopeFactory.CreateScope();
                 var scopedRepository = scope.ServiceProvider.GetRequiredService<IGeneratedContentRepository>();
                 var scopedGeneratorService = scope.ServiceProvider.GetRequiredService<IGeneratorService>();
+                var scopedCacheService = scope.ServiceProvider.GetRequiredService<ICacheService>();
                 
                 try
                 {
@@ -136,7 +140,11 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
                             // Update the content with generated data
                             await scopedRepository.UpdateStatusAndDataAsync(generatedContent.Id, "Completed", jsonData);
                             
-                            _logger.LogInformation("Successfully generated and updated content {ContentId}", generatedContent.Id);
+                            // Invalidate cache for this specific project and path to ensure fresh data
+                            await scopedCacheService.InvalidateContentCacheAsync(templateData.ProjectId, templateData.Path);
+                            
+                            _logger.LogInformation("Successfully generated and updated content {ContentId}, invalidated cache for project {ProjectId}", 
+                                generatedContent.Id, templateData.ProjectId);
                         }
                         catch (System.Text.Json.JsonException jsonEx)
                         {
@@ -151,12 +159,18 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
                             });
                             
                             await scopedRepository.UpdateStatusAndDataAsync(generatedContent.Id, "Failed", errorJson);
+                            
+                            // Invalidate cache even for failed content to ensure consistency
+                            await scopedCacheService.InvalidateContentCacheAsync(templateData.ProjectId, templateData.Path);
                         }
                     }
                     else
                     {
                         // Update status to Failed
                         await scopedRepository.UpdateStatusAndDataAsync(generatedContent.Id, "Failed", "{}");
+                        
+                        // Invalidate cache for failed content
+                        await scopedCacheService.InvalidateContentCacheAsync(templateData.ProjectId, templateData.Path);
                         
                         _logger.LogError("Failed to generate content {ContentId}: {Error}", 
                             generatedContent.Id, generationResult.ErrorMessage);
@@ -170,6 +184,9 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
                     {
                         // Update status to Failed
                         await scopedRepository.UpdateStatusAndDataAsync(generatedContent.Id, "Failed", "{}");
+                        
+                        // Invalidate cache on error
+                        await scopedCacheService.InvalidateContentCacheAsync(templateData.ProjectId, templateData.Path);
                     }
                     catch (Exception updateEx)
                     {
@@ -269,6 +286,15 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
 
             // Mark all content with template version <= fromVersion as stale
             var affectedCount = await _generatedContentRepository.MarkAsStaleByTemplateAndVersionAsync(templateId, request.FromVersion);
+
+            // Get the project ID and path from the template to invalidate specific cache
+            var latestContent = await _generatedContentRepository.GetLatestByTemplateIdAsync(templateId);
+            if (latestContent != null)
+            {
+                await _cacheService.InvalidateContentCacheAsync(latestContent.ProjectId, latestContent.EndpointPath);
+                _logger.LogInformation("Invalidated cache for project {ProjectId} and path {EndpointPath} after marking content as stale", 
+                    latestContent.ProjectId, latestContent.EndpointPath);
+            }
 
             return new MarkContentAsStaleResponse
             {
