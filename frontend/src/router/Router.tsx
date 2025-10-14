@@ -8,10 +8,12 @@ import { TRouteObject } from './types.ts';
 import { SidebarsContextProvider } from '../global-contexts/SidebarsContext/index.ts';
 
 const mapRouteObject = (routeObject: TRouteObject): RouteObject => {
-  const { path, Component, children } = routeObject;
+  const { children, Component, handle, loader, path } = routeObject;
 
   return {
     children: children?.map(mapRouteObject),
+    handle,
+    loader,
     path,
 
     element: (

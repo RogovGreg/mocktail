@@ -8,11 +8,11 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "@emotion/react",
+    "jsxImportSource": "react",
     "lib": ["es2020", "dom"],
     "module": "es2015",
     "moduleDetection": "force",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node10",
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
@@ -20,6 +20,7 @@
     "noUnusedParameters": true,
     "preserveSymlinks": true,
     "paths": {
+      "#icons": ["src/assets/icons/index.ts"],
       "#api": ["src/api"],
       "#api/*": ["src/api/*"],
       "#pages": ["src/pages"],
@@ -36,8 +37,8 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2020",
-    "useDefineForClassFields": true
+    "useDefineForClassFields": true,
   },
-  "include": ["src"],
+  "include": ["src", "src/assets"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -1,4 +1,4 @@
 export type TLoginFormValues = Readonly<{
-  login: string;
+  email: string;
   password: string;
 }>;

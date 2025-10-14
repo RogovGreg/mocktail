@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@plugin "daisyui";
+
+@layer utilities {
+  .btn-xs {
+    height: 1rem;
+    padding-left: 0.375rem;
+    padding-right: 0.375rem;
+    min-height: 1rem;
+    font-size: 0.5rem;
+  }
+  
+  .btn-xs.btn-square {
+    width: 1rem;
+    height: 1rem;
+    padding: 0;
+  }
+  
+  .btn-xs.btn-circle {
+    width: 1rem;
+    height: 1rem;
+    padding: 0;
+  }
+}
+
+.menu li > .active {
+  background-color: hsl(var(--p) / 0.2);
+  color: hsl(var(--p));
+  font-weight: 600;
+}
+
+.menu li > .active:hover {
+  background-color: hsl(var(--p) / 0.3);
+}
+
+.menu li > details > summary.active {
+  background-color: hsl(var(--p) / 0.2);
+  color: hsl(var(--p));
+  font-weight: 600;
+}
+
+.menu li > details > summary.active:hover {
+  background-color: hsl(var(--p) / 0.3);
+}
+
+[data-theme="light"] {
+  --p: 0 100% 50%;    /* primary: #FF3300 */
+  --s: 199 100% 20%;  /* secondary: #006699 */
+  --a: 162 100% 30%;  /* accent: #009966 */
+  --n: 0 0% 32%;      /* neutral: #525253 */
+  --b1: 0 0% 89%;     /* base-100: #E2E3E4 */
+  --b2: 0 0% 77%;     /* base-200: #C5C6C7 */
+  --b3: 0 0% 66%;     /* base-300: #A7A8A9 */
+  --bc: 0 0% 20%;     /* base-content: #343434 */
+}
+
+[data-theme="dark"] {
+  --p: 20 100% 60%;   /* primary: #FF6633 */
+  --s: 199 70% 50%;   /* secondary: #3399CC */
+  --a: 162 60% 50%;   /* accent: #33CC99 */
+  --n: 0 0% 43%;      /* neutral: #6E6E6F */
+  --b1: 0 0% 20%;     /* base-100: #343434 */
+  --b2: 0 0% 15%;     /* base-200: #262626 */
+  --b3: 0 0% 32%;     /* base-300: #525253 */
+  --bc: 0 0% 89%;     /* base-content: #E2E3E4 */
+}
+
+:root {
+  --mt-color-primary-1: #FF3300;
+  --mt-color-primary-2: #CC3333;
+  --mt-color-primary-3: #993300;
+  --mt-color-primary-4: #FF6633;
+  --mt-color-primary-5: #FF9966;
+
+  --mt-color-secondary-1: #006699;	
+  --mt-color-secondary-2: #336666;
+  --mt-color-secondary-3: #003366;
+  --mt-color-secondary-4: #3399CC;
+  --mt-color-secondary-5: #6699CC;
+
+  --mt-color-tertiary-0: #FFFFFF;
+  --mt-color-tertiary-1: #E2E3E4;
+  --mt-color-tertiary-2: #C5C6C7;
+  --mt-color-tertiary-3: #A7A8A9;
+  --mt-color-tertiary-4: #8A8A8B;
+  --mt-color-tertiary-5: #6E6E6F;
+  --mt-color-tertiary-6: #525253;
+  --mt-color-tertiary-7: #343434;
+  --mt-color-tertiary-8: #262626;
+
+  --mt-color-quaternary-1: #009966;
+  --mt-color-quaternary-2: #336666;
+  --mt-color-quaternary-3: #006633;
+  --mt-color-quaternary-4: #33CC99;
+  --mt-color-quaternary-5: #66CC99;
+
+  --mt-main-font-family: Arial, sans-serif;
+  --mt-main-font-size: 14px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+}

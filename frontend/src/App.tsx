@@ -3,14 +3,11 @@ import {
   SidebarsContextProvider,
 } from './global-contexts';
 import { RootLayout } from './layouts';
-import { ThemeProvider } from './theme';
 
 export const App = () => (
-  <ThemeProvider>
-    <AuthContextProvider>
-      <SidebarsContextProvider>
-        <RootLayout />
-      </SidebarsContextProvider>
-    </AuthContextProvider>
-  </ThemeProvider>
+  <AuthContextProvider>
+    <SidebarsContextProvider>
+      <RootLayout />
+    </SidebarsContextProvider>
+  </AuthContextProvider>
 );

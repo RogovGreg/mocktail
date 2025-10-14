@@ -4,7 +4,7 @@ import { TCheckServiceAvailability } from '../types';
 // ================= Common Types =======================
 
 export type TLoginPassword = Readonly<{
-  login: string | null;
+  email: string | null;
   password: string | null;
 }>;
 

@@ -1,7 +1,14 @@
-import { ProjectLayout, ProtectedLayout, WebAppLayout } from '#layouts';
+import { BackendService } from '#api/services/BackendService/BackendService';
+import {
+  ProjectDetailLayout,
+  ProjectLayout,
+  ProtectedLayout,
+  TemplatesLayout,
+  WebAppLayout,
+} from '#layouts';
 
 import { ERoutes } from './routes-list';
-import { TRouteObjectList, TRoutePath } from './types';
+import { TLoaderData, TRouteObjectList, TRoutePath } from './types';
 import { App } from '../App';
 import {
   AboutPage,
@@ -9,11 +16,8 @@ import {
   CreateTemplatePage,
   DashboardPage,
   DocsPage,
-  EditProjectPage,
-  EditTemplatePage,
   LandingPage,
   LoginPage,
-  MembersPage,
   PageNotFoundPage,
   ProfilePage,
   ProjectsPage,
@@ -122,6 +126,10 @@ export const ROUTES_LIST: TRouteObjectList = [
                 isProtected: true,
                 path: 'projects',
 
+                handle: {
+                  crumb: () => 'Projects',
+                },
+
                 children: [
                   {
                     Component: ProjectsPage,
@@ -130,94 +138,112 @@ export const ROUTES_LIST: TRouteObjectList = [
                     path: '',
                   },
                   {
-                    Component: TemplatesPage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId/templates',
-                  },
-                  {
-                    Component: CreateTemplatePage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId/templates/create',
-                  },
-                  {
-                    Component: TemplatePage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId/templates/:templateId',
-                  },
-                  {
-                    Component: EditTemplatePage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId/templates/:templateId/edit',
-                  },
-                  {
-                    Component: MembersPage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId/members',
-                  },
-                  {
-                    Component: MembersPage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId/members/create',
-                  },
-                  {
-                    Component: MembersPage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId/members/:memberId',
-                  },
-                  {
-                    Component: MembersPage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId/members/:memberId/edit',
-                  },
-                  {
-                    Component: ViewProjectPage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId/endpoints',
-                  },
-                  {
-                    Component: ViewProjectPage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId/endpoints/create',
-                  },
-                  {
-                    Component: ViewProjectPage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId/endpoints/:endpointId',
-                  },
-                  {
-                    Component: ViewProjectPage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId/endpoints/:endpointId/edit',
-                  },
-                  {
-                    Component: ViewProjectPage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId',
-                  },
-                  {
-                    Component: EditProjectPage,
-                    isOnAuthFlow: false,
-                    isProtected: true,
-                    path: ':projectId/edit',
-                  },
-                  {
                     Component: CreateProjectPage,
                     isOnAuthFlow: false,
                     isProtected: true,
                     path: 'create',
+
+                    handle: {
+                      crumb: () => 'Create New Project',
+                    },
+                  },
+                  {
+                    Component: ProjectDetailLayout,
+                    isOnAuthFlow: false,
+                    isProtected: true,
+                    path: ':projectId',
+
+                    loader: async ({ params }) => {
+                      if (!params.projectId) {
+                        return null;
+                      }
+
+                      const project = await BackendService.getProjectByID({
+                        path: { params: { id: params.projectId } },
+                      });
+
+                      return { project: project.data };
+                    },
+
+                    handle: {
+                      crumb: (data, params) =>
+                        data?.project?.title || `Project ${params?.projectId}`,
+                    },
+
+                    children: [
+                      {
+                        Component: ViewProjectPage,
+                        isOnAuthFlow: false,
+                        isProtected: true,
+                        path: '',
+                      },
+                      {
+                        Component: TemplatesLayout,
+                        isOnAuthFlow: false,
+                        isProtected: true,
+                        path: 'templates',
+
+                        loader: async ({ params }) => {
+                          if (!params.projectId) {
+                            return null;
+                          }
+                          const project = await BackendService.getProjectByID({
+                            path: { params: { id: params.projectId } },
+                          });
+                          return { project: project.data };
+                        },
+
+                        handle: {
+                          crumb: () => 'Templates',
+                        },
+
+                        children: [
+                          {
+                            Component: TemplatesPage,
+                            isOnAuthFlow: false,
+                            isProtected: true,
+                            path: '',
+                          },
+                          {
+                            Component: CreateTemplatePage,
+                            isOnAuthFlow: false,
+                            isProtected: true,
+                            path: 'create',
+
+                            handle: {
+                              crumb: () => 'Create new template',
+                            },
+                          },
+                          {
+                            Component: TemplatePage,
+                            isOnAuthFlow: false,
+                            isProtected: true,
+                            path: ':templateId',
+
+                            loader: async ({ params }) => {
+                              if (!params.templateId) {
+                                return null;
+                              }
+
+                              const template =
+                                await BackendService.getTemplateByID({
+                                  path: { params: { id: params.templateId } },
+                                });
+
+                              return {
+                                template: template.data,
+                              } as TLoaderData;
+                            },
+
+                            handle: {
+                              crumb: (data, params) =>
+                                data?.template?.name ||
+                                `Template ${params?.templateId}`,
+                            },
+                          },
+                        ],
+                      },
+                    ],
                   },
                 ],
               },

@@ -1,4 +1,3 @@
-export * from './TemplatesPage';
-export * from './TemplatePage';
 export * from './CreateTemplatePage';
-export * from './EditTemplatePage';
+export * from './TemplatePage';
+export * from './TemplatesPage';
