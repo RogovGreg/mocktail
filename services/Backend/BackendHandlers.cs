@@ -115,7 +115,7 @@ public static class BackendHandlers
     return Results.Ok(new
     {
       projectId = resp.ProjectId,
-      openAiKey = resp.OpenAiKey,
+      hasKey = !string.IsNullOrEmpty(resp.OpenAiKey),
       model = resp.Model
     });
   }
