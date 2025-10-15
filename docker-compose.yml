@@ -62,6 +62,9 @@ services:
       context: services/Generator
       dockerfile: Docker/Dockerfile
     container_name: generator
+    depends_on:
+      postgres:
+        condition: service_healthy
     env_file:
       - .env
 

@@ -1,9 +1,21 @@
 using Generator.Integrations;
 using Generator.Services;
+using Microsoft.EntityFrameworkCore;
+using Generator.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();
+
+// Database
+var generatorConnection = builder.Configuration.GetConnectionString("GeneratorDb");
+if (string.IsNullOrWhiteSpace(generatorConnection))
+{
+    throw new InvalidOperationException("Connection string 'GeneratorDb' not found. Ensure 'ConnectionStrings__GeneratorDb' is set.");
+}
+
+builder.Services.AddDbContext<GeneratorDbContext>(options =>
+    options.UseNpgsql(generatorConnection));
 
 builder.Services.AddOpenApi();
 
