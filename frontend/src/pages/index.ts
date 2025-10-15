@@ -5,6 +5,7 @@ export * from './Landing';
 export * from './Login';
 export * from './PageNotFound';
 export * from './Profile';
+export * from './ProjectAccessTokens';
 export * from './Projects';
 export * from './Register';
 export * from './Support';

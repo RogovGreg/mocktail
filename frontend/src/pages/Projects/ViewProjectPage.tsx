@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 
-import { BackendService, TProject } from '#api';
+import { AuthService, BackendService, TProject } from '#api';
 
 export const ViewProjectPage: FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -35,6 +35,8 @@ export const ViewProjectPage: FC = () => {
         // eslint-disable-next-line no-console
         console.error('Failed to fetch project', error);
       });
+
+    AuthService.getProjectAccessTokens({ query: { params: { projectId } } });
   }, [projectId, searchParams]);
 
   const handleEditMode = () => {
@@ -110,16 +112,18 @@ export const ViewProjectPage: FC = () => {
             onChange={e =>
               setEditedProject({ ...editedProject!, title: e.target.value })
             }
-            className='input input-bordered text-4xl font-bold mb-2 w-full'
+            className='input input-bordered text-2xl font-bold mb-2 w-full'
             placeholder='Project title'
           />
         ) : (
-          <h1 className='text-4xl font-bold mb-2'>{currentProject.title}</h1>
+          <h1 className='text-2xl font-semibold mb-2'>
+            {currentProject.title}
+          </h1>
         )}
         <div className='text-sm text-base-content/50'>ID: {project.id}</div>
       </div>
 
-      <div className='stats stats-vertical lg:stats-horizontal shadow w-full'>
+      <div className='stats stats-vertical lg:stats-horizontal shadow w-full mb-2'>
         <div className='stat'>
           <div className='stat-title'>Created</div>
           <div className='stat-value text-primary text-lg'>
@@ -137,7 +141,7 @@ export const ViewProjectPage: FC = () => {
       </div>
 
       <div className='mb-6'>
-        <h3 className='text-lg font-semibold mb-3'>Keywords</h3>
+        <h2 className='text-lg font-semibold mb-3'>Keywords</h2>
         <div className='flex flex-wrap gap-2 mb-3'>
           {currentProject.keyWords && currentProject.keyWords.length > 0 ? (
             currentProject.keyWords.map(keyword => (
@@ -185,7 +189,7 @@ export const ViewProjectPage: FC = () => {
 
       <div className='space-y-8'>
         <div className='mb-6'>
-          <h2 className='text-xl font-semibold mb-3'>Description</h2>
+          <h2 className='text-lg font-semibold mb-3'>Description</h2>
           {isEditing ? (
             <textarea
               value={currentProject.description || ''}
@@ -229,6 +233,15 @@ export const ViewProjectPage: FC = () => {
             </>
           ) : (
             <>
+              <button
+                type='button'
+                className='btn btn-outline'
+                onClick={() =>
+                  navigate(`/app/projects/${projectId}/api-tokens`)
+                }
+              >
+                Go to project&apos;s API tokens
+              </button>
               <button
                 type='button'
                 className='btn btn-outline'

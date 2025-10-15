@@ -19,8 +19,14 @@ export const AppNavigationPanel: React.FC = () => {
     Record<string, Array<TTemplate>>
   >({});
 
-  const { isDashboardActive, isProjectsActive, isTemplatesActive } = useMemo(
+  const {
+    isApiTokensActive,
+    isDashboardActive,
+    isProjectsActive,
+    isTemplatesActive,
+  } = useMemo(
     () => ({
+      isApiTokensActive: pathname.includes('/api-tokens') && Boolean(projectId),
       isDashboardActive: pathname.includes('/app/dashboard'),
       isProjectsActive:
         pathname.includes('/app/projects') && !projectId && !templateId,
@@ -84,34 +90,10 @@ export const AppNavigationPanel: React.FC = () => {
         userProjectTemplatesList[usersProjectID] || [];
 
       const isProjectsItemActive: boolean =
-        projectId === usersProjectID && !isTemplatesActive && !templateId;
-
-      if (!projectTemplatesList.length) {
-        return (
-          <li key={usersProjectID}>
-            <Link
-              to={`/app/projects/${usersProjectID}`}
-              className={isProjectsItemActive ? 'active' : undefined}
-            >
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                fill='none'
-                viewBox='0 0 24 24'
-                strokeWidth='1.5'
-                stroke='currentColor'
-                className='h-4 w-4'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  d='M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z'
-                />
-              </svg>
-              <span>{usersProjectTitle}</span>
-            </Link>
-          </li>
-        );
-      }
+        projectId === usersProjectID &&
+        !isApiTokensActive &&
+        !isTemplatesActive &&
+        !templateId;
 
       return (
         <li key={usersProjectID}>
@@ -155,6 +137,31 @@ export const AppNavigationPanel: React.FC = () => {
               </div>
             </summary>
             <ul>
+              <li>
+                <Link
+                  to={`/app/projects/${usersProjectID}/api-tokens`}
+                  className={isApiTokensActive ? 'active' : undefined}
+                >
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    viewBox='0 0 16 16'
+                    fill='currentColor'
+                    className='size-4'
+                  >
+                    <path
+                      fillRule='evenodd'
+                      d='M8.914 6.025a.75.75 0 0 1 1.06 0 3.5 3.5 0 0 1 0 4.95l-2 2a3.5 3.5 0 0 1-5.396-4.402.75.75 0 0 1 1.251.827 2 2 0 0 0 3.085 2.514l2-2a2 2 0 0 0 0-2.828.75.75 0 0 1 0-1.06Z'
+                      clipRule='evenodd'
+                    />
+                    <path
+                      fillRule='evenodd'
+                      d='M7.086 9.975a.75.75 0 0 1-1.06 0 3.5 3.5 0 0 1 0-4.95l2-2a3.5 3.5 0 0 1 5.396 4.402.75.75 0 0 1-1.251-.827 2 2 0 0 0-3.085-2.514l-2 2a2 2 0 0 0 0 2.828.75.75 0 0 1 0 1.06Z'
+                      clipRule='evenodd'
+                    />
+                  </svg>
+                  <span>API Tokens</span>
+                </Link>
+              </li>
               <li>
                 <details open={isTemplateOfThisProjectOpened}>
                   <summary className={isTemplatesActive ? 'active' : undefined}>
@@ -220,43 +227,45 @@ export const AppNavigationPanel: React.FC = () => {
                       </div>
                     </div>
                   </summary>
-                  <ul>
-                    {projectTemplatesList.map(projectTemplate => {
-                      const {
-                        id: projectTemplateID,
-                        name: projectTemplateName,
-                      } = projectTemplate;
+                  {projectTemplatesList.length > 0 && (
+                    <ul>
+                      {projectTemplatesList.map(projectTemplate => {
+                        const {
+                          id: projectTemplateID,
+                          name: projectTemplateName,
+                        } = projectTemplate;
 
-                      const isTemplatesItemActive: boolean =
-                        projectId === usersProjectID &&
-                        templateId === projectTemplateID;
+                        const isTemplatesItemActive: boolean =
+                          projectId === usersProjectID &&
+                          templateId === projectTemplateID;
 
-                      return (
-                        <li key={projectTemplateID}>
-                          <Link
-                            to={`/app/projects/${usersProjectID}/templates/${projectTemplateID}`}
-                            className={
-                              isTemplatesItemActive ? 'active' : undefined
-                            }
-                          >
-                            <svg
-                              xmlns='http://www.w3.org/2000/svg'
-                              viewBox='0 0 16 16'
-                              fill='currentColor'
-                              className='size-4'
+                        return (
+                          <li key={projectTemplateID}>
+                            <Link
+                              to={`/app/projects/${usersProjectID}/templates/${projectTemplateID}`}
+                              className={
+                                isTemplatesItemActive ? 'active' : undefined
+                              }
                             >
-                              <path
-                                fillRule='evenodd'
-                                d='M4 2a1.5 1.5 0 0 0-1.5 1.5v9A1.5 1.5 0 0 0 4 14h8a1.5 1.5 0 0 0 1.5-1.5V6.621a1.5 1.5 0 0 0-.44-1.06L9.94 2.439A1.5 1.5 0 0 0 8.878 2H4Zm1 5.75A.75.75 0 0 1 5.75 7h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 5 7.75Zm0 3a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Z'
-                                clipRule='evenodd'
-                              />
-                            </svg>
-                            <span>{projectTemplateName}</span>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                              <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                viewBox='0 0 16 16'
+                                fill='currentColor'
+                                className='size-4'
+                              >
+                                <path
+                                  fillRule='evenodd'
+                                  d='M4 2a1.5 1.5 0 0 0-1.5 1.5v9A1.5 1.5 0 0 0 4 14h8a1.5 1.5 0 0 0 1.5-1.5V6.621a1.5 1.5 0 0 0-.44-1.06L9.94 2.439A1.5 1.5 0 0 0 8.878 2H4Zm1 5.75A.75.75 0 0 1 5.75 7h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 5 7.75Zm0 3a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Z'
+                                  clipRule='evenodd'
+                                />
+                              </svg>
+                              <span>{projectTemplateName}</span>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </details>
               </li>
             </ul>
@@ -270,6 +279,7 @@ export const AppNavigationPanel: React.FC = () => {
     userProjectsList,
     userProjectTemplatesList,
     isTemplatesActive,
+    isApiTokensActive,
   ]);
 
   return (

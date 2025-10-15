@@ -20,6 +20,17 @@ export type TUserProfile = Readonly<{
   userName: string | null;
 }>;
 
+export type TProjectAccessToken = Readonly<{
+  createdAt: string;
+  expiresAt: string | null;
+  name: string;
+  projectId: string;
+  tokenId: string;
+}>;
+
+export type TProjectAccessTokenWithValue = TProjectAccessToken &
+  Readonly<{ token: string }>;
+
 // ================= LOGIN =======================
 
 export type TAuthMethodLoginRequestBody = TLoginPassword;
@@ -73,14 +84,60 @@ export type TAuthMethodRegister = TUnifiedApiMethod<
 
 export type TAuthCheckStatus = TUnifiedApiMethod;
 
+// ====================== createProjectAccessToken ======================
+
+export type TCreateProjectAccessTokenApiMethodPayload = Readonly<{
+  projectId: string;
+  name: string;
+  expiresAt?: string | null;
+}>;
+export type TCreateProjectAccessTokenApiMethodResponse =
+  TProjectAccessTokenWithValue;
+export type TCreateProjectAccessTokenApiMethod = TUnifiedApiMethod<
+  void,
+  void,
+  TCreateProjectAccessTokenApiMethodPayload,
+  TCreateProjectAccessTokenApiMethodResponse
+>;
+
+// ====================== getProjectAccessToken ======================
+
+export type TGetProjectAccessTokenApiMethodQueryParams = Readonly<{
+  projectId: string;
+}>;
+export type TGetProjectAccessTokenApiMethodResponse =
+  Array<TProjectAccessToken>;
+export type TGetProjectAccessTokenApiMethod = TUnifiedApiMethod<
+  void,
+  TGetProjectAccessTokenApiMethodQueryParams,
+  void,
+  TGetProjectAccessTokenApiMethodResponse
+>;
+
+// ====================== deleteProjectAccessToken ======================
+
+export type TDeleteProjectAccessTokenApiMethodQueryParams = Readonly<{
+  tokenId: string;
+}>;
+export type TDeleteProjectAccessTokenApiMethod =
+  TUnifiedApiMethod<TDeleteProjectAccessTokenApiMethodQueryParams>;
+
 // ======================================================
 
 export type TAuthService = Readonly<{
   checkAvailability: TCheckServiceAvailability;
+
   checkStatus: TAuthCheckStatus;
+
   getProfile: TAuthGetProfile;
+
   login: TAuthMethodLogin;
   logout: TAuthMethodLogout;
   refreshToken: TAuthMethodRefreshToken;
+
   register: TAuthMethodRegister;
+
+  createProjectAccessToken: TCreateProjectAccessTokenApiMethod;
+  deleteProjectAccessToken: TDeleteProjectAccessTokenApiMethod;
+  getProjectAccessTokens: TGetProjectAccessTokenApiMethod;
 }>;

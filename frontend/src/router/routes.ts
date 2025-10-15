@@ -20,6 +20,7 @@ import {
   LoginPage,
   PageNotFoundPage,
   ProfilePage,
+  ProjectAccessTokens,
   ProjectsPage,
   RegisterPage,
   RegisterSuccessNotificationPage,
@@ -176,6 +177,16 @@ export const ROUTES_LIST: TRouteObjectList = [
                         isOnAuthFlow: false,
                         isProtected: true,
                         path: '',
+                      },
+                      {
+                        Component: ProjectAccessTokens,
+                        isOnAuthFlow: false,
+                        isProtected: true,
+                        path: 'api-tokens',
+
+                        handle: {
+                          crumb: () => 'API Tokens',
+                        },
                       },
                       {
                         Component: TemplatesLayout,
