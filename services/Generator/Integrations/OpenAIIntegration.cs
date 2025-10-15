@@ -7,7 +7,6 @@ namespace Generator.Integrations;
 
 public class OpenAIIntegration
 {
-    private static readonly ChatClient client = new(model: "gpt-4o-mini", apiKey: Environment.GetEnvironmentVariable("OPENAI_API_KEY"));
     private static readonly ILogger logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger("Program");
 
     private static readonly JsonSerializerOptions jsonOptions = new()
@@ -15,12 +14,12 @@ public class OpenAIIntegration
         PropertyNameCaseInsensitive = true
     };
 
-    private static string makeOpenAIRequest(string prompt)
-    {
-        ChatCompletion completion = client.CompleteChat(prompt);
-        var response = completion.Content[0].Text;
-        return response;
-    }
+    // private static string makeOpenAIRequest(string prompt)
+    // {
+    //     ChatCompletion completion = client.CompleteChat(prompt);
+    //     var response = completion.Content[0].Text;
+    //     return response;
+    // }
 
     // Unused for now, implemented as demo
     // public static async Task<IResult> Prompt(HttpContext context)
@@ -46,12 +45,22 @@ public class OpenAIIntegration
     //     }
     // }
 
-    public static async Task<string> GenerateObjects(string schema, int amount = 10)
+    public static async Task<string> GenerateObjects(
+        string schema,
+        int amount = 10,
+        string? apiKey = null,
+        string? model = null
+    )
     {
         if (string.IsNullOrEmpty(schema) || amount <= 0)
         {
             throw new ArgumentException("Invalid schema or amount");
         }
+
+        ChatClient client = new(
+            model ?? "gpt-4o-mini",
+            apiKey: apiKey ?? Environment.GetEnvironmentVariable("OPENAI_API_KEY")
+        );
 
         string prompt =
             $"Generate {amount} JSON objects that match the following typescript schema: \n```{schema}```\n"

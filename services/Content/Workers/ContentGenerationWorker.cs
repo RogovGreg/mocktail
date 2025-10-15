@@ -138,7 +138,7 @@ public class ContentGenerationWorker : BackgroundService
             _logger.LogInformation("Starting content generation for content {ContentId}", message.ContentId);
             
             // Generate content using Generator service with timeout
-            var generationResult = await generatorService.GenerateContentAsync(message.Schema, cts.Token, message.Amount);
+            var generationResult = await generatorService.GenerateContentAsync(message.Schema, message.ProjectId, cts.Token, message.Amount);
 
             if (generationResult.Success)
             {

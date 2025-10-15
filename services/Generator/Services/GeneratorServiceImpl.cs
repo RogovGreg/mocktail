@@ -4,6 +4,7 @@ using Generator.Integrations;
 using Generator.Data;
 using Microsoft.EntityFrameworkCore;
 using Generator.Entities;
+using System.ClientModel;
 
 namespace Generator.Services;
 
@@ -23,12 +24,33 @@ public class GeneratorServiceImpl : GeneratorService.GeneratorServiceBase
         _logger.LogInformation("GenerateContent gRPC endpoint called with schema length: {Length}", request.Schema.Length);
 
         int amount = request.Amount > 0 ? request.Amount : 1;
+        string? apiKey = null;
+        string? model = null;
+
+        if (!string.IsNullOrWhiteSpace(request.ProjectId) && Guid.TryParse(request.ProjectId, out var projectGuid))
+        {
+            var cfg = await _db.ProjectConfigs.FirstOrDefaultAsync(c => c.ProjectId == projectGuid);
+            if (cfg != null)
+            {
+                apiKey = string.IsNullOrWhiteSpace(cfg.OpenAiKey) ? null : cfg.OpenAiKey;
+                model = string.IsNullOrWhiteSpace(cfg.Model) ? null : cfg.Model;
+            }
+        }
+
+        _logger.LogInformation("Using model: {Model}", model ?? "default");
+
         int retries = 3;
         for (int i = 0; i < retries; i++)
         {
             try
             {
-                var generatedContent = await OpenAIIntegration.GenerateObjects(request.Schema, amount);
+                string generatedContent;
+                generatedContent = await OpenAIIntegration.GenerateObjects(
+                    request.Schema,
+                    amount,
+                    apiKey,
+                    model
+                );
 
                 _logger.LogInformation("Successfully generated content with length: {Length}", generatedContent.Length);
 
@@ -36,6 +58,24 @@ public class GeneratorServiceImpl : GeneratorService.GeneratorServiceBase
                 {
                     Success = true,
                     GeneratedData = generatedContent
+                };
+            }
+            catch (ClientResultException ex) when (ex.Status == 401)
+            {
+                _logger.LogError(ex, "Invalid OpenAI API key provided");
+                return new GenerateContentResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Invalid OpenAI API key. Please check your project configuration."
+                };
+            }
+            catch (ClientResultException ex)
+            {
+                _logger.LogError(ex, "OpenAI API error: {Message}", ex.Message);
+                return new GenerateContentResponse
+                {
+                    Success = false,
+                    ErrorMessage = $"OpenAI API error: {ex.Message}"
                 };
             }
             catch (InvalidOperationException ex)

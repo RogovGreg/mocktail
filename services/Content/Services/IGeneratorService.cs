@@ -6,6 +6,7 @@ public interface IGeneratorService
 {
     Task<GenerationResult> GenerateContentAsync(
         string schema,
+        Guid projectId,
         CancellationToken cancellationToken = default,
         int amount = 1
     );
