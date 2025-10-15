@@ -8,8 +8,10 @@ using Content.Services;
 using Content.Repositories;
 using Content.Data;
 using Content.Entities;
+using Content.Workers;
 using Shared.Content.Protos;
 using StackExchange.Redis;
+using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +68,29 @@ builder.Services.AddGrpcClient<Generator.Protos.GeneratorService.GeneratorServic
 
 // Register services
 builder.Services.AddScoped<IGeneratorService, GeneratorService>();
+
+// Register RabbitMQ services
+var rabbitMqConnectionString = builder.Configuration.GetConnectionString("RabbitMQ");
+if (string.IsNullOrWhiteSpace(rabbitMqConnectionString))
+{
+    throw new InvalidOperationException("Connection string 'RabbitMQ' not found. Make sure the environment variable 'ConnectionStrings__RabbitMQ' is set.");
+}
+
+builder.Services.AddSingleton<IConnection>(provider =>
+{
+    var factory = new ConnectionFactory
+    {
+        Uri = new Uri(rabbitMqConnectionString),
+        AutomaticRecoveryEnabled = true,
+        NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
+    };
+    return factory.CreateConnection();
+});
+
+builder.Services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
+
+// Register background worker
+builder.Services.AddHostedService<ContentGenerationWorker>();
 
 // Configure Kestrel specifically for gRPC
 builder.WebHost.ConfigureKestrel(options =>
