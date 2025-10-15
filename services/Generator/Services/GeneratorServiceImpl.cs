@@ -22,15 +22,31 @@ public class GeneratorServiceImpl : GeneratorService.GeneratorServiceBase
     {
         _logger.LogInformation("GenerateContent gRPC endpoint called with schema length: {Length}", request.Schema.Length);
 
-        // Use OpenAIIntegration.Generate to generate content based on the schema
-        var generatedContent = await OpenAIIntegration.Generate(request.Schema, 10);
+        int amount = request.Amount > 0 ? request.Amount : 1;
+        int retries = 3;
+        for (int i = 0; i < retries; i++)
+        {
+            try
+            {
+                var generatedContent = await OpenAIIntegration.GenerateObjects(request.Schema, amount);
 
-        _logger.LogInformation("Successfully generated content with length: {Length}", generatedContent.Length);
+                _logger.LogInformation("Successfully generated content with length: {Length}", generatedContent.Length);
 
+                return new GenerateContentResponse
+                {
+                    Success = true,
+                    GeneratedData = generatedContent
+                };
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Error generating content, retrying... Attempt {Attempt}", i + 1);
+            }
+        }
         return new GenerateContentResponse
         {
-            Success = true,
-            GeneratedData = generatedContent
+            Success = false,
+            ErrorMessage = "Failed to generate content after multiple attempts."
         };
     }
 

@@ -363,6 +363,16 @@ public static class BackendHandlers
     // Use current template version (don't increment)
     var currentVersion = template.Version;
     
+    // Parse optional amount from query (?amount=3)
+    int amount = 10;
+    if (context.Request.Query.TryGetValue("amount", out var amountValues))
+    {
+      if (int.TryParse(amountValues.FirstOrDefault(), out var parsed) && parsed > 0)
+      {
+        amount = parsed;
+      }
+    }
+
     var request = new GenerateFromTemplateRequest
     {
       TemplateId = id.ToString(),
@@ -372,7 +382,8 @@ public static class BackendHandlers
       Schema = template.Schema,
       Path = template.Path ?? "",
       ProjectId = template.RelatedProjectId.ToString(),
-      ProjectTitle = projectTitle
+      ProjectTitle = projectTitle,
+      Amount = amount
     };
 
     try

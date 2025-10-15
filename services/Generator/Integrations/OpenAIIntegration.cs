@@ -46,7 +46,7 @@ public class OpenAIIntegration
     //     }
     // }
 
-    public static async Task<string> Generate(string schema, int amount = 10)
+    public static async Task<string> GenerateObjects(string schema, int amount = 10)
     {
         if (string.IsNullOrEmpty(schema) || amount <= 0)
         {

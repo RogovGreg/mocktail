@@ -13,7 +13,7 @@ public class GeneratorService : IGeneratorService
         _logger = logger;
     }
 
-    public async Task<GenerationResult> GenerateContentAsync(string schema, CancellationToken cancellationToken = default)
+    public async Task<GenerationResult> GenerateContentAsync(string schema, CancellationToken cancellationToken = default, int amount = 10)
     {
         try
         {
@@ -21,7 +21,8 @@ public class GeneratorService : IGeneratorService
 
             var request = new GenerateContentRequest
             {
-                Schema = schema
+                Schema = schema,
+                Amount = amount
             };
 
             var response = await _grpcClient.GenerateContentAsync(request, cancellationToken: cancellationToken);

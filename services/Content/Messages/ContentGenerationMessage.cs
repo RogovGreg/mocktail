@@ -13,6 +13,7 @@ public class ContentGenerationMessage
     public string Path { get; set; } = string.Empty;
     public Guid ProjectId { get; set; }
     public string ProjectTitle { get; set; } = string.Empty;
+    public int Amount { get; set; } = 10;
     public DateTimeOffset CreatedAt { get; set; }
 
     public string ToJson()
