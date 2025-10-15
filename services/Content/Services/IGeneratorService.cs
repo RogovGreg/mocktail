@@ -4,7 +4,7 @@ namespace Content.Services;
 
 public interface IGeneratorService
 {
-    Task<GenerationResult> GenerateContentAsync(string schema);
+    Task<GenerationResult> GenerateContentAsync(string schema, CancellationToken cancellationToken = default);
 }
 
 public record GenerationResult(

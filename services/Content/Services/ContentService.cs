@@ -2,6 +2,7 @@ using Grpc.Core;
 using Shared.Content.Protos;
 using Content.Repositories;
 using Content.Entities;
+using Content.Messages;
 
 namespace Content.Services;
 
@@ -9,20 +10,20 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
 {
     private readonly ILogger<ContentServiceImpl> _logger;
     private readonly IGeneratedContentRepository _generatedContentRepository;
-    private readonly IGeneratorService _generatorService;
+    private readonly IRabbitMqPublisher _rabbitMqPublisher;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ICacheService _cacheService;
 
     public ContentServiceImpl(
         ILogger<ContentServiceImpl> logger, 
         IGeneratedContentRepository generatedContentRepository,
-        IGeneratorService generatorService,
+        IRabbitMqPublisher rabbitMqPublisher,
         IServiceScopeFactory serviceScopeFactory,
         ICacheService cacheService)
     {
         _logger = logger;
         _generatedContentRepository = generatedContentRepository;
-        _generatorService = generatorService;
+        _rabbitMqPublisher = rabbitMqPublisher;
         _serviceScopeFactory = serviceScopeFactory;
         _cacheService = cacheService;
     }
@@ -113,87 +114,23 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
             _logger.LogInformation("Prepared content entry {ContentId} for template {TemplateId} (Status: {Status})", 
                 generatedContent.Id, request.TemplateId, generatedContent.Status);
 
-            // Start generation asynchronously
-            _ = Task.Run(async () =>
+            // Publish message to RabbitMQ queue for background processing
+            var message = new ContentGenerationMessage
             {
-                using var scope = _serviceScopeFactory.CreateScope();
-                var scopedRepository = scope.ServiceProvider.GetRequiredService<IGeneratedContentRepository>();
-                var scopedGeneratorService = scope.ServiceProvider.GetRequiredService<IGeneratorService>();
-                var scopedCacheService = scope.ServiceProvider.GetRequiredService<ICacheService>();
-                
-                try
-                {
-                    _logger.LogInformation("Starting async generation for content {ContentId}", generatedContent.Id);
-                    
-                    // Generate content using Generator service
-                    var generationResult = await scopedGeneratorService.GenerateContentAsync(templateData.Schema);
-                    
-                    if (generationResult.Success)
-                    {
-                        // Validate that the generated data is valid JSON
-                        string jsonData = generationResult.GeneratedData!;
-                        try
-                        {
-                            // Try to parse as JSON to validate
-                            System.Text.Json.JsonDocument.Parse(jsonData);
-                            
-                            // Update the content with generated data
-                            await scopedRepository.UpdateStatusAndDataAsync(generatedContent.Id, "Completed", jsonData);
-                            
-                            // Invalidate cache for this specific project and path to ensure fresh data
-                            await scopedCacheService.InvalidateContentCacheAsync(templateData.ProjectId, templateData.Path);
-                            
-                            _logger.LogInformation("Successfully generated and updated content {ContentId}, invalidated cache for project {ProjectId}", 
-                                generatedContent.Id, templateData.ProjectId);
-                        }
-                        catch (System.Text.Json.JsonException jsonEx)
-                        {
-                            _logger.LogError(jsonEx, "Invalid JSON returned from Generator service for content {ContentId}: {JsonData}", 
-                                generatedContent.Id, jsonData);
-                            
-                            // Store error information as valid JSON
-                            var errorJson = System.Text.Json.JsonSerializer.Serialize(new { 
-                                error = "Invalid JSON from generator", 
-                                originalData = jsonData,
-                                timestamp = DateTimeOffset.UtcNow.ToString("O")
-                            });
-                            
-                            await scopedRepository.UpdateStatusAndDataAsync(generatedContent.Id, "Failed", errorJson);
-                            
-                            // Invalidate cache even for failed content to ensure consistency
-                            await scopedCacheService.InvalidateContentCacheAsync(templateData.ProjectId, templateData.Path);
-                        }
-                    }
-                    else
-                    {
-                        // Update status to Failed
-                        await scopedRepository.UpdateStatusAndDataAsync(generatedContent.Id, "Failed", "{}");
-                        
-                        // Invalidate cache for failed content
-                        await scopedCacheService.InvalidateContentCacheAsync(templateData.ProjectId, templateData.Path);
-                        
-                        _logger.LogError("Failed to generate content {ContentId}: {Error}", 
-                            generatedContent.Id, generationResult.ErrorMessage);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error during async generation for content {ContentId}", generatedContent.Id);
-                    
-                    try
-                    {
-                        // Update status to Failed
-                        await scopedRepository.UpdateStatusAndDataAsync(generatedContent.Id, "Failed", "{}");
-                        
-                        // Invalidate cache on error
-                        await scopedCacheService.InvalidateContentCacheAsync(templateData.ProjectId, templateData.Path);
-                    }
-                    catch (Exception updateEx)
-                    {
-                        _logger.LogError(updateEx, "Failed to update status to Failed for content {ContentId}", generatedContent.Id);
-                    }
-                }
-            });
+                ContentId = generatedContent.Id,
+                TemplateId = templateId,
+                TemplateVersion = request.TemplateVersion,
+                UserId = userId,
+                TemplateName = templateData.Name,
+                Schema = templateData.Schema,
+                Path = templateData.Path,
+                ProjectId = templateData.ProjectId,
+                ProjectTitle = templateData.ProjectTitle,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+
+            await _rabbitMqPublisher.PublishContentGenerationAsync(message);
+            _logger.LogInformation("Published content generation message for content {ContentId} to queue", generatedContent.Id);
 
             // Return immediately with pending status
             return new GenerateFromTemplateResponse

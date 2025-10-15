@@ -33,6 +33,24 @@ services:
       timeout: 2s
       retries: 12
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    hostname: rabbitmq
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
   backend:
     build:
       context: services/Backend
@@ -53,6 +71,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     env_file:
       - .env
@@ -101,3 +121,4 @@ volumes:
   mocktail_data:
     external: true
   redis_data:
+  rabbitmq_data:
