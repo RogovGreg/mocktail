@@ -13,7 +13,7 @@ service GeneratorService {
 message GenerateContentRequest {
   string schema = 1;  // JSON schema for content generation
   string project_id = 2;
-  number amount = 3;
+  int32 amount = 3;
 }
 
 message GenerateContentResponse {

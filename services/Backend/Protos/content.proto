@@ -46,6 +46,7 @@ message GenerateFromTemplateRequest {
   string path = 6;            // Endpoint path
   string project_id = 7;      // Project ID
   string project_title = 8;   // Project title for reference
+  int32 amount = 9;           // Amount of objects to be generated
 }
 
 message GenerateFromTemplateResponse {
