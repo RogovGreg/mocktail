@@ -4,6 +4,7 @@ using MyService.Models;
 using System.Text;
 using System.Text.Json;
 using Shared.Content.Protos;
+using Generator.Protos;
 
 public static class BackendHandlers
 {
@@ -91,6 +92,56 @@ public static class BackendHandlers
     db.Projects.Remove(tpl);
     await db.SaveProjectChangesAsync();
     return Results.NoContent();
+  }
+
+  public static async Task<IResult> GetProjectConfig(
+    Guid id,
+    Generator.Protos.GeneratorService.GeneratorServiceClient client)
+  {
+    var resp = await client.GetProjectConfigAsync(new GetProjectConfigRequest
+    {
+      ProjectId = id.ToString()
+    });
+
+    if (!resp.Found)
+    {
+      return Results.NotFound(new
+      {
+        id,
+        message = resp.ErrorMessage ?? "Not found"
+      });
+    }
+
+    return Results.Ok(new
+    {
+      projectId = resp.ProjectId,
+      openAiKey = resp.OpenAiKey,
+      model = resp.Model
+    });
+  }
+
+  public static async Task<IResult> SetProjectConfig(
+    Guid id,
+    SetProjectConfigBody body,
+    Generator.Protos.GeneratorService.GeneratorServiceClient client)
+  {
+    var resp = await client.SetProjectConfigAsync(new SetProjectConfigRequest
+    {
+      ProjectId = id.ToString(),
+      OpenAiKey = body.OpenAiKey ?? string.Empty,
+      Model = body.Model ?? string.Empty
+    });
+
+    if (!resp.Success)
+    {
+      return Results.BadRequest(new
+      {
+        id,
+        message = resp.ErrorMessage ?? "Failed to set config"
+      });
+    }
+
+    return Results.Ok(new { success = true });
   }
 
   public static async Task<IEnumerable<Template>> GetTemplates(
@@ -356,3 +407,5 @@ public static class BackendHandlers
   }
 
 }
+
+  public record SetProjectConfigBody(string? OpenAiKey, string? Model);
