@@ -12,7 +12,7 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-FROM base as final
+FROM base AS final
 WORKDIR /usr/share/nginx/html
 COPY --from=build /app/dist .
 

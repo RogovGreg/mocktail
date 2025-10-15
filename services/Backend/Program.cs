@@ -21,6 +21,12 @@ builder.Services.AddGrpcClient<ContentService.ContentServiceClient>(options =>
     options.Address = new Uri("http://content:8080");
 });
 
+// Add gRPC client for Generator service
+builder.Services.AddGrpcClient<Generator.Protos.GeneratorService.GeneratorServiceClient>(options =>
+{
+    options.Address = new Uri("http://generator:8080");
+});
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -72,6 +78,9 @@ app.MapGet("/projects/{id:guid}", BackendHandlers.GetProjectById);
 app.MapPost("/projects", BackendHandlers.CreateProject);
 app.MapPut("/projects/{id:guid}", BackendHandlers.UpdateProject);
 app.MapDelete("/projects/{id:guid}", BackendHandlers.DeleteProject);
+// Project config via GRPC
+app.MapGet("/projects/{id:guid}/config", BackendHandlers.GetProjectConfig);
+app.MapPut("/projects/{id:guid}/config", BackendHandlers.SetProjectConfig);
 
 app.MapGet("/templates", BackendHandlers.GetTemplates);
 app.MapGet("/templates/{id:guid}", BackendHandlers.GetTemplateById);

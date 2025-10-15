@@ -4,6 +4,7 @@ using MyService.Models;
 using System.Text;
 using System.Text.Json;
 using Shared.Content.Protos;
+using Generator.Protos;
 
 public static class BackendHandlers
 {
@@ -91,6 +92,56 @@ public static class BackendHandlers
     db.Projects.Remove(tpl);
     await db.SaveProjectChangesAsync();
     return Results.NoContent();
+  }
+
+  public static async Task<IResult> GetProjectConfig(
+    Guid id,
+    Generator.Protos.GeneratorService.GeneratorServiceClient client)
+  {
+    var resp = await client.GetProjectConfigAsync(new GetProjectConfigRequest
+    {
+      ProjectId = id.ToString()
+    });
+
+    if (!resp.Found)
+    {
+      return Results.NotFound(new
+      {
+        id,
+        message = resp.ErrorMessage ?? "Not found"
+      });
+    }
+
+    return Results.Ok(new
+    {
+      projectId = resp.ProjectId,
+      hasKey = !string.IsNullOrEmpty(resp.OpenAiKey),
+      model = resp.Model
+    });
+  }
+
+  public static async Task<IResult> SetProjectConfig(
+    Guid id,
+    SetProjectConfigBody body,
+    Generator.Protos.GeneratorService.GeneratorServiceClient client)
+  {
+    var resp = await client.SetProjectConfigAsync(new SetProjectConfigRequest
+    {
+      ProjectId = id.ToString(),
+      OpenAiKey = body.OpenAiKey ?? string.Empty,
+      Model = body.Model ?? string.Empty
+    });
+
+    if (!resp.Success)
+    {
+      return Results.BadRequest(new
+      {
+        id,
+        message = resp.ErrorMessage ?? "Failed to set config"
+      });
+    }
+
+    return Results.Ok(new { success = true });
   }
 
   public static async Task<IEnumerable<Template>> GetTemplates(
@@ -312,6 +363,16 @@ public static class BackendHandlers
     // Use current template version (don't increment)
     var currentVersion = template.Version;
     
+    // Parse optional amount from query (?amount=3)
+    int amount = 10;
+    if (context.Request.Query.TryGetValue("amount", out var amountValues))
+    {
+      if (int.TryParse(amountValues.FirstOrDefault(), out var parsed) && parsed > 0)
+      {
+        amount = parsed;
+      }
+    }
+
     var request = new GenerateFromTemplateRequest
     {
       TemplateId = id.ToString(),
@@ -321,7 +382,8 @@ public static class BackendHandlers
       Schema = template.Schema,
       Path = template.Path ?? "",
       ProjectId = template.RelatedProjectId.ToString(),
-      ProjectTitle = projectTitle
+      ProjectTitle = projectTitle,
+      Amount = amount
     };
 
     try
@@ -356,3 +418,5 @@ public static class BackendHandlers
   }
 
 }
+
+  public record SetProjectConfigBody(string? OpenAiKey, string? Model);

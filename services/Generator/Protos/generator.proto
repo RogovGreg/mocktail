@@ -6,14 +6,41 @@ package generator;
 
 service GeneratorService {
   rpc GenerateContent (GenerateContentRequest) returns (GenerateContentResponse);
+  rpc GetProjectConfig (GetProjectConfigRequest) returns (GetProjectConfigResponse);
+  rpc SetProjectConfig (SetProjectConfigRequest) returns (SetProjectConfigResponse);
 }
 
 message GenerateContentRequest {
   string schema = 1;  // JSON schema for content generation
+  string project_id = 2;
+  int32 amount = 3;
 }
 
 message GenerateContentResponse {
   bool success = 1;
   string generated_data = 2;  // Generated JSON content
   string error_message = 3;   // Error message if generation failed
+}
+
+message GetProjectConfigRequest {
+  string project_id = 1;
+}
+
+message GetProjectConfigResponse {
+  bool found = 1;
+  string project_id = 2;
+  string open_ai_key = 3;
+  string model = 4;
+  string error_message = 5;
+}
+
+message SetProjectConfigRequest {
+  string project_id = 1;
+  string open_ai_key = 2;
+  string model = 3;
+}
+
+message SetProjectConfigResponse {
+  bool success = 1;
+  string error_message = 2;
 }

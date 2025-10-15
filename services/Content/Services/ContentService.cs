@@ -126,6 +126,7 @@ public class ContentServiceImpl : ContentService.ContentServiceBase
                 Path = templateData.Path,
                 ProjectId = templateData.ProjectId,
                 ProjectTitle = templateData.ProjectTitle,
+                Amount = request.Amount,
                 CreatedAt = DateTimeOffset.UtcNow
             };
 

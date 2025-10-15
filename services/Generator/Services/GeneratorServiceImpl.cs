@@ -1,31 +1,157 @@
 using Grpc.Core;
 using Generator.Protos;
 using Generator.Integrations;
+using Generator.Data;
+using Microsoft.EntityFrameworkCore;
+using Generator.Entities;
+using System.ClientModel;
 
 namespace Generator.Services;
 
 public class GeneratorServiceImpl : GeneratorService.GeneratorServiceBase
 {
     private readonly ILogger<GeneratorServiceImpl> _logger;
+    private readonly GeneratorDbContext _db;
 
-    public GeneratorServiceImpl(ILogger<GeneratorServiceImpl> logger)
+    public GeneratorServiceImpl(ILogger<GeneratorServiceImpl> logger, GeneratorDbContext db)
     {
         _logger = logger;
+        _db = db;
     }
 
     public override async Task<GenerateContentResponse> GenerateContent(GenerateContentRequest request, ServerCallContext context)
     {
         _logger.LogInformation("GenerateContent gRPC endpoint called with schema length: {Length}", request.Schema.Length);
 
-        // Use OpenAIIntegration.Generate to generate content based on the schema
-        var generatedContent = await OpenAIIntegration.Generate(request.Schema, 10);
+        int amount = request.Amount > 0 ? request.Amount : 1;
+        string? apiKey = null;
+        string? model = null;
 
-        _logger.LogInformation("Successfully generated content with length: {Length}", generatedContent.Length);
+        if (!string.IsNullOrWhiteSpace(request.ProjectId) && Guid.TryParse(request.ProjectId, out var projectGuid))
+        {
+            var cfg = await _db.ProjectConfigs.FirstOrDefaultAsync(c => c.ProjectId == projectGuid);
+            if (cfg != null)
+            {
+                apiKey = string.IsNullOrWhiteSpace(cfg.OpenAiKey) ? null : cfg.OpenAiKey;
+                model = string.IsNullOrWhiteSpace(cfg.Model) ? null : cfg.Model;
+            }
+        }
 
+        _logger.LogInformation("Using model: {Model}", model ?? "default");
+
+        int retries = 3;
+        for (int i = 0; i < retries; i++)
+        {
+            try
+            {
+                string generatedContent;
+                generatedContent = await OpenAIIntegration.GenerateObjects(
+                    request.Schema,
+                    amount,
+                    apiKey,
+                    model
+                );
+
+                _logger.LogInformation("Successfully generated content with length: {Length}", generatedContent.Length);
+
+                return new GenerateContentResponse
+                {
+                    Success = true,
+                    GeneratedData = generatedContent
+                };
+            }
+            catch (ClientResultException ex) when (ex.Status == 401)
+            {
+                _logger.LogError(ex, "Invalid OpenAI API key provided");
+                return new GenerateContentResponse
+                {
+                    Success = false,
+                    ErrorMessage = "Invalid OpenAI API key. Please check your project configuration."
+                };
+            }
+            catch (ClientResultException ex)
+            {
+                _logger.LogError(ex, "OpenAI API error: {Message}", ex.Message);
+                return new GenerateContentResponse
+                {
+                    Success = false,
+                    ErrorMessage = $"OpenAI API error: {ex.Message}"
+                };
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Error generating content, retrying... Attempt {Attempt}", i + 1);
+            }
+        }
         return new GenerateContentResponse
         {
-            Success = true,
-            GeneratedData = generatedContent
+            Success = false,
+            ErrorMessage = "Failed to generate content after multiple attempts."
         };
+    }
+
+    public override async Task<GetProjectConfigResponse> GetProjectConfig(
+        GetProjectConfigRequest request,
+        ServerCallContext context
+    )
+    {
+        if (!Guid.TryParse(request.ProjectId, out var projectId))
+        {
+            return new GetProjectConfigResponse { Found = false, ErrorMessage = "Invalid project_id format" };
+        }
+
+        var cfg = await _db.ProjectConfigs.FirstOrDefaultAsync(c => c.ProjectId == projectId);
+        if (cfg == null)
+        {
+            return new GetProjectConfigResponse {
+                Found = false,
+                ProjectId = request.ProjectId
+            };
+        }
+
+        return new GetProjectConfigResponse
+        {
+            Found = true,
+            ProjectId = cfg.ProjectId.ToString(),
+            OpenAiKey = cfg.OpenAiKey ?? string.Empty,
+            Model = cfg.Model ?? string.Empty
+        };
+    }
+
+    public override async Task<SetProjectConfigResponse> SetProjectConfig(SetProjectConfigRequest request, ServerCallContext context)
+    {
+        if (!Guid.TryParse(request.ProjectId, out var projectId))
+        {
+            return new SetProjectConfigResponse { Success = false, ErrorMessage = "Invalid project_id format" };
+        }
+
+        try
+        {
+            var cfg = await _db.ProjectConfigs.FirstOrDefaultAsync(c => c.ProjectId == projectId);
+            if (cfg == null)
+            {
+                cfg = new Generator.Entities.ProjectConfig
+                {
+                    Id = Guid.NewGuid(),
+                    ProjectId = projectId,
+                    OpenAiKey = request.OpenAiKey ?? string.Empty,
+                    Model = request.Model ?? string.Empty
+                };
+                _db.ProjectConfigs.Add(cfg);
+            }
+            else
+            {
+                cfg.OpenAiKey = request.OpenAiKey ?? string.Empty;
+                cfg.Model = request.Model ?? string.Empty;
+            }
+
+            await _db.SaveChangesAsync();
+            return new SetProjectConfigResponse { Success = true };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to set project config for {ProjectId}", request.ProjectId);
+            return new SetProjectConfigResponse { Success = false, ErrorMessage = ex.Message };
+        }
     }
 }
