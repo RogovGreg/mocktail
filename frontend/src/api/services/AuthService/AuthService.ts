@@ -1,3 +1,5 @@
+import { interpolateUrl } from '#api/helpers';
+
 import { EAuthServiceEndpoint } from './inner-types';
 import { TAuthService } from './types';
 import { axiosInstance } from '../../api';
@@ -29,4 +31,23 @@ export const AuthService: TAuthService = {
       config?.body?.data,
       config?.options,
     ),
+
+  createProjectAccessToken: config =>
+    axiosInstance.post(
+      EAuthServiceEndpoint.ProjectAccessToken,
+      config?.body?.data,
+      config?.options,
+    ),
+  deleteProjectAccessToken: config =>
+    axiosInstance.delete(
+      interpolateUrl(EAuthServiceEndpoint.ProjectAccessTokenItem, {
+        tokenId: String(config?.path?.params?.tokenId),
+      }),
+      config?.options,
+    ),
+  getProjectAccessTokens: config =>
+    axiosInstance.get(EAuthServiceEndpoint.ProjectAccessToken, {
+      ...config?.options,
+      params: config?.query?.params,
+    }),
 };

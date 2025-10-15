@@ -6,4 +6,7 @@ export enum EAuthServiceEndpoint {
   GetProfile = 'auth/profile',
   RefreshToken = 'auth/refresh-token',
   Register = 'auth/register',
+
+  ProjectAccessToken = 'auth/api-tokens',
+  ProjectAccessTokenItem = 'auth/api-tokens/:tokenId',
 }

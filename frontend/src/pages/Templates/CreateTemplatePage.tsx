@@ -20,6 +20,11 @@ export const CreateTemplatePage: FC = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (formData.tags.length === 0) {
+      return;
+    }
+
     setIsSubmitting(true);
 
     const payload: TCreateTemplateAPIMethodPayload = {
@@ -28,7 +33,7 @@ export const CreateTemplatePage: FC = () => {
       path: formData.path || null,
       relatedProjectId: projectId!,
       schema: formData.schema,
-      tags: formData.tags.length > 0 ? formData.tags : null,
+      tags: formData.tags,
     };
 
     try {
@@ -101,7 +106,9 @@ export const CreateTemplatePage: FC = () => {
           }}
         />
         <fieldset className='fieldset'>
-          <legend className='fieldset-legend'>Tags</legend>
+          <legend className='fieldset-legend'>
+            Tags <span className='text-error'>*</span>
+          </legend>
 
           <div className='flex flex-wrap gap-2 mb-3'>
             {formData.tags.length > 0 ? (
@@ -122,7 +129,7 @@ export const CreateTemplatePage: FC = () => {
               ))
             ) : (
               <span className='text-base-content/50 italic'>
-                No tags added yet
+                At least one tag is required
               </span>
             )}
           </div>
@@ -196,7 +203,11 @@ export const CreateTemplatePage: FC = () => {
           <button
             type='submit'
             className={`btn btn-primary ${isSubmitting ? 'loading' : ''}`}
-            disabled={isSubmitting || !formData.name.trim()}
+            disabled={
+              isSubmitting ||
+              !formData.name.trim() ||
+              formData.tags.length === 0
+            }
           >
             {isSubmitting ? (
               <>

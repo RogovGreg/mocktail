@@ -169,7 +169,7 @@ public static class AuthHandlers
         var userName = context.User.Identity.Name;
         if (string.IsNullOrEmpty(userName))
             return Results.Unauthorized();
-            
+
         var user = await userManager.FindByNameAsync(userName);
         if (user == null)
             return Results.NotFound();
@@ -196,7 +196,7 @@ public static class AuthHandlers
         var userName = context.User.Identity.Name;
         if (string.IsNullOrEmpty(userName))
             return Results.Unauthorized();
-            
+
         var user = await userManager.FindByNameAsync(userName);
         if (user == null)
             return Results.NotFound();
@@ -218,7 +218,7 @@ public static class AuthHandlers
         var userName = context.User.Identity.Name;
         if (string.IsNullOrEmpty(userName))
             return Results.Unauthorized();
-            
+
         var user = await userManager.FindByNameAsync(userName);
         if (user == null)
             return Results.NotFound();
@@ -245,7 +245,7 @@ public static class AuthHandlers
         var userName = context.User.Identity.Name;
         if (string.IsNullOrEmpty(userName))
             return Results.Unauthorized();
-            
+
         var user = await userManager.FindByNameAsync(userName);
         if (user == null)
             return Results.NotFound();
@@ -270,7 +270,7 @@ public static class AuthHandlers
         var userName = context.User.Identity.Name;
         if (string.IsNullOrEmpty(userName))
             return Results.Unauthorized();
-            
+
         var user = await userManager.FindByNameAsync(userName);
         if (user == null)
             return Results.NotFound();
@@ -317,9 +317,9 @@ public static class AuthHandlers
             return Results.Unauthorized();
 
         var result = await apiTokenService.CreateTokenAsync(
-            userId, 
-            request.ProjectId, 
-            request.Name, 
+            userId,
+            request.ProjectId,
+            request.Name,
             request.ExpiresAt);
 
         if (!result.Success)
@@ -333,7 +333,8 @@ public static class AuthHandlers
             TokenId = result.TokenId,
             Name = request.Name,
             ProjectId = request.ProjectId,
-            ExpiresAt = request.ExpiresAt
+            CreatedAt = result.CreatedAt,
+            ExpiresAt = request.ExpiresAt,
         });
     }
 
@@ -351,7 +352,7 @@ public static class AuthHandlers
             return Results.Unauthorized();
 
         IEnumerable<ApiToken> tokens;
-        
+
         if (projectId.HasValue)
         {
             tokens = await apiTokenService.GetUserTokensByProjectAsync(userId, projectId.Value);
@@ -360,10 +361,10 @@ public static class AuthHandlers
         {
             tokens = await apiTokenService.GetUserTokensAsync(userId);
         }
-        
+
         return Results.Ok(tokens.Select(t => new
         {
-            t.Id,
+            TokenId = t.Id,
             t.Name,
             t.ProjectId,
             t.CreatedAt,

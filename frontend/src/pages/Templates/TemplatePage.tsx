@@ -152,13 +152,6 @@ export const TemplatePage: FC = () => {
           </div>
           <div className='stat-desc'>by {template.updatedBy}</div>
         </div>
-        <div className='stat'>
-          <div className='stat-title'>Used in</div>
-          <div className='stat-value text-accent text-lg'>
-            {template.usedIn?.length || 0}
-          </div>
-          <div className='stat-desc'>other templates</div>
-        </div>
       </div>
 
       <div className='mb-6'>

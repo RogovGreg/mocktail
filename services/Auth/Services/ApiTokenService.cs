@@ -16,7 +16,7 @@ public interface IApiTokenService
     Task<bool> DeleteTokenAsync(Guid tokenId, string userId);
 }
 
-public record ApiTokenResult(bool Success, string? Token, string? ErrorMessage, Guid? TokenId);
+public record ApiTokenResult(bool Success, string? Token, string? ErrorMessage, Guid? TokenId, DateTimeOffset? CreatedAt);
 public record ApiTokenValidationResult(bool IsValid, string? UserId, Guid? ProjectId, string? ErrorMessage);
 
 public class ApiTokenService : IApiTokenService
@@ -58,15 +58,15 @@ public class ApiTokenService : IApiTokenService
             _context.ApiTokens.Add(apiToken);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Created API token {TokenId} for user {UserId} and project {ProjectId}", 
+            _logger.LogInformation("Created API token {TokenId} for user {UserId} and project {ProjectId}",
                 apiToken.Id, userId, projectId);
 
-            return new ApiTokenResult(true, token, null, apiToken.Id);
+            return new ApiTokenResult(true, token, null, apiToken.Id, apiToken.CreatedAt);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating API token for user {UserId}", userId);
-            return new ApiTokenResult(false, null, "Failed to create API token", null);
+            return new ApiTokenResult(false, null, "Failed to create API token", null, null);
         }
     }
 
@@ -75,7 +75,7 @@ public class ApiTokenService : IApiTokenService
         try
         {
             var tokenHash = HashToken(token);
-            
+
             var apiToken = await _context.ApiTokens
                 .FirstOrDefaultAsync(t => t.TokenHash == tokenHash && t.IsActive);
 
@@ -103,7 +103,7 @@ public class ApiTokenService : IApiTokenService
         try
         {
             var tokenHash = HashToken(token);
-            
+
             var apiToken = await _context.ApiTokens
                 .FirstOrDefaultAsync(t => t.TokenHash == tokenHash);
 
