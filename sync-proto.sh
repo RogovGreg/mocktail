@@ -3,17 +3,20 @@
 # Script to sync proto files from Shared/Contracts to service-specific Protos directories
 # This ensures all services use the same proto definitions
 
+# TODO Only copy necessary files instead of all
+
 echo "Syncing proto files..."
 
-# Copy content.proto to Backend service
-cp services/Shared/Contracts/content.proto services/Backend/Protos/
-echo "✓ Copied content.proto to Backend/Protos/"
+cp services/Shared/Contracts/*.proto services/Backend/Protos/
+echo "✓ Copied .proto files to Backend/Protos/ (readonly)"
 
-# Copy content.proto to Content service  
-cp services/Shared/Contracts/content.proto services/Content/Protos/
-echo "✓ Copied content.proto to Content/Protos/"
+cp services/Shared/Contracts/*.proto services/Content/Protos/
+echo "✓ Copied .proto files to Content/Protos/ (readonly)"
+
+cp services/Shared/Contracts/*.proto services/Generator/Protos/
+echo "✓ Copied .proto files to Generator/Protos/ (readonly)"
 
 echo "Proto files synced successfully!"
 echo ""
-echo "Note: Run this script whenever you update the proto file in Shared/Contracts/"
+echo "Note: Run this script whenever you update proto files in Shared/Contracts/"
 echo "This ensures all services use the same proto definitions."
