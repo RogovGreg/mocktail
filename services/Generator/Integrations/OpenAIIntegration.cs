@@ -22,28 +22,29 @@ public class OpenAIIntegration
         return response;
     }
 
-    public static async Task<IResult> Prompt(HttpContext context)
-    {
-        try
-        {
-            var request = await JsonSerializer.DeserializeAsync<PromptRequest>(context.Request.Body, jsonOptions);
-            if (request == null || string.IsNullOrEmpty(request.Prompt))
-            {
-                return Results.BadRequest("Invalid request");
-            }
+    // Unused for now, implemented as demo
+    // public static async Task<IResult> Prompt(HttpContext context)
+    // {
+    //     try
+    //     {
+    //         var request = await JsonSerializer.DeserializeAsync<PromptRequest>(context.Request.Body, jsonOptions);
+    //         if (request == null || string.IsNullOrEmpty(request.Prompt))
+    //         {
+    //             return Results.BadRequest("Invalid request");
+    //         }
 
-            logger.LogInformation("[LLM Prompt]: {Prompt}", request.Prompt);
+    //         logger.LogInformation("[LLM Prompt]: {Prompt}", request.Prompt);
 
-            var response = makeOpenAIRequest(request.Prompt);
-            logger.LogInformation("[LLM Response]: {Response}", response);
+    //         var response = makeOpenAIRequest(request.Prompt);
+    //         logger.LogInformation("[LLM Response]: {Response}", response);
 
-            return Results.Json(new { response });
-        }
-        catch (JsonException)
-        {
-            return Results.BadRequest("Invalid JSON");
-        }
-    }
+    //         return Results.Json(new { response });
+    //     }
+    //     catch (JsonException)
+    //     {
+    //         return Results.BadRequest("Invalid JSON");
+    //     }
+    // }
 
     public static async Task<string> Generate(string schema, int amount = 10)
     {

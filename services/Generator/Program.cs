@@ -46,6 +46,6 @@ if (app.Environment.IsDevelopment())
 app.MapGrpcService<GeneratorServiceImpl>();
 
 // Routes
-app.MapPost("/prompt", (Delegate)OpenAIIntegration.Prompt);
+// app.MapPost("/prompt", (Delegate)OpenAIIntegration.Prompt); // unused
 
 app.Run();
