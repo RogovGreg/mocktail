@@ -8,7 +8,7 @@ public interface IGeneratorService
         string schema,
         Guid projectId,
         CancellationToken cancellationToken = default,
-        int amount = 1
+        int amount = 10
     );
 }
 
