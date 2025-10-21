@@ -74,15 +74,14 @@ export const CreateProjectPage: FC = () => {
       <form onSubmit={handleSubmit} className='space-y-2'>
         <div className='form-control'>
           <CustomInput
-            name='title'
+            inputClassName='input-bordered w-full'
             label='Project Title'
+            name='title'
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+              setFormData({ ...formData, title: event.target.value })
+            }
             placeholder='Enter project title'
-            inputProps={{
-              className: 'input input-bordered w-full',
-              onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
-                setFormData({ ...formData, title: event.target.value }),
-              required: true,
-            }}
+            required
           />
         </div>
 
@@ -115,24 +114,24 @@ export const CreateProjectPage: FC = () => {
 
           <div className='flex gap-2'>
             <CustomInput
+              inputClassName='input-bordered w-full'
               name='newKeyword'
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                setNewKeyword(event.target.value)
+              }
               placeholder='Add new keyword'
-              wrapperProps={{
-                className: 'flex-1',
-                style: {
-                  background: 'transparent',
-                  border: 'none',
-                  margin: 0,
-                  padding: 0,
-                },
-              }}
-              inputProps={{
-                className: 'input input-bordered w-full',
-                onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-                  setNewKeyword(e.target.value),
+              specificInputProps={{
                 onKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) =>
                   e.key === 'Enter' && (e.preventDefault(), handleAddKeyword()),
-                value: newKeyword,
+              }}
+              value={newKeyword}
+              rewriteWrapperClassName
+              wrapperClassName='flex-1'
+              wrapperStyle={{
+                background: 'transparent',
+                border: 'none',
+                margin: 0,
+                padding: 0,
               }}
             />
             <button

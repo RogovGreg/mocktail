@@ -82,11 +82,13 @@ export const RegisterPage: FC = () => {
           label='Password'
           name='password'
           placeholder='Enter your password'
+          type='password'
         />
         <CustomInput
           label='Confirm Password'
           name='confirmPassword'
           placeholder='Confirm your password'
+          type='password'
         />
         <button type='submit' className='btn btn-primary flex mx-auto'>
           Submit

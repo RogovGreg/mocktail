@@ -75,18 +75,17 @@ export const TemplatesPage = () => {
           <CustomInput
             name='searchString'
             placeholder='Search templates by name, description or tags'
-            wrapperProps={{
-              className: 'join-item flex-1',
-              style: {
-                background: 'transparent',
-                border: 'none',
-                margin: 0,
-                padding: 0,
-              },
+            rewriteWrapperClassName
+            wrapperClassName='join-item flex-1'
+            wrapperStyle={{
+              background: 'transparent',
+              border: 'none',
+              margin: 0,
+              padding: 0,
             }}
-            inputProps={{
-              className: 'input input-bordered join-item w-full',
-              style: { border: 'none' },
+            inputClassName='input-bordered join-item w-full'
+            inputStyle={{
+              border: 'none',
             }}
           />
           <button type='submit' className='btn join-item'>

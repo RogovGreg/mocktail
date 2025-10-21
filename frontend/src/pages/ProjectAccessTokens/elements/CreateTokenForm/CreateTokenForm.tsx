@@ -66,27 +66,22 @@ export const CreateTokenForm: FC<TCreateTokenFormProps> = props => {
     <div className='card bg-base-200 p-6 mb-6'>
       <form onSubmit={handleCreateToken} className='space-y-4'>
         <CustomInput
-          name='tokenName'
+          required
+          inputClassName='input-bordered w-full'
           label='Token Name'
+          name='tokenName'
+          onChange={event => setNewTokenName(event.target.value)}
           placeholder='Enter token name'
-          inputProps={{
-            className: 'input input-bordered w-full',
-            onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
-              setNewTokenName(event.target.value),
-            required: true,
-            value: newTokenName,
-          }}
+          value={newTokenName}
         />
 
         <CustomInput
-          name='tokenExpiresAt'
+          inputClassName='input-bordered w-full'
           label='Expires At (optional)'
-          inputProps={{
-            className: 'input input-bordered w-full',
-            onChange: handleDateChange,
-            type: 'datetime-local',
-            value: formatDateForInput(newTokenExpiresAt),
-          }}
+          name='tokenExpiresAt'
+          onChange={handleDateChange}
+          type='datetime-local'
+          value={formatDateForInput(newTokenExpiresAt)}
         />
         <div className='flex gap-2 justify-end'>
           <button
