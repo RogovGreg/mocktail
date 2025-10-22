@@ -1,7 +1,39 @@
-import { Link, useMatches } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useMatches, useParams } from 'react-router-dom';
+
+import { BackendService, TProject, TTemplate } from '#api';
 
 export const ProjectsPageBreadcrumbs: React.FC = () => {
   const matches = useMatches();
+
+  const { projectId, templateId } = useParams();
+
+  const [project, setProject] = useState<TProject | null>(null);
+  const [template, setTemplate] = useState<TTemplate | null>(null);
+
+  useEffect(() => {
+    if (projectId) {
+      BackendService.getProjectByID({ path: { params: { id: projectId } } })
+        .then(response => {
+          setProject(response.data);
+        })
+        .catch(() => {
+          setProject(null);
+        });
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    if (templateId) {
+      BackendService.getTemplateByID({ path: { params: { id: templateId } } })
+        .then(response => {
+          setTemplate(response.data);
+        })
+        .catch(() => {
+          setTemplate(null);
+        });
+    }
+  }, [templateId]);
 
   const breadcrumbs = matches
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -11,11 +43,27 @@ export const ProjectsPageBreadcrumbs: React.FC = () => {
       const isLast = index === filteredMatches.length - 1;
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      const label = match.handle.crumb(match.data, match.params);
+      const { crumb } = match.handle;
+
+      if (crumb === 'Project') {
+        return {
+          isLast,
+          label: project?.title || 'Project Details',
+          path: match.pathname,
+        };
+      }
+
+      if (crumb === 'Template') {
+        return {
+          isLast,
+          label: template?.name || 'Template Details',
+          path: match.pathname,
+        };
+      }
 
       return {
         isLast,
-        label,
+        label: crumb,
         path: match.pathname,
       };
     });
