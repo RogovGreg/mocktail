@@ -15,7 +15,7 @@ export const TemplatesPage = () => {
   useEffect(() => {
     if (projectId) {
       BackendService.getTemplatesList({
-        query: { params: { relatedProjectId: projectId } },
+        query: { params: { relatedProjectIds: [projectId] } },
       })
         .then(response => {
           setTemplates(response.data);
@@ -49,21 +49,23 @@ export const TemplatesPage = () => {
 
       const { searchString } = values || {};
 
-      BackendService.getTemplatesList({
-        query: {
-          params: {
-            relatedProjectId: projectId,
-            searchString,
+      if (projectId) {
+        BackendService.getTemplatesList({
+          query: {
+            params: {
+              relatedProjectIds: [projectId],
+              searchString,
+            },
           },
-        },
-      })
-        .then(response => {
-          setTemplates(response.data);
         })
-        .catch(error => {
-          // eslint-disable-next-line no-console
-          console.error('Failed to fetch templates', error);
-        });
+          .then(response => {
+            setTemplates(response.data);
+          })
+          .catch(error => {
+            // eslint-disable-next-line no-console
+            console.error('Failed to fetch templates', error);
+          });
+      }
     },
     [projectId],
   );
@@ -73,8 +75,9 @@ export const TemplatesPage = () => {
       <form onSubmit={onSearch} className='flex justify-center m-6'>
         <div className='join w-full max-w-2xl'>
           <CustomInput
+            helperText='Search by partial name or path, exact tag or ID'
             name='searchString'
-            placeholder='Search templates by name, description or tags'
+            placeholder='Enter your search request...'
             rewriteWrapperClassName
             wrapperClassName='join-item flex-1'
             wrapperStyle={{

@@ -127,10 +127,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
     [],
   );
 
-  console.log('AuthContextProvider', isAuthorized);
-
   useEffect(() => {
-    console.log('AuthContextProvider - start polling');
     if (!pollingStatusIntervalRef.current) {
       pollingStatusIntervalRef.current = setInterval(() => {
         AuthService.checkStatus();

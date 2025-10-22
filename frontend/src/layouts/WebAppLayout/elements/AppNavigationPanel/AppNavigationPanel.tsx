@@ -42,22 +42,23 @@ export const AppNavigationPanel: React.FC = () => {
         query: { params: { createdBy: userID! } },
       }).then(response => response.data);
 
-      const templatePromises = usersProjects.map(async project => {
-        const { id } = project;
+      const relatedProjectIds = usersProjects.map(project => project.id);
 
-        const templates = await BackendService.getTemplatesList({
-          query: { params: { relatedProjectId: id } },
-        }).then(response => response.data);
+      const allTemplates = await BackendService.getTemplatesList({
+        query: { params: { relatedProjectIds } },
+      }).then(response => response.data);
 
-        return { projectId: id, templates };
-      });
-
-      const templateResults = await Promise.all(templatePromises);
-
-      const usersProjectsTemplates = templateResults.reduce<
+      const usersProjectsTemplates = allTemplates.reduce<
         Record<string, Array<TTemplate>>
-      >((accumulator, { projectId, templates }) => {
-        accumulator[projectId] = templates;
+      >((accumulator, templateItem) => {
+        const { relatedProjectId: projectId } = templateItem;
+
+        if (accumulator[projectId]) {
+          accumulator[projectId].push(templateItem);
+        } else {
+          accumulator[projectId] = [templateItem];
+        }
+
         return accumulator;
       }, {});
 

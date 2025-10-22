@@ -21,10 +21,6 @@ export const CreateTemplatePage: FC = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (formData.tags.length === 0) {
-      return;
-    }
-
     setIsSubmitting(true);
 
     const payload: TCreateTemplateAPIMethodPayload = {
@@ -104,9 +100,7 @@ export const CreateTemplatePage: FC = () => {
           value={formData.path}
         />
         <fieldset className='fieldset'>
-          <legend className='fieldset-legend'>
-            Tags <span className='text-error'>*</span>
-          </legend>
+          <legend className='fieldset-legend'>Tags</legend>
 
           <div className='flex flex-wrap gap-2 mb-3'>
             {formData.tags.length > 0 ? (
@@ -121,14 +115,19 @@ export const CreateTemplatePage: FC = () => {
                     onClick={() => handleRemoveTag(tag)}
                     className='btn btn-ghost btn-xs btn-circle'
                   >
-                    x
+                    <svg
+                      xmlns='http://www.w3.org/2000/svg'
+                      viewBox='0 0 16 16'
+                      fill='currentColor'
+                      className='size-4'
+                    >
+                      <path d='M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z' />
+                    </svg>
                   </button>
                 </span>
               ))
             ) : (
-              <span className='text-base-content/50 italic'>
-                At least one tag is required
-              </span>
+              <span className='text-base-content/50 italic'>No tags added</span>
             )}
           </div>
 
@@ -202,11 +201,7 @@ export const CreateTemplatePage: FC = () => {
           <button
             type='submit'
             className={`btn btn-primary ${isSubmitting ? 'loading' : ''}`}
-            disabled={
-              isSubmitting ||
-              !formData.name.trim() ||
-              formData.tags.length === 0
-            }
+            disabled={isSubmitting || !formData.name.trim()}
           >
             {isSubmitting ? (
               <>

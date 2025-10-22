@@ -11,7 +11,7 @@ import { TProjectFiltersFormValues } from './types';
 export const ProjectsPage = () => {
   const navigate = useNavigate();
 
-  const [projects, setProjects] = useState<TProject[]>([]);
+  const [projects, setProjects] = useState<Array<TProject>>([]);
 
   useEffect(() => {
     BackendService.getProjectsList()
@@ -66,8 +66,9 @@ export const ProjectsPage = () => {
       <form onSubmit={onSearch} className='flex justify-center m-6'>
         <div className='join w-full max-w-2xl'>
           <CustomInput
+            helperText='Search by partial name, exact keyword or ID'
             name='searchString'
-            placeholder='Search (by project ID, title or key words)'
+            placeholder='Enter your search request...'
             rewriteWrapperClassName
             wrapperClassName='join-item flex-1'
             wrapperStyle={{

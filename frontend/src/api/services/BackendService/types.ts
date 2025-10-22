@@ -130,7 +130,7 @@ export type TGetTemplatesListMethodQueryParams = Readonly<{
   updatedAt?: string;
   createdBy?: string;
   updatedBy?: string;
-  relatedProjectId?: string;
+  relatedProjectIds?: Array<string>;
   usedIn?: string;
 }>;
 export type TGetTemplatesListMethodResponse = Array<TTemplate>;
