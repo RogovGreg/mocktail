@@ -1,12 +1,12 @@
-import { LoaderFunction } from 'react-router-dom';
+// import { LoaderFunction } from 'react-router-dom';
 
-import { TProject, TTemplate } from '#api';
+// import { TProject, TTemplate } from '#api';
 
-export type TLoaderData = {
-  project?: TProject;
-  template?: TTemplate;
-  [key: string]: unknown;
-};
+// export type TLoaderData = {
+//   project?: TProject;
+//   template?: TTemplate;
+//   [key: string]: unknown;
+// };
 
 export type TRouteHandle = {
   crumb?: string;
@@ -22,7 +22,7 @@ export type TRouteObject = Readonly<{
   isProtected: boolean;
   path: string;
 
-  loader?: LoaderFunction;
+  // loader?: LoaderFunction;
   handle?: TRouteHandle;
 
   children?: Array<TRouteObject>;

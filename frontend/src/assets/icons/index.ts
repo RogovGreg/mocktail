@@ -1,1 +1,17 @@
+export { default as ApiTokensIcon } from './ApiTokens.svg?react';
+export { default as CrossIcon } from './Cross.svg?react';
+export { default as DashboardIcon } from './Dashboard.svg?react';
+export { default as DeleteIcon } from './Delete.svg?react';
+export { default as EditIcon } from './Edit.svg?react';
+export { default as EmptyListIcon } from './EmptyList.svg?react';
+export { default as LinkIcon } from './Link.svg?react';
 export { default as MockTailIcon } from './MockTail.svg?react';
+export { default as PlusIcon } from './Plus.svg?react';
+export { default as ProjectsIcon } from './Projects.svg?react';
+export { default as ProjectsItemIcon } from './ProjectsItem.svg?react';
+export { default as QuestionIcon } from './Question.svg?react';
+export { default as SearchIcon } from './Search.svg?react';
+export { default as TemplatesIcon } from './Templates.svg?react';
+export { default as TemplatesItemIcon } from './TemplatesItem.svg?react';
+export { default as ViewIcon } from './View.svg?react';
+export { default as WarningIcon } from './Warning.svg?react';
