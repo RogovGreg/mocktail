@@ -100,7 +100,7 @@ npm run dev
 ### Backend services
 The main way to run backend services locally is through `run.py`, which is essentially a wrapper around:
 ```
-docker compose -f ./docker-compose.yml -f ./docker-compose.dev.yml up -d --build,
+docker compose -f ./docker-compose.yml -f ./docker-compose.dev.yml up -d --build
 ```
 
 While the script is running you can enter commands:
