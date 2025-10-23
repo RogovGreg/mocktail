@@ -52,10 +52,10 @@ export type TDeleteProjectAPIMethod =
 
 // =========================== getProjectByID ===========================
 
-export type TGetProjectByIDMethodQueryParams = Pick<TProject, 'id'>;
+export type TGetProjectByIDMethodPathParams = Pick<TProject, 'id'>;
 export type TGetProjectByIDMethodResponse = TProject;
 export type TGetProjectByIDMethod = TUnifiedApiMethod<
-  TGetProjectByIDMethodQueryParams,
+  TGetProjectByIDMethodPathParams,
   void,
   void,
   TGetProjectByIDMethodResponse

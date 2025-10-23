@@ -1,8 +1,14 @@
-import { ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useParams } from 'react-router';
+import { ReactNode, useContext, useMemo } from 'react';
+import {
+  Link,
+  Params,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router';
 
-import { BackendService } from '#api';
-import { TProject, TTemplate } from '#api/services/BackendService/types';
+import { TTemplate, useProjectsListQuery, useTemplatesListQuery } from '#api';
+import { AuthContext } from '#global-contexts';
 import {
   ApiTokensIcon,
   DashboardIcon,
@@ -13,54 +19,52 @@ import {
   TemplatesIcon,
   TemplatesItemIcon,
 } from '#icons';
-import { AuthContext } from '#src/global-contexts/AuthContext/AuthContext';
 
 export const AppNavigationPanel: React.FC = () => {
-  const params = useParams();
+  const params: Readonly<Params<string>> = useParams();
   const { projectId, templateId } = params || {};
 
+  const navigate = useNavigate();
   const { pathname } = useLocation();
 
   const { authorizedUserData } = useContext(AuthContext);
   const { id: userID } = authorizedUserData || {};
 
-  const [userProjectsList, setUserProjectsList] = useState<Array<TProject>>([]);
-  const [userProjectTemplatesList, setUserProjectTemplatesList] = useState<
-    Record<string, Array<TTemplate>>
-  >({});
-
-  const {
-    isApiTokensActive,
-    isDashboardActive,
-    isProjectsActive,
-    isTemplatesActive,
-  } = useMemo(
+  const { isDashboardActive, isProjectsActive } = useMemo(
     () => ({
-      isApiTokensActive: pathname.includes('/api-tokens') && Boolean(projectId),
       isDashboardActive: pathname.includes('/app/dashboard'),
       isProjectsActive:
         pathname.includes('/app/projects') && !projectId && !templateId,
-      isTemplatesActive:
-        pathname.includes('/templates') && Boolean(projectId) && !templateId,
     }),
     [projectId, templateId, pathname],
   );
 
-  useEffect(() => {
-    const fetchDataUsersProjectsData = async () => {
-      const usersProjects = await BackendService.getProjectsList({
-        query: { params: { createdBy: userID! } },
-      }).then(response => response.data);
+  const { data: userProjectsList } = useProjectsListQuery(
+    userID ? { createdBy: userID } : undefined,
+    { enabled: Boolean(userID) },
+  );
 
-      const relatedProjectIds = usersProjects.map(project => project.id);
+  const relatedProjectIds = useMemo<Array<string>>(
+    () => userProjectsList?.map(project => project.id) || [],
+    [userProjectsList],
+  );
 
-      const allTemplates = await BackendService.getTemplatesList({
-        query: { params: { relatedProjectIds } },
-      }).then(response => response.data);
+  const { data: allUserProjectsTemplates } = useTemplatesListQuery(
+    {
+      relatedProjectIds,
+    },
+    { enabled: relatedProjectIds.length > 0 },
+  );
 
-      const usersProjectsTemplates = allTemplates.reduce<
-        Record<string, Array<TTemplate>>
-      >((accumulator, templateItem) => {
+  const userProjectTemplatesList = useMemo<
+    Record<string, Array<TTemplate>>
+  >(() => {
+    if (!allUserProjectsTemplates) {
+      return {};
+    }
+
+    return allUserProjectsTemplates.reduce<Record<string, Array<TTemplate>>>(
+      (accumulator, templateItem) => {
         const { relatedProjectId: projectId } = templateItem;
 
         if (accumulator[projectId]) {
@@ -70,19 +74,13 @@ export const AppNavigationPanel: React.FC = () => {
         }
 
         return accumulator;
-      }, {});
-
-      setUserProjectsList(usersProjects);
-      setUserProjectTemplatesList(usersProjectsTemplates);
-    };
-
-    if (userID) {
-      fetchDataUsersProjectsData();
-    }
-  }, [userID]);
+      },
+      {},
+    );
+  }, [allUserProjectsTemplates]);
 
   const navBarProjectsTree = useMemo<ReactNode | Array<ReactNode>>(() => {
-    if (!userProjectsList.length) {
+    if (!userProjectsList?.length) {
       return null;
     }
 
@@ -96,6 +94,13 @@ export const AppNavigationPanel: React.FC = () => {
             template => template.id === templateId,
           ),
       );
+      const isTemplatesActive: boolean =
+        pathname.includes('/templates') &&
+        !templateId &&
+        projectId === usersProjectID;
+
+      const isApiTokensActive: boolean =
+        pathname.includes('/api-tokens') && projectId === usersProjectID;
 
       const projectTemplatesList: Array<TTemplate> =
         userProjectTemplatesList[usersProjectID] || [];
@@ -152,13 +157,17 @@ export const AppNavigationPanel: React.FC = () => {
                         className='tooltip tooltip-left'
                         data-tip='Create new template'
                       >
-                        <button type='button'>
-                          <Link
-                            to={`/app/projects/${usersProjectID}/templates/create`}
-                            className='btn btn-ghost btn-xs btn-square'
-                          >
-                            <PlusIcon />
-                          </Link>
+                        <button
+                          type='button'
+                          onClick={event => {
+                            event.preventDefault();
+                            navigate(
+                              `/app/projects/${usersProjectID}/templates/create`,
+                            );
+                          }}
+                          className='btn btn-ghost btn-xs btn-square'
+                        >
+                          <PlusIcon />
                         </button>
                       </div>
                     </div>
@@ -203,8 +212,8 @@ export const AppNavigationPanel: React.FC = () => {
     templateId,
     userProjectsList,
     userProjectTemplatesList,
-    isTemplatesActive,
-    isApiTokensActive,
+    pathname,
+    navigate,
   ]);
 
   return (
@@ -226,13 +235,15 @@ export const AppNavigationPanel: React.FC = () => {
           <ProjectsIcon />
           <span>Projects</span>
           <div className='tooltip tooltip-left' data-tip='Create new project'>
-            <button type='button'>
-              <Link
-                to='/app/projects/create'
-                className='btn btn-ghost btn-xs btn-square'
-              >
-                <PlusIcon />
-              </Link>
+            <button
+              type='button'
+              onClick={event => {
+                event.preventDefault();
+                navigate('/app/projects/create');
+              }}
+              className='btn btn-ghost btn-xs btn-square'
+            >
+              <PlusIcon />
             </button>
           </div>
         </Link>

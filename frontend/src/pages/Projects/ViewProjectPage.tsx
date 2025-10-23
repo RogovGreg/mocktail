@@ -1,7 +1,13 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 
-import { AuthService, BackendService, TProject } from '#api';
+import {
+  AuthService,
+  BackendService,
+  TProject,
+  useProjectsDeletionMutation,
+  useProjectsEditionMutation,
+} from '#api';
 import { CrossIcon } from '#icons';
 
 export const ViewProjectPage: FC = () => {
@@ -10,6 +16,9 @@ export const ViewProjectPage: FC = () => {
   const navigate = useNavigate();
 
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const projectsEditionMutation = useProjectsEditionMutation();
+  const projectsDeletionMutation = useProjectsDeletionMutation();
 
   const [project, setProject] = useState<TProject | null>(null);
   const [editedProject, setEditedProject] = useState<TProject | null>(null);
@@ -57,14 +66,19 @@ export const ViewProjectPage: FC = () => {
     if (!editedProject || !projectId) return;
 
     try {
-      const response = await BackendService.updateProject({
-        body: { data: editedProject },
-        path: { params: { id: projectId } },
-      });
-
-      setProject(response.data);
-      setEditedProject(null);
-      setSearchParams({});
+      await projectsEditionMutation.mutate(
+        {
+          body: { data: editedProject },
+          path: { params: { id: projectId } },
+        },
+        {
+          onSuccess: response => {
+            setProject(response.data);
+            setEditedProject(null);
+            setSearchParams({});
+          },
+        },
+      );
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to update project', error);
@@ -90,6 +104,19 @@ export const ViewProjectPage: FC = () => {
     });
   };
 
+  const onProjectDelete = useCallback(() => {
+    if (projectId) {
+      projectsDeletionMutation.mutate(
+        {
+          path: { params: { id: projectId } },
+        },
+        {
+          onSuccess: () => navigate('/app/projects'),
+        },
+      );
+    }
+  }, [projectId, navigate, projectsDeletionMutation]);
+
   if (!project) {
     return (
       <div className='flex justify-center items-center h-64'>
@@ -110,8 +137,8 @@ export const ViewProjectPage: FC = () => {
           <input
             type='text'
             value={currentProject.title}
-            onChange={e =>
-              setEditedProject({ ...editedProject!, title: e.target.value })
+            onChange={event =>
+              setEditedProject({ ...editedProject!, title: event.target.value })
             }
             className='input input-bordered text-2xl font-bold mb-2 w-full'
             placeholder='Project title'
@@ -172,8 +199,8 @@ export const ViewProjectPage: FC = () => {
             <input
               type='text'
               value={newKeyword}
-              onChange={e => setNewKeyword(e.target.value)}
-              onKeyPress={e => e.key === 'Enter' && handleAddKeyword()}
+              onChange={event => setNewKeyword(event.target.value)}
+              onKeyPress={event => event.key === 'Enter' && handleAddKeyword()}
               className='input input-bordered input-sm flex-1'
               placeholder='Add new keyword'
             />
@@ -260,11 +287,7 @@ export const ViewProjectPage: FC = () => {
               <button
                 type='button'
                 className='btn btn-error'
-                onClick={() =>
-                  BackendService.deleteProject({
-                    path: { params: { id: projectId! } },
-                  }).then(() => navigate('/app/projects'))
-                }
+                onClick={onProjectDelete}
               >
                 Delete Project
               </button>

@@ -1,7 +1,12 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 
-import { BackendService, TTemplate } from '#api';
+import {
+  BackendService,
+  TTemplate,
+  useTemplatesDeletionMutation,
+  useTemplatesEditionMutation,
+} from '#api';
 import { CrossIcon } from '#icons';
 
 export const TemplatePage: FC = () => {
@@ -12,6 +17,9 @@ export const TemplatePage: FC = () => {
   const navigate = useNavigate();
 
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const templatesEditionMutation = useTemplatesEditionMutation();
+  const templatesDeletionMutation = useTemplatesDeletionMutation();
 
   const [template, setTemplate] = useState<TTemplate | null>(null);
   const [editedTemplate, setEditedTemplate] = useState<TTemplate | null>(null);
@@ -57,19 +65,38 @@ export const TemplatePage: FC = () => {
     if (!editedTemplate || !templateId) return;
 
     try {
-      const response = await BackendService.updateTemplate({
-        body: { data: editedTemplate },
-        path: { params: { id: templateId } },
-      });
-
-      setTemplate(response.data);
-      setEditedTemplate(null);
-      setSearchParams({});
+      templatesEditionMutation.mutate(
+        {
+          body: { data: editedTemplate },
+          path: { params: { id: templateId } },
+        },
+        {
+          onSuccess: () => {
+            setEditedTemplate(null);
+            setSearchParams({});
+          },
+        },
+      );
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to update template', error);
     }
   };
+
+  const onTemplateDelete = useCallback(() => {
+    if (templateId) {
+      templatesDeletionMutation.mutate(
+        {
+          path: { params: { id: templateId } },
+        },
+        {
+          onSuccess: () => {
+            navigate(`/app/projects/${projectId}/templates`);
+          },
+        },
+      );
+    }
+  }, [navigate, projectId, templateId, templatesDeletionMutation]);
 
   const handleAddTag = () => {
     if (!newTag.trim() || !editedTemplate) return;
@@ -336,13 +363,7 @@ export const TemplatePage: FC = () => {
               <button
                 type='button'
                 className='btn btn-error'
-                onClick={() =>
-                  BackendService.deleteTemplate({
-                    path: { params: { id: templateId! } },
-                  }).then(() =>
-                    navigate(`/app/projects/${projectId}/templates`),
-                  )
-                }
+                onClick={onTemplateDelete}
               >
                 Delete Template
               </button>

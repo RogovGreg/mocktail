@@ -1,8 +1,11 @@
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { BackendService } from '#api';
-import { TProject } from '#api/services/BackendService/types';
+import {
+  TProject,
+  useProjectsDeletionMutation,
+  useProjectsListQuery,
+} from '#api';
 import { CustomInput } from '#common-components';
 import {
   DeleteIcon,
@@ -19,54 +22,34 @@ import { TProjectFiltersFormValues } from './types';
 export const ProjectsPage = () => {
   const navigate = useNavigate();
 
-  const [projects, setProjects] = useState<Array<TProject>>([]);
+  const [searchParams, setSearchParams] = useState<
+    TProjectFiltersFormValues | undefined
+  >(undefined);
 
-  useEffect(() => {
-    BackendService.getProjectsList()
-      .then(response => {
-        setProjects(response.data);
-      })
-      .catch(error => {
-        // eslint-disable-next-line no-console
-        console.error('Failed to fetch projects', error);
-      });
-  }, []);
+  const { data: projects } = useProjectsListQuery(searchParams);
+  const projectsList: Array<TProject> = projects || [];
+
+  const projectsDeletionMutation = useProjectsDeletionMutation();
 
   const handleDeleteProject = (projectId: string) => {
-    BackendService.deleteProject({ path: { params: { id: projectId } } })
-      .then(() => {
-        setProjects(projects.filter(project => project.id !== projectId));
-      })
-      .catch(error => {
-        // eslint-disable-next-line no-console
-        console.error('Failed to delete project', error);
-      });
+    projectsDeletionMutation.mutate({
+      path: { params: { id: projectId } },
+    });
   };
 
-  const onSearch = useCallback(async (event: FormEvent<HTMLFormElement>) => {
+  const onSearch = useCallback((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
 
     const values: TProjectFiltersFormValues = {
-      searchString: String(form.get('searchString') ?? ''),
+      searchString: String(form.get('searchString') ?? '').trim(),
     };
 
-    const { searchString } = values || {};
-
-    BackendService.getProjectsList({
-      query: {
-        params: {
-          searchString,
-        },
-      },
-    })
-      .then(response => {
-        setProjects(response.data);
-      })
-      .catch(error => {
-        // eslint-disable-next-line no-console
-        console.error('Failed to fetch projects', error);
-      });
+    setSearchParams(
+      values.searchString && values.searchString.length > 0
+        ? { searchString: values.searchString }
+        : undefined,
+    );
   }, []);
 
   return (
@@ -103,11 +86,11 @@ export const ProjectsPage = () => {
         </div>
       </form>
       <div className='divider divider-start'>
-        {projects.length > 0
-          ? `Found ${projects.length} project${projects.length > 1 ? 's' : ''}`
+        {projectsList.length > 0
+          ? `Found ${projectsList.length} project${projectsList.length > 1 ? 's' : ''}`
           : null}
       </div>
-      {projects.length > 0 ? (
+      {projectsList.length > 0 ? (
         <div className='overflow-x-auto'>
           <table className='table table-zebra'>
             <thead>
@@ -120,7 +103,7 @@ export const ProjectsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {projects.map(project => (
+              {projectsList.map(project => (
                 <tr key={project.id} className='hover'>
                   <td>
                     <div className='font-bold'>{project.title}</div>

@@ -1,7 +1,11 @@
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useState } from 'react';
 import { Outlet, useNavigate, useParams } from 'react-router';
 
-import { BackendService, TTemplate } from '#api';
+import {
+  TTemplate,
+  useTemplatesDeletionMutation,
+  useTemplatesListQuery,
+} from '#api';
 import { CustomInput } from '#common-components';
 import {
   DeleteIcon,
@@ -18,65 +22,41 @@ export const TemplatesPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
 
-  const [templates, setTemplates] = useState<TTemplate[]>([]);
+  const [searchParams, setSearchParams] = useState<
+    TFilterTemplateFormValues | undefined
+  >(undefined);
 
-  useEffect(() => {
-    if (projectId) {
-      BackendService.getTemplatesList({
-        query: { params: { relatedProjectIds: [projectId] } },
-      })
-        .then(response => {
-          setTemplates(response.data);
-        })
-        .catch(error => {
-          // eslint-disable-next-line no-console
-          console.error('Failed to fetch templates', error);
-        });
-    }
-  }, [projectId]);
+  const { data: templates } = useTemplatesListQuery({
+    ...searchParams,
+    relatedProjectIds: projectId ? [projectId] : undefined,
+  });
+  const templatesList: Array<TTemplate> = templates || [];
 
-  const handleDeleteTemplate = (templateId: string) => {
-    BackendService.deleteTemplate({ path: { params: { id: templateId } } })
-      .then(() => {
-        setTemplates(templates.filter(template => template.id !== templateId));
-      })
-      .catch(error => {
-        // eslint-disable-next-line no-console
-        console.error('Failed to delete template', error);
+  const templatesDeletionMutation = useTemplatesDeletionMutation();
+
+  const handleDeleteTemplate = useCallback(
+    (templateId: string) => {
+      templatesDeletionMutation.mutate({
+        path: { params: { id: templateId } },
       });
-  };
-
-  const onSearch = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      const form = new FormData(event.currentTarget);
-
-      const values: TFilterTemplateFormValues = {
-        searchString: String(form.get('searchString') ?? ''),
-      };
-
-      const { searchString } = values || {};
-
-      if (projectId) {
-        BackendService.getTemplatesList({
-          query: {
-            params: {
-              relatedProjectIds: [projectId],
-              searchString,
-            },
-          },
-        })
-          .then(response => {
-            setTemplates(response.data);
-          })
-          .catch(error => {
-            // eslint-disable-next-line no-console
-            console.error('Failed to fetch templates', error);
-          });
-      }
     },
-    [projectId],
+    [templatesDeletionMutation],
   );
+
+  const onSearch = useCallback((event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+
+    const values: TFilterTemplateFormValues = {
+      searchString: String(form.get('searchString') ?? '').trim(),
+    };
+
+    setSearchParams(
+      values.searchString && values.searchString.length > 0
+        ? { searchString: values.searchString }
+        : undefined,
+    );
+  }, []);
 
   return (
     <div className='container mx-auto p-6 w-full box-border'>
@@ -117,12 +97,12 @@ export const TemplatesPage = () => {
       </form>
 
       <div className='divider divider-start'>
-        {templates.length > 0
-          ? `Found ${templates.length} template${templates.length > 1 ? 's' : ''}`
+        {templatesList.length > 0
+          ? `Found ${templatesList.length} template${templatesList.length > 1 ? 's' : ''}`
           : null}
       </div>
 
-      {templates.length > 0 ? (
+      {templatesList.length > 0 ? (
         <div className='overflow-x-auto'>
           <table className='table table-zebra'>
             <thead>
@@ -135,7 +115,7 @@ export const TemplatesPage = () => {
               </tr>
             </thead>
             <tbody>
-              {templates.map(template => (
+              {templatesList.map(template => (
                 <tr key={template.id} className='hover'>
                   <td>
                     <div className='font-bold'>{template.name}</div>

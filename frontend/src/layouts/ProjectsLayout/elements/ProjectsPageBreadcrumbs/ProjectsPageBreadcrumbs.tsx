@@ -1,39 +1,25 @@
-import { useEffect, useState } from 'react';
 import { Link, useMatches, useParams } from 'react-router-dom';
 
-import { BackendService, TProject, TTemplate } from '#api';
+import { useProjectsItemQuery, useTemplatesItemQuery } from '#api';
 
 export const ProjectsPageBreadcrumbs: React.FC = () => {
   const matches = useMatches();
 
   const { projectId, templateId } = useParams();
 
-  const [project, setProject] = useState<TProject | null>(null);
-  const [template, setTemplate] = useState<TTemplate | null>(null);
+  const { data: project } = useProjectsItemQuery(
+    projectId ? { id: projectId } : undefined,
+    {
+      enabled: Boolean(projectId),
+    },
+  );
 
-  useEffect(() => {
-    if (projectId) {
-      BackendService.getProjectByID({ path: { params: { id: projectId } } })
-        .then(response => {
-          setProject(response.data);
-        })
-        .catch(() => {
-          setProject(null);
-        });
-    }
-  }, [projectId]);
-
-  useEffect(() => {
-    if (templateId) {
-      BackendService.getTemplateByID({ path: { params: { id: templateId } } })
-        .then(response => {
-          setTemplate(response.data);
-        })
-        .catch(() => {
-          setTemplate(null);
-        });
-    }
-  }, [templateId]);
+  const { data: template } = useTemplatesItemQuery(
+    templateId ? { id: templateId } : undefined,
+    {
+      enabled: Boolean(templateId),
+    },
+  );
 
   const breadcrumbs = matches
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment

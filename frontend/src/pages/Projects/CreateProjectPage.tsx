@@ -2,7 +2,10 @@
 import { FC, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { BackendService, TCreateProjectAPIMethodPayload } from '#api';
+import {
+  TCreateProjectAPIMethodPayload,
+  useProjectsCreationMutation,
+} from '#api';
 import { CustomInput } from '#common-components';
 import { CrossIcon } from '#icons';
 
@@ -17,6 +20,8 @@ export const CreateProjectPage: FC = () => {
   const [newKeyword, setNewKeyword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const createProjectMutation = useProjectsCreationMutation();
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
@@ -28,10 +33,14 @@ export const CreateProjectPage: FC = () => {
     };
 
     try {
-      const response = await BackendService.createProject({
-        body: { data: payload },
-      });
-      navigate(`/app/projects/${response.data.id}`);
+      createProjectMutation.mutate(
+        { body: { data: payload } },
+        {
+          onSuccess: response => {
+            navigate(`/app/projects/${response.data.id}`);
+          },
+        },
+      );
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error creating project:', error);

@@ -1,7 +1,10 @@
 import { FC, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
-import { BackendService, TCreateTemplateAPIMethodPayload } from '#api';
+import {
+  TCreateTemplateAPIMethodPayload,
+  useTemplatesCreationMutation,
+} from '#api';
 import { CustomInput } from '#common-components';
 import { CrossIcon } from '#icons';
 
@@ -19,6 +22,8 @@ export const CreateTemplatePage: FC = () => {
   const [newTag, setNewTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const templatesCreationMutation = useTemplatesCreationMutation();
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -34,10 +39,16 @@ export const CreateTemplatePage: FC = () => {
     };
 
     try {
-      const response = await BackendService.createTemplate({
-        body: { data: payload },
-      });
-      navigate(`/app/projects/${projectId}/templates/${response.data.id}`);
+      templatesCreationMutation.mutate(
+        { body: { data: payload } },
+        {
+          onSuccess: response => {
+            navigate(
+              `/app/projects/${projectId}/templates/${response.data.id}`,
+            );
+          },
+        },
+      );
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error creating template:', error);
