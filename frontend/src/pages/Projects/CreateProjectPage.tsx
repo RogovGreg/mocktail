@@ -33,7 +33,7 @@ export const CreateProjectPage: FC = () => {
     };
 
     try {
-      createProjectMutation.mutate(
+      await createProjectMutation.mutateAsync(
         { body: { data: payload } },
         {
           onSuccess: response => {

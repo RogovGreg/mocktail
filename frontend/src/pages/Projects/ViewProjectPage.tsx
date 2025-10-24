@@ -66,7 +66,7 @@ export const ViewProjectPage: FC = () => {
     if (!editedProject || !projectId) return;
 
     try {
-      await projectsEditionMutation.mutate(
+      await projectsEditionMutation.mutateAsync(
         {
           body: { data: editedProject },
           path: { params: { id: projectId } },

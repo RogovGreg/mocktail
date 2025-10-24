@@ -39,7 +39,7 @@ export const CreateTemplatePage: FC = () => {
     };
 
     try {
-      templatesCreationMutation.mutate(
+      await templatesCreationMutation.mutateAsync(
         { body: { data: payload } },
         {
           onSuccess: response => {

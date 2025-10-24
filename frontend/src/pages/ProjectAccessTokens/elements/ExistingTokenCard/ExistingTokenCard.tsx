@@ -88,15 +88,6 @@ export const ExistingTokenCard: FC<TExistingTokenCardProps> = memo(props => {
                     <code className='text-xs break-all flex-1 font-mono'>
                       {token.token}
                     </code>
-                    <button
-                      type='button'
-                      className='btn btn-warning btn-xs'
-                      onClick={() =>
-                        navigator.clipboard.writeText(token.token!)
-                      }
-                    >
-                      Copy
-                    </button>
                   </div>
                 </div>
               ) : null}

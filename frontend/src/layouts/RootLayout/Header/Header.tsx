@@ -61,7 +61,7 @@ export const Header: FC = () => {
     }
 
     return <div className='join items-center'>{userBadgeContent}</div>;
-  }, [isAuthorized, navigate, userName]);
+  }, [isAuthorized, userName]);
 
   return (
     <>

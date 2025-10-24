@@ -65,7 +65,7 @@ export const TemplatePage: FC = () => {
     if (!editedTemplate || !templateId) return;
 
     try {
-      templatesEditionMutation.mutate(
+      await templatesEditionMutation.mutateAsync(
         {
           body: { data: editedTemplate },
           path: { params: { id: templateId } },
