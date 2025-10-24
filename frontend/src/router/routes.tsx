@@ -1,3 +1,5 @@
+import { Navigate } from 'react-router';
+
 import {
   ProjectDetailLayout,
   ProjectLayout,
@@ -114,6 +116,14 @@ export const ROUTES_LIST: TRouteObjectList = [
             path: '',
 
             children: [
+              {
+                Component: () => null,
+                element: <Navigate to='dashboard' replace />,
+                index: true,
+                isOnAuthFlow: false,
+                isProtected: true,
+                path: '',
+              },
               {
                 Component: DashboardPage,
                 isOnAuthFlow: false,

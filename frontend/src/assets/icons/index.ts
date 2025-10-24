@@ -1,3 +1,4 @@
+export { default as AccountIcon } from './Account.svg?react';
 export { default as ApiTokensIcon } from './ApiTokens.svg?react';
 export { default as CrossIcon } from './Cross.svg?react';
 export { default as DashboardIcon } from './Dashboard.svg?react';
@@ -5,6 +6,8 @@ export { default as DeleteIcon } from './Delete.svg?react';
 export { default as EditIcon } from './Edit.svg?react';
 export { default as EmptyListIcon } from './EmptyList.svg?react';
 export { default as LinkIcon } from './Link.svg?react';
+export { default as LoginIcon } from './Login.svg?react';
+export { default as LogoutIcon } from './Logout.svg?react';
 export { default as MockTailIcon } from './MockTail.svg?react';
 export { default as PlusIcon } from './Plus.svg?react';
 export { default as ProjectsIcon } from './Projects.svg?react';

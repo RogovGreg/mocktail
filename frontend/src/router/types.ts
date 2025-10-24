@@ -21,6 +21,8 @@ export type TRouteObject = Readonly<{
   isOnAuthFlow: boolean;
   isProtected: boolean;
   path: string;
+  index?: boolean;
+  element?: React.ReactNode;
 
   // loader?: LoaderFunction;
   handle?: TRouteHandle;
