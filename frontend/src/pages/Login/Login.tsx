@@ -72,6 +72,7 @@ export const LoginPage = () => {
         <CustomInput
           label='Password'
           name='password'
+          type='password'
           placeholder='Enter your password'
         />
         <button type='submit' className='btn btn-primary flex mx-auto'>

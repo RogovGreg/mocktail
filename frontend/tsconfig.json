@@ -28,7 +28,7 @@
       "#common-constants": ["src/common-constants/index.ts"],
       "#common-components": ["src/common-components/index.ts"],
       "#layouts": ["src/layouts/index.ts"],
-      "#routes": ["src/routes-list.ts"],
+      "#router": ["src/router"],
       "#src": ["src"],
       "#src/*": ["src/*"],
       "#global-contexts": ["src/global-contexts/index.ts"],

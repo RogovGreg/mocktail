@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { StatusCodes } from 'http-status-codes';
+import qs from 'qs';
 
 import { AUTHORIZED_USER_ID_FIELD_NAME } from '#common-constants';
 import { ERoutes } from '#src/router';
@@ -12,6 +13,7 @@ export const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' }),
 });
 
 axiosInstance.interceptors.response.use(undefined, error => {

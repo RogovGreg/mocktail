@@ -30,12 +30,11 @@ export const DeleteTokenDialog: FC<TDeleteTokenDialogProps> = props => {
           name='deleteConfirmName'
           label={`Type the token name "${deletingTokenName}" to confirm deletion`}
           placeholder={deletingTokenName}
-          inputProps={{
-            className: 'input w-full',
-            onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
-              setDeleteConfirmName(event.target.value),
-            value: deleteConfirmName,
-          }}
+          inputClassName='w-full'
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            setDeleteConfirmName(event.target.value)
+          }
+          value={deleteConfirmName}
         />
         <div className='modal-action'>
           <button type='button' className='btn btn-outline' onClick={onClose}>

@@ -2,8 +2,12 @@
 import { FC, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { BackendService, TCreateProjectAPIMethodPayload } from '#api';
+import {
+  TCreateProjectAPIMethodPayload,
+  useProjectsCreationMutation,
+} from '#api';
 import { CustomInput } from '#common-components';
+import { CrossIcon } from '#icons';
 
 export const CreateProjectPage: FC = () => {
   const navigate = useNavigate();
@@ -16,6 +20,8 @@ export const CreateProjectPage: FC = () => {
   const [newKeyword, setNewKeyword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const createProjectMutation = useProjectsCreationMutation();
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
@@ -27,10 +33,14 @@ export const CreateProjectPage: FC = () => {
     };
 
     try {
-      const response = await BackendService.createProject({
-        body: { data: payload },
-      });
-      navigate(`/app/projects/${response.data.id}`);
+      await createProjectMutation.mutateAsync(
+        { body: { data: payload } },
+        {
+          onSuccess: response => {
+            navigate(`/app/projects/${response.data.id}`);
+          },
+        },
+      );
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error creating project:', error);
@@ -74,15 +84,14 @@ export const CreateProjectPage: FC = () => {
       <form onSubmit={handleSubmit} className='space-y-2'>
         <div className='form-control'>
           <CustomInput
-            name='title'
+            inputClassName='input-bordered w-full'
             label='Project Title'
+            name='title'
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+              setFormData({ ...formData, title: event.target.value })
+            }
             placeholder='Enter project title'
-            inputProps={{
-              className: 'input input-bordered w-full',
-              onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
-                setFormData({ ...formData, title: event.target.value }),
-              required: true,
-            }}
+            required
           />
         </div>
 
@@ -102,7 +111,7 @@ export const CreateProjectPage: FC = () => {
                     onClick={() => handleRemoveKeyword(keyword)}
                     className='btn btn-ghost btn-xs btn-circle'
                   >
-                    x
+                    <CrossIcon />
                   </button>
                 </span>
               ))
@@ -115,24 +124,24 @@ export const CreateProjectPage: FC = () => {
 
           <div className='flex gap-2'>
             <CustomInput
+              inputClassName='input-bordered w-full'
               name='newKeyword'
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                setNewKeyword(event.target.value)
+              }
               placeholder='Add new keyword'
-              wrapperProps={{
-                className: 'flex-1',
-                style: {
-                  background: 'transparent',
-                  border: 'none',
-                  margin: 0,
-                  padding: 0,
-                },
-              }}
-              inputProps={{
-                className: 'input input-bordered w-full',
-                onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-                  setNewKeyword(e.target.value),
+              specificInputProps={{
                 onKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) =>
                   e.key === 'Enter' && (e.preventDefault(), handleAddKeyword()),
-                value: newKeyword,
+              }}
+              value={newKeyword}
+              rewriteWrapperClassName
+              wrapperClassName='flex-1'
+              wrapperStyle={{
+                background: 'transparent',
+                border: 'none',
+                margin: 0,
+                padding: 0,
               }}
             />
             <button

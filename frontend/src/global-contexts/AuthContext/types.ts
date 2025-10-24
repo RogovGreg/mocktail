@@ -15,4 +15,6 @@ export type TAuthContextValue = Readonly<{
 
   authorizedUserData: TUserProfile | null;
   updateAuthorizedUserData: null | ((parameter: TUserProfile | null) => void);
+
+  userLogout: null | (() => Promise<void>);
 }>;

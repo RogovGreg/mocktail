@@ -25,7 +25,7 @@ public static class BackendHandlers
     public DateTimeOffset? UpdatedAt { get; set; }
     public Guid? CreatedBy { get; set; }
     public Guid? UpdatedBy { get; set; }
-    public Guid? RelatedProjectId { get; set; }
+    public Guid[]? RelatedProjectIds { get; set; }
     public Guid? UsedIn { get; set; }
   }
 
@@ -36,11 +36,16 @@ public static class BackendHandlers
     var query = db.Projects.AsQueryable();
 
     if (!string.IsNullOrEmpty(filters.SearchString))
+    {
+      var searchStringInLower = filters.SearchString.ToLower();
+
       query = query.Where(project =>
-        project.Title.Contains(filters.SearchString) ||
-        project.Id.ToString().Contains(filters.SearchString) ||
-        project.KeyWords.Any(k => k == filters.SearchString)
+        project.Title.ToLower().Contains(searchStringInLower) ||
+        project.KeyWords.Any(keyWord =>
+          keyWord.ToLower() == searchStringInLower) ||
+        project.Id.ToString() == filters.SearchString
       );
+    }
 
     if (filters.Member.HasValue)
       query = query.Where(project => project.Members.Contains(filters.Member.Value));
@@ -151,12 +156,16 @@ public static class BackendHandlers
     var query = db.Templates.AsQueryable();
 
     if (!string.IsNullOrEmpty(filters.SearchString))
+    {
+      var searchStringInLower = filters.SearchString.ToLower();
+
       query = query.Where(template =>
-        template.Name.Contains(filters.SearchString) ||
-        template.Id.ToString().Contains(filters.SearchString) ||
-        (template.Path != null && template.Path.Contains(filters.SearchString)) ||
-        template.Tags.Any(tag => tag == filters.SearchString)
+        template.Name.ToLower().Contains(searchStringInLower) ||
+        (template.Path != null && template.Path.ToLower().Contains(searchStringInLower)) ||
+          template.Tags.Any(tag => tag.ToLower() == searchStringInLower) ||
+        template.Id.ToString() == filters.SearchString
       );
+    }
 
     if (filters.CreatedAt.HasValue)
       query = query.Where(template => template.CreatedAt == filters.CreatedAt);
@@ -170,8 +179,8 @@ public static class BackendHandlers
     if (filters.UpdatedBy.HasValue)
       query = query.Where(template => template.UpdatedBy == filters.UpdatedBy);
 
-    if (filters.RelatedProjectId.HasValue)
-      query = query.Where(template => template.RelatedProjectId == filters.RelatedProjectId);
+    if (filters.RelatedProjectIds != null && filters.RelatedProjectIds.Length > 0)
+      query = query.Where(template => filters.RelatedProjectIds.Contains(template.RelatedProjectId));
 
     if (filters.UsedIn.HasValue)
       query = query.Where(template => template.UsedIn.Contains(filters.UsedIn.Value));
@@ -193,10 +202,10 @@ public static class BackendHandlers
       };
 
       var contentResponse = await client.GetLatestContentByTemplateAsync(contentRequest);
-      
+
       // Compute aggregated status
       string effectiveStatus = template.Status;
-      
+
       if (template.Status == "Draft")
       {
         // If Backend says Draft, it's always Draft regardless of Content state
@@ -271,14 +280,14 @@ public static class BackendHandlers
     {
       return Results.BadRequest($"Project with Id '{template.RelatedProjectId}' does not exist.");
     }
-    
+
     db.Templates.Add(template);
-    
+
     // Add template ID to project's templates array
     var templatesList = project.Templates.ToList();
     templatesList.Add(template.Id);
     project.Templates = templatesList.ToArray();
-    
+
     await db.SaveChangesAsync();
     return Results.Created($"/templates/{template.Id}", template);
   }
@@ -297,7 +306,7 @@ public static class BackendHandlers
     // Check if schema or other generation-relevant fields changed
     bool schemaChanged = existingTemplate.Schema != template.Schema;
     bool pathChanged = existingTemplate.Path != template.Path;
-    
+
     if (schemaChanged || pathChanged)
     {
       // Increment version when schema or path changes
@@ -315,7 +324,7 @@ public static class BackendHandlers
     template.Id = id;
     template.CreatedAt = existingTemplate.CreatedAt;
     template.CreatedBy = existingTemplate.CreatedBy;
-    
+
     db.Entry(existingTemplate).CurrentValues.SetValues(template);
     await db.SaveChangesAsync();
     return Results.NoContent();
@@ -343,13 +352,13 @@ public static class BackendHandlers
   public static async Task<IResult> GenerateTemplateData(Guid id, AppDbContext db, ContentService.ContentServiceClient client, HttpContext context)
   {
     var template = await db.Templates.FindAsync(id);
-    if (template is null) 
+    if (template is null)
     {
       return Results.NotFound();
     }
 
     // Get user ID from JWT token
-    var userId = context.User.FindFirst("sub")?.Value ?? 
+    var userId = context.User.FindFirst("sub")?.Value ??
                  context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
     if (string.IsNullOrEmpty(userId))
     {
@@ -359,10 +368,10 @@ public static class BackendHandlers
     // Get project title
     var project = await db.Projects.FindAsync(template.RelatedProjectId);
     var projectTitle = project?.Title ?? "Unknown Project";
-    
+
     // Use current template version (don't increment)
     var currentVersion = template.Version;
-    
+
     // Parse optional amount from query (?amount=3)
     int amount = 10;
     if (context.Request.Query.TryGetValue("amount", out var amountValues))
@@ -389,16 +398,16 @@ public static class BackendHandlers
     try
     {
       var response = await client.GenerateFromTemplateAsync(request);
-      
+
       // Update template status to Published after successful gRPC call
       template.Status = "Published";
-      
+
       // Update template with generation tracking
       template.LastGeneratedAt = DateTimeOffset.UtcNow;
       template.LatestGeneratedVersion = template.Version;
       template.UpdatedAt = DateTimeOffset.UtcNow;
       await db.SaveChangesAsync();
-      
+
       return Results.Ok(new
       {
         ContentId = response.ContentId,
@@ -419,4 +428,4 @@ public static class BackendHandlers
 
 }
 
-  public record SetProjectConfigBody(string? OpenAiKey, string? Model);
+public record SetProjectConfigBody(string? OpenAiKey, string? Model);

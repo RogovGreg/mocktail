@@ -1,26 +1,36 @@
-import { createBrowserRouter, Navigate, RouteObject } from 'react-router';
-import { RouterProvider } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  Navigate,
+  RouteObject,
+  RouterProvider,
+} from 'react-router-dom';
 
-import { ROUTES_LIST } from './routes.ts';
+import { ROUTES_LIST } from './routes';
 import { ERoutes } from './routes-list.ts';
 import { RouteWrapper } from './RouteWrapper.tsx';
 import { TRouteObject } from './types.ts';
-import { SidebarsContextProvider } from '../global-contexts/SidebarsContext/index.ts';
 
 const mapRouteObject = (routeObject: TRouteObject): RouteObject => {
-  const { children, Component, handle, loader, path } = routeObject;
+  const { children, Component, element, handle, index, path } = routeObject;
+
+  if (index === true) {
+    if (!element) throw new Error('Index route needs element');
+
+    return {
+      element,
+      handle,
+      index: true,
+    };
+  }
 
   return {
     children: children?.map(mapRouteObject),
     handle,
-    loader,
     path,
 
     element: (
       <RouteWrapper>
-        <SidebarsContextProvider>
-          <Component />
-        </SidebarsContextProvider>
+        <Component />
       </RouteWrapper>
     ),
   };
@@ -28,11 +38,6 @@ const mapRouteObject = (routeObject: TRouteObject): RouteObject => {
 
 const router = createBrowserRouter([
   ...ROUTES_LIST.map(mapRouteObject),
-
-  {
-    element: <Navigate to={ERoutes.Dashboard} />,
-    path: ERoutes.WebApp,
-  },
   {
     element: <Navigate to={ERoutes.WaitingPage} />,
     path: '/',

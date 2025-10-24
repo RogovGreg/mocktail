@@ -1,8 +1,12 @@
 import { FC, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
-import { BackendService, TCreateTemplateAPIMethodPayload } from '#api';
+import {
+  TCreateTemplateAPIMethodPayload,
+  useTemplatesCreationMutation,
+} from '#api';
 import { CustomInput } from '#common-components';
+import { CrossIcon } from '#icons';
 
 export const CreateTemplatePage: FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -18,12 +22,10 @@ export const CreateTemplatePage: FC = () => {
   const [newTag, setNewTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const templatesCreationMutation = useTemplatesCreationMutation();
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (formData.tags.length === 0) {
-      return;
-    }
 
     setIsSubmitting(true);
 
@@ -37,10 +39,16 @@ export const CreateTemplatePage: FC = () => {
     };
 
     try {
-      const response = await BackendService.createTemplate({
-        body: { data: payload },
-      });
-      navigate(`/app/projects/${projectId}/templates/${response.data.id}`);
+      await templatesCreationMutation.mutateAsync(
+        { body: { data: payload } },
+        {
+          onSuccess: response => {
+            navigate(
+              `/app/projects/${projectId}/templates/${response.data.id}`,
+            );
+          },
+        },
+      );
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error creating template:', error);
@@ -83,32 +91,28 @@ export const CreateTemplatePage: FC = () => {
 
       <form onSubmit={handleSubmit} className='space-y-2'>
         <CustomInput
+          required
           name='name'
           label='Template Name'
           placeholder='Enter template name'
-          inputProps={{
-            className: 'input w-full',
-            onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
-              setFormData({ ...formData, name: event.target.value }),
-            required: true,
-            value: formData.name,
-          }}
+          inputClassName='w-full'
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            setFormData({ ...formData, name: event.target.value })
+          }
+          value={formData.name}
         />
         <CustomInput
           name='path'
           label='Template Path'
           placeholder='Enter template path (optional)'
-          inputProps={{
-            className: 'input w-full',
-            onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
-              setFormData({ ...formData, path: event.target.value }),
-            value: formData.path,
-          }}
+          inputClassName='w-full'
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            setFormData({ ...formData, path: event.target.value })
+          }
+          value={formData.path}
         />
         <fieldset className='fieldset'>
-          <legend className='fieldset-legend'>
-            Tags <span className='text-error'>*</span>
-          </legend>
+          <legend className='fieldset-legend'>Tags</legend>
 
           <div className='flex flex-wrap gap-2 mb-3'>
             {formData.tags.length > 0 ? (
@@ -123,37 +127,36 @@ export const CreateTemplatePage: FC = () => {
                     onClick={() => handleRemoveTag(tag)}
                     className='btn btn-ghost btn-xs btn-circle'
                   >
-                    x
+                    <CrossIcon />
                   </button>
                 </span>
               ))
             ) : (
-              <span className='text-base-content/50 italic'>
-                At least one tag is required
-              </span>
+              <span className='text-base-content/50 italic'>No tags added</span>
             )}
           </div>
 
           <div className='flex gap-2'>
             <CustomInput
+              inputClassName='input-bordered w-full'
               name='newTag'
               placeholder='Add new tag'
-              wrapperProps={{
-                className: 'flex-1',
-                style: {
-                  background: 'transparent',
-                  border: 'none',
-                  margin: 0,
-                  padding: 0,
-                },
+              rewriteWrapperClassName
+              value={newTag}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                setNewTag(event.target.value)
+              }
+              specificInputProps={{
+                onKeyPress: (event: React.KeyboardEvent<HTMLInputElement>) =>
+                  event.key === 'Enter' &&
+                  (event.preventDefault(), handleAddTag()),
               }}
-              inputProps={{
-                className: 'input input-bordered w-full',
-                onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-                  setNewTag(e.target.value),
-                onKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) =>
-                  e.key === 'Enter' && (e.preventDefault(), handleAddTag()),
-                value: newTag,
+              wrapperClassName='flex-1'
+              wrapperStyle={{
+                background: 'transparent',
+                border: 'none',
+                margin: 0,
+                padding: 0,
               }}
             />
             <button
@@ -203,11 +206,7 @@ export const CreateTemplatePage: FC = () => {
           <button
             type='submit'
             className={`btn btn-primary ${isSubmitting ? 'loading' : ''}`}
-            disabled={
-              isSubmitting ||
-              !formData.name.trim() ||
-              formData.tags.length === 0
-            }
+            disabled={isSubmitting || !formData.name.trim()}
           >
             {isSubmitting ? (
               <>

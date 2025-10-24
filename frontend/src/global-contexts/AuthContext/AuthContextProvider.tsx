@@ -127,10 +127,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
     [],
   );
 
-  console.log('AuthContextProvider', isAuthorized);
-
   useEffect(() => {
-    console.log('AuthContextProvider - start polling');
     if (!pollingStatusIntervalRef.current) {
       pollingStatusIntervalRef.current = setInterval(() => {
         AuthService.checkStatus();
@@ -164,6 +161,19 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
     }
   };
 
+  const userLogout = useCallback(async () => {
+    await AuthService.logout().then(() => {
+      sessionStorage.removeItem(AUTHORIZED_USER_ID_FIELD_NAME);
+      setIsAuthorized(false);
+      setAccessToken(AUTH_CONTEXT_DEFAULT_VALUE.accessToken);
+      updateApiAuthorization({
+        accessToken: undefined,
+        tokenType: undefined,
+      });
+      setAuthorizedUserData(AUTH_CONTEXT_DEFAULT_VALUE.authorizedUserData);
+    });
+  }, []);
+
   const contextValue = useMemo<TAuthContextValue>(
     () => ({
       accessToken,
@@ -172,6 +182,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
       updateAccessToken,
       updateAuthorizedUserData: setAuthorizedUserData,
       updateIsAuthorized,
+      userLogout,
     }),
     [
       accessToken,
@@ -180,6 +191,7 @@ export const AuthContextProvider: FC<PropsWithChildren> = props => {
       setAuthorizedUserData,
       updateAccessToken,
       updateIsAuthorized,
+      userLogout,
     ],
   );
 

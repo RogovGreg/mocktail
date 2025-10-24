@@ -9,4 +9,6 @@ export const AUTH_CONTEXT_DEFAULT_VALUE: TAuthContextValue = {
 
   authorizedUserData: null,
   updateAuthorizedUserData: null,
+
+  userLogout: null,
 };

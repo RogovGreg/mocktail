@@ -1,4 +1,5 @@
-import { BackendService } from '#api/services/BackendService/BackendService';
+import { Navigate } from 'react-router';
+
 import {
   ProjectDetailLayout,
   ProjectLayout,
@@ -8,7 +9,7 @@ import {
 } from '#layouts';
 
 import { ERoutes } from './routes-list';
-import { TLoaderData, TRouteObjectList, TRoutePath } from './types';
+import { TRouteObjectList, TRoutePath } from './types';
 import { App } from '../App';
 import {
   AboutPage,
@@ -116,6 +117,14 @@ export const ROUTES_LIST: TRouteObjectList = [
 
             children: [
               {
+                Component: () => null,
+                element: <Navigate to='dashboard' replace />,
+                index: true,
+                isOnAuthFlow: false,
+                isProtected: true,
+                path: '',
+              },
+              {
                 Component: DashboardPage,
                 isOnAuthFlow: false,
                 isProtected: true,
@@ -128,7 +137,7 @@ export const ROUTES_LIST: TRouteObjectList = [
                 path: 'projects',
 
                 handle: {
-                  crumb: () => 'Projects',
+                  crumb: 'Projects',
                 },
 
                 children: [
@@ -145,7 +154,7 @@ export const ROUTES_LIST: TRouteObjectList = [
                     path: 'create',
 
                     handle: {
-                      crumb: () => 'Create New Project',
+                      crumb: 'Create New Project',
                     },
                   },
                   {
@@ -154,21 +163,8 @@ export const ROUTES_LIST: TRouteObjectList = [
                     isProtected: true,
                     path: ':projectId',
 
-                    loader: async ({ params }) => {
-                      if (!params.projectId) {
-                        return null;
-                      }
-
-                      const project = await BackendService.getProjectByID({
-                        path: { params: { id: params.projectId } },
-                      });
-
-                      return { project: project.data };
-                    },
-
                     handle: {
-                      crumb: (data, params) =>
-                        data?.project?.title || `Project ${params?.projectId}`,
+                      crumb: 'Project',
                     },
 
                     children: [
@@ -185,7 +181,7 @@ export const ROUTES_LIST: TRouteObjectList = [
                         path: 'api-tokens',
 
                         handle: {
-                          crumb: () => 'API Tokens',
+                          crumb: 'API Tokens',
                         },
                       },
                       {
@@ -194,18 +190,8 @@ export const ROUTES_LIST: TRouteObjectList = [
                         isProtected: true,
                         path: 'templates',
 
-                        loader: async ({ params }) => {
-                          if (!params.projectId) {
-                            return null;
-                          }
-                          const project = await BackendService.getProjectByID({
-                            path: { params: { id: params.projectId } },
-                          });
-                          return { project: project.data };
-                        },
-
                         handle: {
-                          crumb: () => 'Templates',
+                          crumb: 'Templates',
                         },
 
                         children: [
@@ -222,7 +208,7 @@ export const ROUTES_LIST: TRouteObjectList = [
                             path: 'create',
 
                             handle: {
-                              crumb: () => 'Create new template',
+                              crumb: 'Create new template',
                             },
                           },
                           {
@@ -231,25 +217,8 @@ export const ROUTES_LIST: TRouteObjectList = [
                             isProtected: true,
                             path: ':templateId',
 
-                            loader: async ({ params }) => {
-                              if (!params.templateId) {
-                                return null;
-                              }
-
-                              const template =
-                                await BackendService.getTemplateByID({
-                                  path: { params: { id: params.templateId } },
-                                });
-
-                              return {
-                                template: template.data,
-                              } as TLoaderData;
-                            },
-
                             handle: {
-                              crumb: (data, params) =>
-                                data?.template?.name ||
-                                `Template ${params?.templateId}`,
+                              crumb: 'Template',
                             },
                           },
                         ],
