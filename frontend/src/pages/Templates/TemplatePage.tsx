@@ -51,7 +51,8 @@ export const TemplatePage: FC = () => {
       },
       [ETemplateStatus.Stale]: {
         badgeClass: 'badge-error',
-        tooltip: 'No data',
+        tooltip:
+          'No data or the Template has been modified since last data generation',
       },
     };
     return template ? configs[template.status] : configs[ETemplateStatus.Draft];
