@@ -9,6 +9,7 @@ import {
   TProjectAccessTokenWithValue,
   // TProjectAccessTokenWithValue,
 } from '#api';
+import { toast } from '#src/common-functions';
 
 import { CreateTokenForm, ExistingTokenCard } from './elements';
 import { DeleteTokenDialog } from './elements/DeleteTokenDialog';
@@ -96,8 +97,9 @@ export const ProjectAccessTokens: FC = () => {
         setProject(response.data);
       })
       .catch(error => {
-        // eslint-disable-next-line no-console
-        console.error('Failed to fetch project', error);
+        toast.error(
+          error.response?.data?.message || 'Project receiving failed.',
+        );
       });
 
     AuthService.getProjectAccessTokens({ query: { params: { projectId } } })
@@ -114,8 +116,10 @@ export const ProjectAccessTokens: FC = () => {
         setTokens(sortedTokens);
       })
       .catch(error => {
-        // eslint-disable-next-line no-console
-        console.error('Failed to fetch project access tokens', error);
+        toast.error(
+          error.response?.data?.message ||
+            'Project API tokens receiving failed.',
+        );
       });
   }, [projectId]);
 

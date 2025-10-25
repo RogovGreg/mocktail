@@ -1,11 +1,17 @@
 import { FC, ReactNode, useCallback, useContext, useMemo } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { AuthContext } from '#global-contexts';
-import { AccountIcon, LoginIcon, LogoutIcon, QuestionIcon } from '#icons';
+import {
+  AccountIcon,
+  LoginIcon,
+  LogoutIcon,
+  MockTailLogo,
+  // QuestionIcon,
+} from '#icons';
 import { ERoutes } from '#router';
 
-import { Sidebar, ThemeSwitcher } from './elements';
+import { ThemeSwitcher } from './elements';
 
 export const Header: FC = () => {
   const { authorizedUserData, isAuthorized, userLogout } =
@@ -17,12 +23,6 @@ export const Header: FC = () => {
 
   const isWebAppActive = pathname.includes(ERoutes.WebApp);
 
-  const icon = isAuthorized ? (
-    <LogoutIcon className='size-7' />
-  ) : (
-    <LoginIcon className='size-7' />
-  );
-
   const onLogin = () => navigate('/login');
   const onLogout = useCallback(() => {
     if (userLogout) userLogout();
@@ -32,20 +32,18 @@ export const Header: FC = () => {
     let userBadgeContent: ReactNode;
     if (isAuthorized) {
       userBadgeContent = (
-        <div
-          className='tooltip tooltip-bottom group cursor-pointer'
-          data-tip='Profile'
-        >
-          <Link
-            to='/profile'
+        <div className='group'>
+          <div
             className='join-item inline-flex items-center gap-2 rounded-full bg-base-200 h-10 px-3 text-sm
-              transition-colors
-              group-hover:bg-base-300 group-hover:text-[var(--mt-color-primary-1)]
-              [&_svg]:transition-colors [&_svg]:fill-current [&_svg]:stroke-current'
+            '
+            // TODO: Uncomment when profile page is ready
+            // transition-colors
+            // group-hover:bg-base-300 group-hover:text-[var(--mt-color-primary-1)]
+            // [&_svg]:transition-colors [&_svg]:fill-current [&_svg]:stroke-current
           >
             <AccountIcon className='size-7' />
             <span className='max-w-[16ch] truncate'>{userName}</span>
-          </Link>
+          </div>
         </div>
       );
     } else {
@@ -72,8 +70,7 @@ export const Header: FC = () => {
             onClick={() => navigate('/')}
             type='button'
           >
-            <span style={{ color: 'var(--mt-color-secondary-4)' }}>Mock</span>
-            <span style={{ color: 'var(--mt-color-primary-1)' }}>Tail</span>
+            <MockTailLogo height={28} />
           </button>
           <ul className='menu menu-horizontal px-1'>
             <li>
@@ -85,7 +82,7 @@ export const Header: FC = () => {
                       ? 'bg-[var(--mt-color-primary-1)] text-white hover:bg-[var(--mt-color-primary-1)]'
                       : 'hover:text-[var(--mt-color-primary-1)]'
                   }`}
-                onClick={() => navigate(ERoutes.Dashboard)}
+                onClick={() => navigate(ERoutes.Projects)}
               >
                 / Web App
               </button>
@@ -94,14 +91,14 @@ export const Header: FC = () => {
         </div>
         <div className='navbar-end flex items-center gap-1'>
           <ThemeSwitcher />
-          <label
+          {/* <label
             className='btn btn-ghost btn-circle tooltip tooltip-bottom hover:bg-base-300 hover:text-[var(--mt-color-primary-1)]
               [&_svg]:transition-colors [&_svg]:stroke-current'
             data-tip='Docs & Support'
             htmlFor='my-drawer-5'
           >
             <QuestionIcon className='size-7' />
-          </label>
+          </label> */}
           {userBadge}
           <button
             type='button'
@@ -110,11 +107,15 @@ export const Header: FC = () => {
               [&_svg]:transition-colors [&_svg]:fill-current'
             data-tip={isAuthorized ? 'Logout' : 'Login'}
           >
-            {icon}
+            {isAuthorized ? (
+              <LogoutIcon className='size-7' />
+            ) : (
+              <LoginIcon className='size-7' />
+            )}
           </button>
         </div>
       </div>
-      <Sidebar />
+      {/* <Sidebar /> */}
     </>
   );
 };

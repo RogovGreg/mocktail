@@ -27,15 +27,19 @@ export const MocktailLoadingIcon = () => (
       opacity='0.6'
     />
 
-    <path opacity='0.8' d='M85,155 L315,155 L290,585 L110,585 Z' fill='aqua'>
+    <path
+      opacity='0.8'
+      d='M85,155 L315,155 L290,585 L110,585 Z'
+      fill='var(--mt-color-secondary-4)'
+    >
       <animate
         attributeName='d'
-        dur='2s'
+        dur='3s'
         repeatCount='indefinite'
         values='
-      M85,155 L315,155 L290,585 L110,585 Z;
-      M110,585 L290,585 L290,585 L110,585 Z
-      '
+          M85,155 L315,155 L290,585 L110,585 Z;
+          M110,585 L290,585 L290,585 L110,585 Z
+        '
       />
     </path>
     <path

@@ -108,8 +108,8 @@ export const TemplatesPage = () => {
             <thead>
               <tr>
                 <th>Name</th>
+                <th>Path</th>
                 <th>Description</th>
-                <th>Tags</th>
                 <th>Updated At</th>
                 <th>Actions</th>
               </tr>
@@ -122,29 +122,15 @@ export const TemplatesPage = () => {
                     <div className='text-sm opacity-50'>{template.id}</div>
                   </td>
                   <td>
-                    <div className='max-w-xs truncate'>
-                      {template.description || 'No description'}
+                    <div className='max-w-xs truncate font-mono text-sm'>
+                      {template.path || (
+                        <span className='opacity-50 italic'>No path</span>
+                      )}
                     </div>
                   </td>
                   <td>
-                    <div className='flex flex-wrap gap-1'>
-                      {template.tags && template.tags.length > 0 ? (
-                        template.tags.slice(0, 3).map(tag => (
-                          <span
-                            key={tag}
-                            className='badge badge-outline badge-sm'
-                          >
-                            {tag}
-                          </span>
-                        ))
-                      ) : (
-                        <span className='text-sm opacity-50'>No tags</span>
-                      )}
-                      {template.tags && template.tags.length > 3 && (
-                        <span className='badge badge-outline badge-sm'>
-                          +{template.tags.length - 3}
-                        </span>
-                      )}
+                    <div className='max-w-xs truncate'>
+                      {template.description || 'No description'}
                     </div>
                   </td>
                   <td>

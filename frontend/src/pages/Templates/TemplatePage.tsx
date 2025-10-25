@@ -1,52 +1,92 @@
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { Tooltip } from 'react-tooltip';
 
 import {
-  BackendService,
+  EContentGenerationStatus,
+  ETemplateStatus,
   TTemplate,
+  useTemplateGenerationMutation,
   useTemplatesDeletionMutation,
   useTemplatesEditionMutation,
+  useTemplatesItemQuery,
 } from '#api';
 import { CrossIcon } from '#icons';
+import { toast } from '#src/common-functions';
 
 export const TemplatePage: FC = () => {
   const { projectId, templateId } = useParams<{
     projectId: string;
     templateId: string;
   }>();
+
   const navigate = useNavigate();
 
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const { data: template, refetch } = useTemplatesItemQuery(
+    templateId ? { id: templateId } : undefined,
+    { enabled: Boolean(templateId) },
+  );
+
   const templatesEditionMutation = useTemplatesEditionMutation();
   const templatesDeletionMutation = useTemplatesDeletionMutation();
+  const templateGenerationMutation = useTemplateGenerationMutation();
 
-  const [template, setTemplate] = useState<TTemplate | null>(null);
   const [editedTemplate, setEditedTemplate] = useState<TTemplate | null>(null);
   const [newTag, setNewTag] = useState('');
 
   const isEditing = Boolean(editedTemplate);
+  const isGenerating = templateGenerationMutation.isPending;
+
+  const statusConfig = useMemo(() => {
+    const configs = {
+      [ETemplateStatus.Draft]: {
+        badgeClass: 'badge-warning',
+        tooltip: 'Data has not been generated yet',
+      },
+      [ETemplateStatus.Published]: {
+        badgeClass: 'badge-success',
+        tooltip: 'Data has been generated for the current template version',
+      },
+      [ETemplateStatus.Stale]: {
+        badgeClass: 'badge-error',
+        tooltip:
+          'No data or the Template has been modified since last data generation',
+      },
+    };
+    return template ? configs[template.status] : configs[ETemplateStatus.Draft];
+  }, [template]);
+
+  const contentStatusConfig = useMemo(() => {
+    if (!template?.contentStatus) return null;
+
+    const configs = {
+      [EContentGenerationStatus.Pending]: {
+        badgeClass: 'badge-warning',
+        tooltip: 'Generation is not completed',
+      },
+      [EContentGenerationStatus.Completed]: {
+        badgeClass: 'badge-success',
+        tooltip: `The data was successfully generated on ${
+          template.lastGeneratedAt
+            ? new Date(template.lastGeneratedAt).toLocaleString()
+            : "'N/A'"
+        } for version ${template.latestGeneratedVersion}`,
+      },
+      [EContentGenerationStatus.Failed]: {
+        badgeClass: 'badge-error',
+        tooltip: 'An unknown error occurred during generation',
+      },
+    };
+    return configs[template.contentStatus];
+  }, [template]);
 
   useEffect(() => {
-    if (!templateId) {
-      // eslint-disable-next-line no-console
-      console.error('Template ID is required');
-      return;
+    if (template && searchParams.get('edit') === 'true') {
+      setEditedTemplate({ ...template });
     }
-
-    BackendService.getTemplateByID({ path: { params: { id: templateId } } })
-      .then(response => {
-        setTemplate(response.data);
-
-        if (searchParams.get('edit') === 'true') {
-          setEditedTemplate(response.data);
-        }
-      })
-      .catch(error => {
-        // eslint-disable-next-line no-console
-        console.error('Failed to fetch template', error);
-      });
-  }, [templateId, searchParams]);
+  }, [template, searchParams]);
 
   const handleEditMode = () => {
     if (template) {
@@ -74,12 +114,12 @@ export const TemplatePage: FC = () => {
           onSuccess: () => {
             setEditedTemplate(null);
             setSearchParams({});
+            refetch();
           },
         },
       );
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to update template', error);
+      toast.error('Failed to update template.');
     }
   };
 
@@ -118,14 +158,21 @@ export const TemplatePage: FC = () => {
   };
 
   const handleGenerateData = () => {
-    if (templateId) {
-      BackendService.generateDataByTemplateID({
+    if (!templateId) return;
+
+    templateGenerationMutation.mutate(
+      {
         path: { params: { id: templateId } },
-      }).catch(error => {
-        // eslint-disable-next-line no-console
-        console.error('Failed to generate data', error);
-      });
-    }
+      },
+      {
+        onError: () => {
+          toast.error('Failed to generate data.');
+        },
+        onSuccess: () => {
+          refetch();
+        },
+      },
+    );
   };
 
   if (!template) {
@@ -139,41 +186,186 @@ export const TemplatePage: FC = () => {
     );
   }
 
-  const currentTemplate = editedTemplate || template;
+  const currentTemplate: TTemplate = editedTemplate || template;
+
+  const {
+    contentStatus: currentTemplateContentStatus,
+    createdAt: currentTemplateCreatedAt,
+    createdBy: currentTemplateCreatedBy,
+    description: currentTemplateDescription,
+    id: currentTemplateID,
+    name: currentTemplateName,
+    path: currentTemplatePath,
+    schema: currentTemplateSchema,
+    status: currentTemplateStatus,
+    tags: currentTemplateTags,
+    updatedAt: currentTemplateUpdatedAt,
+    updatedBy: currentTemplateUpdatedBy,
+    version: currentTemplateVersion,
+  } = currentTemplate;
 
   return (
-    <div className='container mx-auto p-6 w-full'>
-      <div className='mb-8'>
-        {isEditing ? (
-          <input
-            type='text'
-            value={currentTemplate.name}
-            onChange={e =>
-              setEditedTemplate({ ...editedTemplate!, name: e.target.value })
-            }
-            className='input input-bordered text-4xl font-bold mb-2 w-full'
-            placeholder='Template name'
-          />
-        ) : (
-          <h1 className='text-4xl font-bold mb-2'>{currentTemplate.name}</h1>
-        )}
-        <div className='text-sm text-base-content/50'>ID: {template.id}</div>
+    <div className='container mx-auto p-6 w-full overflow-hidden'>
+      <dialog className={`modal ${isGenerating ? 'modal-open' : ''}`}>
+        <div className='modal-box'>
+          <h3 className='font-bold text-lg mb-4'>Generating Data</h3>
+          <div className='flex flex-col items-center gap-4 py-4'>
+            <span className='loading loading-spinner loading-lg' />
+            <p className='text-base-content/70'>
+              Please wait while we generate data for your template...
+            </p>
+          </div>
+        </div>
+        <form method='dialog' className='modal-backdrop'>
+          <button type='button' aria-label='Close modal'>
+            close
+          </button>
+        </form>
+      </dialog>
+
+      <div className='mb-8 flex items-start justify-between gap-4'>
+        <div className='flex-1 min-w-0 overflow-hidden'>
+          {isEditing ? (
+            <input
+              type='text'
+              value={currentTemplateName}
+              onChange={event =>
+                setEditedTemplate({
+                  ...editedTemplate!,
+                  name: event.target.value,
+                })
+              }
+              className='input input-bordered text-4xl font-bold mb-2 w-full'
+              placeholder='Template name'
+            />
+          ) : (
+            <div
+              className='tooltip tooltip-bottom'
+              data-tip={currentTemplateName}
+            >
+              <h1 className='text-4xl font-bold mb-2 truncate block'>
+                {currentTemplateName}
+              </h1>
+            </div>
+          )}
+          <div className='text-sm text-base-content/50'>
+            ID: {currentTemplateID}
+          </div>
+          <div className='text-sm text-base-content/50'>
+            Version: {currentTemplateVersion || 'N/A'}
+          </div>
+          <div className='mt-2 flex items-center gap-2'>
+            <span className='text-sm text-base-content/50'>Status:</span>
+            <span
+              className={`badge ${statusConfig.badgeClass}`}
+              data-tooltip-id='status-tooltip'
+              data-tooltip-content={statusConfig.tooltip}
+            >
+              {currentTemplateStatus}
+            </span>
+          </div>
+          {contentStatusConfig && (
+            <div className='mt-2 flex items-center gap-2'>
+              <span className='text-sm text-base-content/50'>
+                Content Status:
+              </span>
+              <span
+                className={`badge ${contentStatusConfig.badgeClass}`}
+                data-tooltip-id='content-status-tooltip'
+                data-tooltip-content={contentStatusConfig.tooltip}
+              >
+                {currentTemplateContentStatus}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className='flex gap-2 flex-shrink-0'>
+          {isEditing ? (
+            <>
+              <button
+                type='button'
+                className='btn btn-outline'
+                onClick={handleCancelEdit}
+              >
+                Cancel
+              </button>
+              <button
+                type='button'
+                className='btn btn-primary'
+                onClick={handleSaveChanges}
+                disabled={templatesEditionMutation.isPending}
+              >
+                {templatesEditionMutation.isPending ? (
+                  <>
+                    <span className='loading loading-spinner loading-sm' />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type='button'
+                className='btn tooltip tooltip-left'
+                data-tip='Warning: AI models may make mistakes when generating data. MockTail cannot guarantee the accuracy of the results.'
+                style={{ backgroundColor: 'var(--mt-color-quaternary-1)' }}
+                onClick={handleGenerateData}
+                disabled={isGenerating}
+              >
+                {isGenerating ? (
+                  <>
+                    <span className='loading loading-spinner loading-sm' />
+                    Generating...
+                  </>
+                ) : (
+                  'Generate Data'
+                )}
+              </button>
+              <button
+                type='button'
+                className='btn btn-outline'
+                onClick={handleEditMode}
+              >
+                Edit Template
+              </button>
+              <button
+                type='button'
+                className='btn btn-error'
+                onClick={onTemplateDelete}
+                disabled={templatesDeletionMutation.isPending}
+              >
+                {templatesDeletionMutation.isPending ? (
+                  <>
+                    <span className='loading loading-spinner loading-sm' />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete Template'
+                )}
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className='stats stats-vertical lg:stats-horizontal shadow w-full mb-6'>
         <div className='stat'>
           <div className='stat-title'>Created</div>
           <div className='stat-value text-primary text-lg'>
-            {new Date(template.createdAt).toLocaleDateString()}
+            {new Date(currentTemplateCreatedAt).toLocaleDateString()}
           </div>
-          <div className='stat-desc'>by {template.createdBy}</div>
+          <div className='stat-desc'>by {currentTemplateCreatedBy}</div>
         </div>
         <div className='stat'>
           <div className='stat-title'>Last Updated</div>
           <div className='stat-value text-secondary text-lg'>
-            {new Date(template.updatedAt).toLocaleDateString()}
+            {new Date(currentTemplateUpdatedAt).toLocaleDateString()}
           </div>
-          <div className='stat-desc'>by {template.updatedBy}</div>
+          <div className='stat-desc'>by {currentTemplateUpdatedBy}</div>
         </div>
       </div>
 
@@ -182,16 +374,19 @@ export const TemplatePage: FC = () => {
         {isEditing ? (
           <input
             type='text'
-            value={currentTemplate.path || ''}
-            onChange={e =>
-              setEditedTemplate({ ...editedTemplate!, path: e.target.value })
+            value={currentTemplatePath || ''}
+            onChange={event =>
+              setEditedTemplate({
+                ...editedTemplate!,
+                path: event.target.value,
+              })
             }
             className='input input-bordered w-full'
             placeholder='Template path'
           />
         ) : (
           <p className='text-base-content/80 leading-relaxed font-mono bg-base-200 p-3 rounded'>
-            {currentTemplate.path || (
+            {currentTemplatePath || (
               <span className='text-base-content/50 italic'>
                 No path specified
               </span>
@@ -203,8 +398,8 @@ export const TemplatePage: FC = () => {
       <div className='mb-6'>
         <h3 className='text-lg font-semibold mb-3'>Tags</h3>
         <div className='flex flex-wrap gap-2 mb-3'>
-          {currentTemplate.tags && currentTemplate.tags.length > 0 ? (
-            currentTemplate.tags.map(tag => (
+          {currentTemplateTags && currentTemplateTags.length > 0 ? (
+            currentTemplateTags.map(tag => (
               <span
                 key={tag}
                 className='badge badge-primary badge-outline gap-2'
@@ -252,11 +447,11 @@ export const TemplatePage: FC = () => {
           <h2 className='text-xl font-semibold mb-3'>Description</h2>
           {isEditing ? (
             <textarea
-              value={currentTemplate.description || ''}
-              onChange={e =>
+              value={currentTemplateDescription || ''}
+              onChange={event =>
                 setEditedTemplate({
                   ...editedTemplate!,
-                  description: e.target.value,
+                  description: event.target.value,
                 })
               }
               className='textarea textarea-bordered w-full h-32'
@@ -264,7 +459,7 @@ export const TemplatePage: FC = () => {
             />
           ) : (
             <p className='text-base-content/80 leading-relaxed'>
-              {currentTemplate.description || (
+              {currentTemplateDescription || (
                 <span className='text-base-content/50 italic'>
                   No description provided
                 </span>
@@ -277,11 +472,11 @@ export const TemplatePage: FC = () => {
           <h2 className='text-xl font-semibold mb-3'>Schema (TypeScript)</h2>
           {isEditing ? (
             <textarea
-              value={currentTemplate.schema || ''}
-              onChange={e =>
+              value={currentTemplateSchema || ''}
+              onChange={event =>
                 setEditedTemplate({
                   ...editedTemplate!,
-                  schema: e.target.value,
+                  schema: event.target.value,
                 })
               }
               className='textarea textarea-bordered w-full h-48 font-mono text-sm'
@@ -289,9 +484,9 @@ export const TemplatePage: FC = () => {
             />
           ) : (
             <div className='bg-base-200 p-4 rounded-lg'>
-              {currentTemplate.schema ? (
+              {currentTemplateSchema ? (
                 <pre className='text-sm overflow-x-auto'>
-                  {currentTemplate.schema}
+                  {currentTemplateSchema}
                 </pre>
               ) : (
                 <span className='text-base-content/50 italic'>
@@ -318,59 +513,35 @@ export const TemplatePage: FC = () => {
             </div>
           </div>
         )}
-
-        <div className='flex justify-end gap-4'>
-          {isEditing ? (
-            <>
-              <button
-                type='button'
-                className='btn btn-outline'
-                onClick={handleCancelEdit}
-              >
-                Cancel
-              </button>
-              <button
-                type='button'
-                className='btn btn-primary'
-                onClick={handleSaveChanges}
-              >
-                Save Changes
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                type='button'
-                className='btn btn-outline'
-                onClick={handleGenerateData}
-              >
-                Generate Data
-              </button>
-              <button
-                type='button'
-                className='btn btn-outline'
-                onClick={() => navigate(`/app/projects/${projectId}/templates`)}
-              >
-                Back to Templates
-              </button>
-              <button
-                type='button'
-                className='btn btn-outline'
-                onClick={handleEditMode}
-              >
-                Edit Template
-              </button>
-              <button
-                type='button'
-                className='btn btn-error'
-                onClick={onTemplateDelete}
-              >
-                Delete Template
-              </button>
-            </>
-          )}
-        </div>
       </div>
+      <Tooltip
+        id='status-tooltip'
+        place='right'
+        style={{
+          backgroundColor: 'hsl(var(--b2))',
+          borderRadius: '0.5rem',
+          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+          color: 'hsl(var(--bc))',
+          fontSize: '0.875rem',
+          padding: '0.5rem 1rem',
+          zIndex: 9999,
+        }}
+        opacity={1}
+      />
+      <Tooltip
+        id='content-status-tooltip'
+        place='right'
+        style={{
+          backgroundColor: 'hsl(var(--b2))',
+          borderRadius: '0.5rem',
+          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+          color: 'hsl(var(--bc))',
+          fontSize: '0.875rem',
+          padding: '0.5rem 1rem',
+          zIndex: 9999,
+        }}
+        opacity={1}
+      />
     </div>
   );
 };

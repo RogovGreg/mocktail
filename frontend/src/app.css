@@ -24,6 +24,17 @@
   }
 }
 
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .menu li > .active {
   background-color: hsl(var(--p) / 0.2);
   color: hsl(var(--p));
@@ -111,5 +122,6 @@ body {
 
 #root {
   height: 100vh;
+  overflow-x: hidden;
   width: 100vw;
 }

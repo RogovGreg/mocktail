@@ -4,35 +4,10 @@ import { StatusCodes } from 'http-status-codes';
 
 import { AuthService } from '#api';
 import { CustomInput } from '#common-components';
-import { ERoutes } from '#src/router/routes-list.ts';
+import { toast } from '#src/common-functions';
+import { ERoutes } from '#src/router/routes-list';
 
-import { TRegisterFormValues } from './inner-types.ts';
-
-/**
- * 
- * if (!value) {
-                  return Promise.reject(new Error('Password is required!'));
-                }
-
-                const errors: string[] = [];
-                const minLength = 8;
-                if (value.length < minLength) {
-                  errors.push(`at least ${minLength} characters long`);
-                }
-                if (!/[A-Z]/.test(value)) {
-                  errors.push('one uppercase letter');
-                }
-                if (!/[a-z]/.test(value)) {
-                  errors.push('one lowercase letter');
-                }
-                if (!/\d/.test(value)) {
-                  errors.push('one number');
-                }
-                if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
-                  errors.push('one special character');
-                }
-
- */
+import { TRegisterFormValues } from './inner-types';
 
 export const RegisterPage: FC = () => {
   const navigate = useNavigate();
@@ -57,16 +32,23 @@ export const RegisterPage: FC = () => {
       body: {
         data: restFields,
       },
-    }).then(response => {
-      if (response.status === StatusCodes.OK) {
-        navigate(ERoutes.RegisterSuccess);
-      }
-    });
+    })
+      .then(response => {
+        if (response.status === StatusCodes.OK) {
+          navigate(ERoutes.RegisterSuccess);
+        }
+      })
+      .catch(error => {
+        toast.error(
+          error.response?.data?.message ||
+            'Registration failed. Please try again.',
+        );
+      });
   };
 
   return (
     <div>
-      <h1 className='text-7xl text-center mb-8'>Register</h1>
+      <h1 className='text-4xl font-bold mb-2 text-center'>Register</h1>
       <form
         name='registerForm'
         id='registerForm'
@@ -90,7 +72,7 @@ export const RegisterPage: FC = () => {
           placeholder='Confirm your password'
           type='password'
         />
-        <button type='submit' className='btn btn-primary flex mx-auto'>
+        <button type='submit' className='btn btn-primary my-5 flex mx-auto'>
           Submit
         </button>
       </form>

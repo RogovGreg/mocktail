@@ -11,7 +11,7 @@ import { TTemplate, useProjectsListQuery, useTemplatesListQuery } from '#api';
 import { AuthContext } from '#global-contexts';
 import {
   ApiTokensIcon,
-  DashboardIcon,
+  // DashboardIcon,
   LinkIcon,
   PlusIcon,
   ProjectsIcon,
@@ -30,9 +30,9 @@ export const AppNavigationPanel: React.FC = () => {
   const { authorizedUserData } = useContext(AuthContext);
   const { id: userID } = authorizedUserData || {};
 
-  const { isDashboardActive, isProjectsActive } = useMemo(
+  const { isProjectsActive } = useMemo(
     () => ({
-      isDashboardActive: pathname.includes('/app/dashboard'),
+      // isDashboardActive: pathname.includes('/app/dashboard'),
       isProjectsActive:
         pathname.includes('/app/projects') && !projectId && !templateId,
     }),
@@ -218,7 +218,7 @@ export const AppNavigationPanel: React.FC = () => {
 
   return (
     <ul className='menu menu-xs bg-base-200 h-full min-w-xs w-64 flex-shrink-0'>
-      <li>
+      {/* <li>
         <Link
           to='/app/dashboard'
           className={isDashboardActive ? 'active' : undefined}
@@ -226,7 +226,7 @@ export const AppNavigationPanel: React.FC = () => {
           <DashboardIcon />
           <span>Dashboard</span>
         </Link>
-      </li>
+      </li> */}
       <li>
         <Link
           to='/app/projects'

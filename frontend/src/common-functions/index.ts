@@ -1,2 +1,3 @@
 export * from './usePrevious';
-export * from './useSidebar';
+
+export * from './toast';

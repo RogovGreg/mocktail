@@ -4,6 +4,18 @@ import { TCheckServiceAvailability } from '../types';
 
 // =========================== common ===========================
 
+export enum ETemplateStatus {
+  Draft = 'Draft',
+  Published = 'Published',
+  Stale = 'Stale',
+}
+
+export enum EContentGenerationStatus {
+  Pending = 'Pending',
+  Completed = 'Completed',
+  Failed = 'Failed',
+}
+
 export type TProject = Readonly<{
   createdAt: string;
   createdBy: string;
@@ -24,6 +36,12 @@ export type TTemplate = Readonly<{
   path: string | null;
   relatedProjectId: string;
   schema: string;
+  version: number;
+  status: ETemplateStatus;
+  lastGeneratedAt: string | null;
+  latestGeneratedVersion: number | null;
+  contentStatus: EContentGenerationStatus | null;
+  contentVersion: number | null;
   tags: Array<string> | null;
   updatedAt: string;
   updatedBy: string;

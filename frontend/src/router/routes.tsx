@@ -12,20 +12,16 @@ import { ERoutes } from './routes-list';
 import { TRouteObjectList, TRoutePath } from './types';
 import { App } from '../App';
 import {
-  AboutPage,
   CreateProjectPage,
   CreateTemplatePage,
-  DashboardPage,
-  DocsPage,
+  // DashboardPage,
   LandingPage,
   LoginPage,
   PageNotFoundPage,
-  ProfilePage,
   ProjectAccessTokens,
   ProjectsPage,
   RegisterPage,
   RegisterSuccessNotificationPage,
-  SupportPage,
   TemplatePage,
   TemplatesPage,
   ViewProjectPage,
@@ -45,61 +41,56 @@ export const ROUTES_LIST: TRouteObjectList = [
         isOnAuthFlow: true,
         isProtected: false,
         path: ERoutes.Register,
+
+        handle: {
+          title: 'Register',
+        },
       },
       {
         Component: RegisterSuccessNotificationPage,
         isOnAuthFlow: true,
         isProtected: false,
         path: ERoutes.RegisterSuccess,
+
+        handle: {
+          title: 'Register Success',
+        },
       },
       {
         Component: LoginPage,
         isOnAuthFlow: true,
         isProtected: false,
         path: ERoutes.Login,
+
+        handle: {
+          title: 'Login',
+        },
       },
       {
         Component: PageNotFoundPage,
         isOnAuthFlow: true,
         isProtected: false,
         path: ERoutes.PageNotFound,
+
+        handle: {
+          title: 'Page not found',
+        },
       },
       {
         Component: WaitingPage,
         isOnAuthFlow: true,
         isProtected: false,
         path: ERoutes.WaitingPage,
+
+        handle: {
+          title: 'Waiting...',
+        },
       },
       {
         Component: LandingPage,
         isOnAuthFlow: false,
         isProtected: false,
         path: ERoutes.Landing,
-      },
-      {
-        Component: AboutPage,
-        isOnAuthFlow: false,
-        isProtected: false,
-        path: ERoutes.About,
-      },
-
-      {
-        Component: DocsPage,
-        isOnAuthFlow: false,
-        isProtected: false,
-        path: ERoutes.Docs,
-      },
-      {
-        Component: ProfilePage,
-        isOnAuthFlow: false,
-        isProtected: true,
-        path: ERoutes.Profile,
-      },
-      {
-        Component: SupportPage,
-        isOnAuthFlow: false,
-        isProtected: false,
-        path: ERoutes.Support,
       },
 
       {
@@ -118,18 +109,22 @@ export const ROUTES_LIST: TRouteObjectList = [
             children: [
               {
                 Component: () => null,
-                element: <Navigate to='dashboard' replace />,
+                element: <Navigate to='projects' replace />,
                 index: true,
                 isOnAuthFlow: false,
                 isProtected: true,
                 path: '',
               },
-              {
-                Component: DashboardPage,
-                isOnAuthFlow: false,
-                isProtected: true,
-                path: 'dashboard',
-              },
+              // {
+              //   Component: DashboardPage,
+              //   isOnAuthFlow: false,
+              //   isProtected: true,
+              //   path: 'dashboard',
+
+              //   handle: {
+              //     title: 'Dashboard',
+              //   },
+              // },
               {
                 Component: ProjectLayout,
                 isOnAuthFlow: false,
@@ -138,6 +133,7 @@ export const ROUTES_LIST: TRouteObjectList = [
 
                 handle: {
                   crumb: 'Projects',
+                  title: 'Projects',
                 },
 
                 children: [
@@ -154,7 +150,8 @@ export const ROUTES_LIST: TRouteObjectList = [
                     path: 'create',
 
                     handle: {
-                      crumb: 'Create New Project',
+                      crumb: 'Create new project',
+                      title: 'Create new project',
                     },
                   },
                   {
@@ -165,6 +162,7 @@ export const ROUTES_LIST: TRouteObjectList = [
 
                     handle: {
                       crumb: 'Project',
+                      title: 'Project',
                     },
 
                     children: [
@@ -181,7 +179,8 @@ export const ROUTES_LIST: TRouteObjectList = [
                         path: 'api-tokens',
 
                         handle: {
-                          crumb: 'API Tokens',
+                          crumb: 'API tokens',
+                          title: 'Project API tokens',
                         },
                       },
                       {
@@ -192,6 +191,7 @@ export const ROUTES_LIST: TRouteObjectList = [
 
                         handle: {
                           crumb: 'Templates',
+                          title: 'Project templates',
                         },
 
                         children: [
@@ -209,6 +209,7 @@ export const ROUTES_LIST: TRouteObjectList = [
 
                             handle: {
                               crumb: 'Create new template',
+                              title: 'Create new template',
                             },
                           },
                           {
@@ -219,6 +220,7 @@ export const ROUTES_LIST: TRouteObjectList = [
 
                             handle: {
                               crumb: 'Template',
+                              title: 'Template details',
                             },
                           },
                         ],

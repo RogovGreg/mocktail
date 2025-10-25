@@ -5,6 +5,7 @@ import { StatusCodes } from 'http-status-codes';
 import { AuthService } from '#api';
 import { CustomInput } from '#common-components';
 import { AUTHORIZED_USER_ID_FIELD_NAME } from '#common-constants';
+import { toast } from '#src/common-functions';
 import { AuthContext } from '#src/global-contexts';
 import { ERoutes } from '#src/router';
 
@@ -24,40 +25,46 @@ export const LoginPage = () => {
       password: String(formData.get('password') ?? ''),
     };
 
-    await AuthService.login({ body: { data: values } }).then(response => {
-      if (
-        response.status === StatusCodes.OK &&
-        updateAccessToken &&
-        updateAuthorizedUserData
-      ) {
-        const {
-          accessToken: { tokenType, accessToken, expiresIn },
-          authorizedUser,
-        } = response.data;
-        const { id: authorizedUserID } = authorizedUser;
+    await AuthService.login({ body: { data: values } })
+      .then(response => {
+        if (
+          response.status === StatusCodes.OK &&
+          updateAccessToken &&
+          updateAuthorizedUserData
+        ) {
+          const {
+            accessToken: { tokenType, accessToken, expiresIn },
+            authorizedUser,
+          } = response.data;
+          const { id: authorizedUserID } = authorizedUser;
 
-        updateAccessToken({
-          expiresIn,
-          type: tokenType,
-          value: accessToken,
-        });
-        updateAuthorizedUserData(authorizedUser);
+          updateAccessToken({
+            expiresIn,
+            type: tokenType,
+            value: accessToken,
+          });
+          updateAuthorizedUserData(authorizedUser);
 
-        if (authorizedUserID) {
-          sessionStorage.setItem(
-            AUTHORIZED_USER_ID_FIELD_NAME,
-            authorizedUserID,
-          );
+          if (authorizedUserID) {
+            sessionStorage.setItem(
+              AUTHORIZED_USER_ID_FIELD_NAME,
+              authorizedUserID,
+            );
+          }
+
+          navigate(ERoutes.Projects);
         }
-
-        navigate(ERoutes.Dashboard);
-      }
-    });
+      })
+      .catch(error => {
+        toast.error(
+          error.response?.data?.message || 'Login failed. Please try again.',
+        );
+      });
   };
 
   return (
     <div>
-      <h1 className='text-7xl text-center mb-8'>Login</h1>
+      <h1 className='text-4xl font-bold mb-2 text-center'>Login</h1>
       <form
         name='loginForm'
         id='loginForm'
@@ -75,7 +82,7 @@ export const LoginPage = () => {
           type='password'
           placeholder='Enter your password'
         />
-        <button type='submit' className='btn btn-primary flex mx-auto'>
+        <button type='submit' className='btn btn-primary my-5 flex mx-auto'>
           Submit
         </button>
       </form>

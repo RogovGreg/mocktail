@@ -9,6 +9,7 @@ import {
   useProjectsEditionMutation,
 } from '#api';
 import { CrossIcon } from '#icons';
+import { toast } from '#src/common-functions';
 
 export const ViewProjectPage: FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -41,9 +42,8 @@ export const ViewProjectPage: FC = () => {
           setEditedProject(response.data);
         }
       })
-      .catch(error => {
-        // eslint-disable-next-line no-console
-        console.error('Failed to fetch project', error);
+      .catch(() => {
+        toast.error('Receiving project failed.');
       });
 
     AuthService.getProjectAccessTokens({ query: { params: { projectId } } });
@@ -65,24 +65,22 @@ export const ViewProjectPage: FC = () => {
   const handleSaveChanges = async () => {
     if (!editedProject || !projectId) return;
 
-    try {
-      await projectsEditionMutation.mutateAsync(
-        {
-          body: { data: editedProject },
-          path: { params: { id: projectId } },
+    await projectsEditionMutation.mutateAsync(
+      {
+        body: { data: editedProject },
+        path: { params: { id: projectId } },
+      },
+      {
+        onSuccess: response => {
+          setProject(response.data);
+          setEditedProject(null);
+          setSearchParams({});
         },
-        {
-          onSuccess: response => {
-            setProject(response.data);
-            setEditedProject(null);
-            setSearchParams({});
-          },
+        onError: () => {
+          toast.error('Updating project failed. Please try again.');
         },
-      );
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to update project', error);
-    }
+      },
+    );
   };
 
   const handleAddKeyword = () => {
@@ -131,24 +129,110 @@ export const ViewProjectPage: FC = () => {
   const currentProject: TProject = editedProject || project;
 
   return (
-    <div className='container mx-auto p-6 w-full'>
-      <div className='mb-8'>
-        {isEditing ? (
-          <input
-            type='text'
-            value={currentProject.title}
-            onChange={event =>
-              setEditedProject({ ...editedProject!, title: event.target.value })
-            }
-            className='input input-bordered text-2xl font-bold mb-2 w-full'
-            placeholder='Project title'
-          />
-        ) : (
-          <h1 className='text-2xl font-semibold mb-2'>
-            {currentProject.title}
-          </h1>
-        )}
-        <div className='text-sm text-base-content/50'>ID: {project.id}</div>
+    <div className='container mx-auto p-6 w-full overflow-hidden'>
+      <div className='mb-8 flex items-start justify-between gap-4'>
+        <div className='flex-1 min-w-0 overflow-hidden'>
+          {isEditing ? (
+            <input
+              type='text'
+              value={currentProject.title}
+              onChange={event =>
+                setEditedProject({
+                  ...editedProject!,
+                  title: event.target.value,
+                })
+              }
+              className='input input-bordered text-4xl font-bold mb-2 w-full'
+              placeholder='Project title'
+            />
+          ) : (
+            <div
+              className='tooltip tooltip-bottom'
+              data-tip={currentProject.title}
+            >
+              <h1 className='text-4xl font-bold mb-2 truncate block overflow-hidden'>
+                {currentProject.title}
+              </h1>
+            </div>
+          )}
+          <div className='text-sm text-base-content/50'>ID: {project.id}</div>
+        </div>
+
+        <div className='flex flex-col gap-2 flex-shrink-0'>
+          {isEditing ? (
+            <div className='flex gap-2'>
+              <button
+                type='button'
+                className='btn btn-outline hover:btn-outline w-32'
+                onClick={handleCancelEdit}
+              >
+                Cancel
+              </button>
+              <button
+                type='button'
+                className='btn btn-primary w-32'
+                onClick={handleSaveChanges}
+                disabled={projectsEditionMutation.isPending}
+              >
+                {projectsEditionMutation.isPending ? (
+                  <>
+                    <span className='loading loading-spinner loading-sm' />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className='flex gap-2'>
+                <button
+                  type='button'
+                  className='btn btn-outline hover:btn-outline flex-1'
+                  onClick={handleEditMode}
+                >
+                  Edit Project
+                </button>
+                <button
+                  type='button'
+                  className='btn btn-error flex-1'
+                  onClick={onProjectDelete}
+                  disabled={projectsDeletionMutation.isPending}
+                >
+                  {projectsDeletionMutation.isPending ? (
+                    <>
+                      <span className='loading loading-spinner loading-sm' />
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete Project'
+                  )}
+                </button>
+              </div>
+              <div className='flex gap-2'>
+                <button
+                  type='button'
+                  className='btn btn-outline hover:btn-outline flex-1'
+                  onClick={() =>
+                    navigate(`/app/projects/${projectId}/api-tokens`)
+                  }
+                >
+                  API Tokens
+                </button>
+                <button
+                  type='button'
+                  className='btn btn-outline hover:btn-outline flex-1'
+                  onClick={() =>
+                    navigate(`/app/projects/${projectId}/templates`)
+                  }
+                >
+                  Templates
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <div className='stats stats-vertical lg:stats-horizontal shadow w-full mb-2'>
@@ -238,60 +322,6 @@ export const ViewProjectPage: FC = () => {
                 </span>
               )}
             </p>
-          )}
-        </div>
-
-        <div className='flex justify-end gap-4'>
-          {isEditing ? (
-            <>
-              <button
-                type='button'
-                className='btn btn-outline'
-                onClick={handleCancelEdit}
-              >
-                Cancel
-              </button>
-              <button
-                type='button'
-                className='btn btn-primary'
-                onClick={handleSaveChanges}
-              >
-                Save Changes
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                type='button'
-                className='btn btn-outline'
-                onClick={() =>
-                  navigate(`/app/projects/${projectId}/api-tokens`)
-                }
-              >
-                Go to project&apos;s API tokens
-              </button>
-              <button
-                type='button'
-                className='btn btn-outline'
-                onClick={() => navigate(`/app/projects/${projectId}/templates`)}
-              >
-                Go to project&apos;s templates
-              </button>
-              <button
-                type='button'
-                className='btn btn-outline'
-                onClick={handleEditMode}
-              >
-                Edit Project
-              </button>
-              <button
-                type='button'
-                className='btn btn-error'
-                onClick={onProjectDelete}
-              >
-                Delete Project
-              </button>
-            </>
           )}
         </div>
       </div>
