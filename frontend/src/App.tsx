@@ -2,10 +2,7 @@ import { FC, useEffect } from 'react';
 import { useMatches } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import {
-  AuthContextProvider,
-  SidebarsContextProvider,
-} from './global-contexts';
+import { AuthContextProvider } from './global-contexts';
 import { RootLayout } from './layouts';
 
 const queryClient = new QueryClient({
@@ -23,7 +20,9 @@ export const App: FC = () => {
 
   useEffect(() => {
     const currentMatch = matches[matches.length - 1];
-    const title = currentMatch?.handle?.title;
+    const title: string | undefined = (
+      currentMatch?.handle as { title?: string }
+    )?.title;
 
     if (title) {
       document.title = `MockTail | ${title}`;
@@ -35,9 +34,7 @@ export const App: FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthContextProvider>
-        <SidebarsContextProvider>
-          <RootLayout />
-        </SidebarsContextProvider>
+        <RootLayout />
       </AuthContextProvider>
     </QueryClientProvider>
   );

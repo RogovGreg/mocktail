@@ -1,13 +1,3 @@
-// import { LoaderFunction } from 'react-router-dom';
-
-// import { TProject, TTemplate } from '#api';
-
-// export type TLoaderData = {
-//   project?: TProject;
-//   template?: TTemplate;
-//   [key: string]: unknown;
-// };
-
 export type TRouteHandle = {
   crumb?: string;
   title?: string;
@@ -24,7 +14,6 @@ export type TRouteObject = Readonly<{
   index?: boolean;
   element?: React.ReactNode;
 
-  // loader?: LoaderFunction;
   handle?: TRouteHandle;
 
   children?: Array<TRouteObject>;

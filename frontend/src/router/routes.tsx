@@ -12,20 +12,16 @@ import { ERoutes } from './routes-list';
 import { TRouteObjectList, TRoutePath } from './types';
 import { App } from '../App';
 import {
-  AboutPage,
   CreateProjectPage,
   CreateTemplatePage,
-  DashboardPage,
-  DocsPage,
+  // DashboardPage,
   LandingPage,
   LoginPage,
   PageNotFoundPage,
-  ProfilePage,
   ProjectAccessTokens,
   ProjectsPage,
   RegisterPage,
   RegisterSuccessNotificationPage,
-  SupportPage,
   TemplatePage,
   TemplatesPage,
   ViewProjectPage,
@@ -96,31 +92,6 @@ export const ROUTES_LIST: TRouteObjectList = [
         isProtected: false,
         path: ERoutes.Landing,
       },
-      {
-        Component: AboutPage,
-        isOnAuthFlow: false,
-        isProtected: false,
-        path: ERoutes.About,
-      },
-
-      {
-        Component: DocsPage,
-        isOnAuthFlow: false,
-        isProtected: false,
-        path: ERoutes.Docs,
-      },
-      {
-        Component: ProfilePage,
-        isOnAuthFlow: false,
-        isProtected: true,
-        path: ERoutes.Profile,
-      },
-      {
-        Component: SupportPage,
-        isOnAuthFlow: false,
-        isProtected: false,
-        path: ERoutes.Support,
-      },
 
       {
         Component: ProtectedLayout,
@@ -138,22 +109,22 @@ export const ROUTES_LIST: TRouteObjectList = [
             children: [
               {
                 Component: () => null,
-                element: <Navigate to='dashboard' replace />,
+                element: <Navigate to='projects' replace />,
                 index: true,
                 isOnAuthFlow: false,
                 isProtected: true,
                 path: '',
               },
-              {
-                Component: DashboardPage,
-                isOnAuthFlow: false,
-                isProtected: true,
-                path: 'dashboard',
+              // {
+              //   Component: DashboardPage,
+              //   isOnAuthFlow: false,
+              //   isProtected: true,
+              //   path: 'dashboard',
 
-                handle: {
-                  title: 'Dashboard',
-                },
-              },
+              //   handle: {
+              //     title: 'Dashboard',
+              //   },
+              // },
               {
                 Component: ProjectLayout,
                 isOnAuthFlow: false,

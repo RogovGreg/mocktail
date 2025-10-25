@@ -8,6 +8,7 @@ import {
 } from '#api';
 import { CustomInput } from '#common-components';
 import { CrossIcon } from '#icons';
+import { toast } from '#src/common-functions';
 
 export const CreateProjectPage: FC = () => {
   const navigate = useNavigate();
@@ -32,21 +33,18 @@ export const CreateProjectPage: FC = () => {
       title: formData.title,
     };
 
-    try {
-      await createProjectMutation.mutateAsync(
-        { body: { data: payload } },
-        {
-          onSuccess: response => {
-            navigate(`/app/projects/${response.data.id}`);
-          },
+    await createProjectMutation.mutateAsync(
+      { body: { data: payload } },
+      {
+        onSuccess: response => {
+          navigate(`/app/projects/${response.data.id}`);
+          setIsSubmitting(false);
         },
-      );
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error creating project:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+        onError: () => {
+          toast.error('Create project failed. Please try again.');
+        },
+      },
+    );
   };
 
   const handleAddKeyword = () => {

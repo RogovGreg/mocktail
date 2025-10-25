@@ -9,6 +9,7 @@ import {
   useProjectsEditionMutation,
 } from '#api';
 import { CrossIcon } from '#icons';
+import { toast } from '#src/common-functions';
 
 export const ViewProjectPage: FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -41,9 +42,8 @@ export const ViewProjectPage: FC = () => {
           setEditedProject(response.data);
         }
       })
-      .catch(error => {
-        // eslint-disable-next-line no-console
-        console.error('Failed to fetch project', error);
+      .catch(() => {
+        toast.error('Receiving project failed.');
       });
 
     AuthService.getProjectAccessTokens({ query: { params: { projectId } } });
@@ -65,24 +65,22 @@ export const ViewProjectPage: FC = () => {
   const handleSaveChanges = async () => {
     if (!editedProject || !projectId) return;
 
-    try {
-      await projectsEditionMutation.mutateAsync(
-        {
-          body: { data: editedProject },
-          path: { params: { id: projectId } },
+    await projectsEditionMutation.mutateAsync(
+      {
+        body: { data: editedProject },
+        path: { params: { id: projectId } },
+      },
+      {
+        onSuccess: response => {
+          setProject(response.data);
+          setEditedProject(null);
+          setSearchParams({});
         },
-        {
-          onSuccess: response => {
-            setProject(response.data);
-            setEditedProject(null);
-            setSearchParams({});
-          },
+        onError: () => {
+          toast.error('Updating project failed. Please try again.');
         },
-      );
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to update project', error);
-    }
+      },
+    );
   };
 
   const handleAddKeyword = () => {

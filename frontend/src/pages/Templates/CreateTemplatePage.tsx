@@ -7,6 +7,7 @@ import {
 } from '#api';
 import { CustomInput } from '#common-components';
 import { CrossIcon } from '#icons';
+import { toast } from '#src/common-functions';
 
 export const CreateTemplatePage: FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -50,8 +51,7 @@ export const CreateTemplatePage: FC = () => {
         },
       );
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error creating template:', error);
+      toast.error('Error creating template.');
     } finally {
       setIsSubmitting(false);
     }

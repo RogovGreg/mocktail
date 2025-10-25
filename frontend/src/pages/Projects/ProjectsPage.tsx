@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useState } from 'react';
+import { FormEvent, useCallback, useContext, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import {
@@ -15,18 +15,29 @@ import {
   SearchIcon,
   ViewIcon,
 } from '#icons';
+import { AuthContext } from '#src/global-contexts';
 import { ERoutes } from '#src/router';
 
 import { TProjectFiltersFormValues } from './types';
 
 export const ProjectsPage = () => {
   const navigate = useNavigate();
+  const { authorizedUserData } = useContext(AuthContext);
+  const { id } = authorizedUserData || {};
 
   const [searchParams, setSearchParams] = useState<
     TProjectFiltersFormValues | undefined
   >(undefined);
 
-  const { data: projects } = useProjectsListQuery(searchParams);
+  const { data: projects } = useProjectsListQuery(
+    {
+      ...searchParams,
+      createdBy: id ?? undefined,
+    },
+    {
+      enabled: Boolean(id),
+    },
+  );
   const projectsList: Array<TProject> = projects || [];
 
   const projectsDeletionMutation = useProjectsDeletionMutation();

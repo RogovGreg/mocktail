@@ -12,6 +12,7 @@ import {
   useTemplatesItemQuery,
 } from '#api';
 import { CrossIcon } from '#icons';
+import { toast } from '#src/common-functions';
 
 export const TemplatePage: FC = () => {
   const { projectId, templateId } = useParams<{
@@ -50,7 +51,7 @@ export const TemplatePage: FC = () => {
       },
       [ETemplateStatus.Stale]: {
         badgeClass: 'badge-error',
-        tooltip: `Data was generated for template version ${template?.latestGeneratedVersion || 'N/A'}`,
+        tooltip: 'No data',
       },
     };
     return template ? configs[template.status] : configs[ETemplateStatus.Draft];
@@ -70,7 +71,7 @@ export const TemplatePage: FC = () => {
           template.lastGeneratedAt
             ? new Date(template.lastGeneratedAt).toLocaleString()
             : "'N/A'"
-        }`,
+        } for version ${template.latestGeneratedVersion}`,
       },
       [EContentGenerationStatus.Failed]: {
         badgeClass: 'badge-error',
@@ -117,8 +118,7 @@ export const TemplatePage: FC = () => {
         },
       );
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to update template', error);
+      toast.error('Failed to update template.');
     }
   };
 
@@ -164,9 +164,8 @@ export const TemplatePage: FC = () => {
         path: { params: { id: templateId } },
       },
       {
-        onError: error => {
-          // eslint-disable-next-line no-console
-          console.error('Failed to generate data', error);
+        onError: () => {
+          toast.error('Failed to generate data.');
         },
         onSuccess: () => {
           refetch();

@@ -2,6 +2,7 @@ import { FC, useCallback, useState } from 'react';
 
 import { AuthService, TProjectAccessToken } from '#api';
 import { CustomInput } from '#common-components';
+import { toast } from '#src/common-functions';
 
 export type TCreateTokenFormProps = Readonly<{
   projectId: string | undefined;
@@ -57,8 +58,7 @@ export const CreateTokenForm: FC<TCreateTokenFormProps> = props => {
       setNewTokenName('');
       setNewTokenExpiresAt('');
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to create token', error);
+      toast.error('Create token failed. Please try again.');
     }
   };
 

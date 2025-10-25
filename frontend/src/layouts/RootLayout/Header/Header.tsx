@@ -7,11 +7,11 @@ import {
   LoginIcon,
   LogoutIcon,
   MockTailLogo,
-  QuestionIcon,
+  // QuestionIcon,
 } from '#icons';
 import { ERoutes } from '#router';
 
-import { Sidebar, ThemeSwitcher } from './elements';
+import { ThemeSwitcher } from './elements';
 
 export const Header: FC = () => {
   const { authorizedUserData, isAuthorized, userLogout } =
@@ -82,7 +82,7 @@ export const Header: FC = () => {
                       ? 'bg-[var(--mt-color-primary-1)] text-white hover:bg-[var(--mt-color-primary-1)]'
                       : 'hover:text-[var(--mt-color-primary-1)]'
                   }`}
-                onClick={() => navigate(ERoutes.Dashboard)}
+                onClick={() => navigate(ERoutes.Projects)}
               >
                 / Web App
               </button>
@@ -91,14 +91,14 @@ export const Header: FC = () => {
         </div>
         <div className='navbar-end flex items-center gap-1'>
           <ThemeSwitcher />
-          <label
+          {/* <label
             className='btn btn-ghost btn-circle tooltip tooltip-bottom hover:bg-base-300 hover:text-[var(--mt-color-primary-1)]
               [&_svg]:transition-colors [&_svg]:stroke-current'
             data-tip='Docs & Support'
             htmlFor='my-drawer-5'
           >
             <QuestionIcon className='size-7' />
-          </label>
+          </label> */}
           {userBadge}
           <button
             type='button'
@@ -115,7 +115,7 @@ export const Header: FC = () => {
           </button>
         </div>
       </div>
-      <Sidebar />
+      {/* <Sidebar /> */}
     </>
   );
 };
