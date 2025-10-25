@@ -102,7 +102,7 @@ export const CustomInput: FC<TCustomInputProps> = props => {
   }, [inputClassName, rewriteInputClassName]);
 
   const helperTextClasses = useMemo<string>(() => {
-    const baseClass: string = 'helper-text';
+    const baseClass: string = 'helper-text text-xs opacity-70';
 
     if (helperTextClassName) {
       if (rewriteHelperTextClassName) {

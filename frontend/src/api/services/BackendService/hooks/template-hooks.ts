@@ -82,3 +82,20 @@ export const useTemplatesEditionMutation = () => {
     },
   });
 };
+
+export const useTemplateGenerationMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: BackendService.generateDataByTemplateID,
+    mutationKey: ['generateDataByTemplateID'],
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['getTemplatesItem', { id: variables?.path?.params?.id }],
+      });
+      queryClient.invalidateQueries({
+        predicate: query => query.queryKey[0] === 'getTemplatesList',
+      });
+    },
+  });
+};

@@ -45,30 +45,50 @@ export const ROUTES_LIST: TRouteObjectList = [
         isOnAuthFlow: true,
         isProtected: false,
         path: ERoutes.Register,
+
+        handle: {
+          title: 'Register',
+        },
       },
       {
         Component: RegisterSuccessNotificationPage,
         isOnAuthFlow: true,
         isProtected: false,
         path: ERoutes.RegisterSuccess,
+
+        handle: {
+          title: 'Register Success',
+        },
       },
       {
         Component: LoginPage,
         isOnAuthFlow: true,
         isProtected: false,
         path: ERoutes.Login,
+
+        handle: {
+          title: 'Login',
+        },
       },
       {
         Component: PageNotFoundPage,
         isOnAuthFlow: true,
         isProtected: false,
         path: ERoutes.PageNotFound,
+
+        handle: {
+          title: 'Page not found',
+        },
       },
       {
         Component: WaitingPage,
         isOnAuthFlow: true,
         isProtected: false,
         path: ERoutes.WaitingPage,
+
+        handle: {
+          title: 'Waiting...',
+        },
       },
       {
         Component: LandingPage,
@@ -129,6 +149,10 @@ export const ROUTES_LIST: TRouteObjectList = [
                 isOnAuthFlow: false,
                 isProtected: true,
                 path: 'dashboard',
+
+                handle: {
+                  title: 'Dashboard',
+                },
               },
               {
                 Component: ProjectLayout,
@@ -138,6 +162,7 @@ export const ROUTES_LIST: TRouteObjectList = [
 
                 handle: {
                   crumb: 'Projects',
+                  title: 'Projects',
                 },
 
                 children: [
@@ -154,7 +179,8 @@ export const ROUTES_LIST: TRouteObjectList = [
                     path: 'create',
 
                     handle: {
-                      crumb: 'Create New Project',
+                      crumb: 'Create new project',
+                      title: 'Create new project',
                     },
                   },
                   {
@@ -165,6 +191,7 @@ export const ROUTES_LIST: TRouteObjectList = [
 
                     handle: {
                       crumb: 'Project',
+                      title: 'Project',
                     },
 
                     children: [
@@ -181,7 +208,8 @@ export const ROUTES_LIST: TRouteObjectList = [
                         path: 'api-tokens',
 
                         handle: {
-                          crumb: 'API Tokens',
+                          crumb: 'API tokens',
+                          title: 'Project API tokens',
                         },
                       },
                       {
@@ -192,6 +220,7 @@ export const ROUTES_LIST: TRouteObjectList = [
 
                         handle: {
                           crumb: 'Templates',
+                          title: 'Project templates',
                         },
 
                         children: [
@@ -209,6 +238,7 @@ export const ROUTES_LIST: TRouteObjectList = [
 
                             handle: {
                               crumb: 'Create new template',
+                              title: 'Create new template',
                             },
                           },
                           {
@@ -219,6 +249,7 @@ export const ROUTES_LIST: TRouteObjectList = [
 
                             handle: {
                               crumb: 'Template',
+                              title: 'Template details',
                             },
                           },
                         ],

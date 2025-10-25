@@ -1,4 +1,5 @@
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
+import { useMatches } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import {
@@ -17,12 +18,27 @@ const queryClient = new QueryClient({
   },
 });
 
-export const App: FC = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthContextProvider>
-      <SidebarsContextProvider>
-        <RootLayout />
-      </SidebarsContextProvider>
-    </AuthContextProvider>
-  </QueryClientProvider>
-);
+export const App: FC = () => {
+  const matches = useMatches();
+
+  useEffect(() => {
+    const currentMatch = matches[matches.length - 1];
+    const title = currentMatch?.handle?.title;
+
+    if (title) {
+      document.title = `MockTail | ${title}`;
+    } else {
+      document.title = 'MockTail';
+    }
+  }, [matches]);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthContextProvider>
+        <SidebarsContextProvider>
+          <RootLayout />
+        </SidebarsContextProvider>
+      </AuthContextProvider>
+    </QueryClientProvider>
+  );
+};
