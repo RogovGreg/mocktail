@@ -12,11 +12,12 @@ namespace Content.Workers;
 
 public class ContentGenerationWorker : BackgroundService
 {
-    private readonly IConnection _connection;
-    private readonly IModel _channel;
+    private IConnection _connection;
+    private IModel _channel;
     private readonly ILogger<ContentGenerationWorker> _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly string _queueName = "content-generation-queue";
+    private readonly string _connectionString;
 
     public ContentGenerationWorker(IConfiguration configuration, ILogger<ContentGenerationWorker> logger, IServiceProvider serviceProvider)
     {
@@ -29,32 +30,69 @@ public class ContentGenerationWorker : BackgroundService
             throw new InvalidOperationException("Connection string 'RabbitMQ' not found. Make sure the environment variable 'ConnectionStrings__RabbitMQ' is set.");
         }
 
-        var factory = new ConnectionFactory
+        _connectionString = connectionString;
+        _logger.LogInformation("Content generation worker constructor completed. RabbitMQ connection will be established in ExecuteAsync.");
+    }
+
+    private async Task WaitForRabbitMQConnectionAsync(CancellationToken stoppingToken)
+    {
+        var maxRetries = 30; // 30 retries
+        var baseDelay = TimeSpan.FromSeconds(2); // Start with 2 seconds
+        
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
         {
-            Uri = new Uri(connectionString),
-            AutomaticRecoveryEnabled = true,
-            NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
-        };
+            try
+            {
+                _logger.LogInformation("Attempting to connect to RabbitMQ (attempt {Attempt}/{MaxRetries})", attempt, maxRetries);
+                
+                var factory = new ConnectionFactory
+                {
+                    Uri = new Uri(_connectionString),
+                    AutomaticRecoveryEnabled = true,
+                    NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
+                };
 
-        _connection = factory.CreateConnection();
-        _channel = _connection.CreateModel();
+                _connection = factory.CreateConnection();
+                _channel = _connection.CreateModel();
 
-        // Declare the queue as durable
-        _channel.QueueDeclare(
-            queue: _queueName,
-            durable: true,
-            exclusive: false,
-            autoDelete: false,
-            arguments: null);
+                // Declare the queue as durable
+                _channel.QueueDeclare(
+                    queue: _queueName,
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null);
 
-        // Set prefetch count to 1 to process one message at a time
-        _channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+                // Set prefetch count to 1 to process one message at a time
+                _channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
 
-        _logger.LogInformation("Content generation worker initialized with queue '{QueueName}'", _queueName);
+                _logger.LogInformation("Successfully connected to RabbitMQ and initialized queue '{QueueName}'", _queueName);
+                return; // Success!
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to connect to RabbitMQ on attempt {Attempt}/{MaxRetries}", attempt, maxRetries);
+                
+                if (attempt == maxRetries)
+                {
+                    _logger.LogError("Failed to connect to RabbitMQ after {MaxRetries} attempts. Giving up.", maxRetries);
+                    throw;
+                }
+                
+                // Exponential backoff: 2s, 4s, 8s, 16s, 30s, 30s, ...
+                var delay = TimeSpan.FromMilliseconds(Math.Min(baseDelay.TotalMilliseconds * Math.Pow(2, attempt - 1), 30000));
+                _logger.LogInformation("Waiting {Delay} seconds before next attempt...", delay.TotalSeconds);
+                
+                await Task.Delay(delay, stoppingToken);
+            }
+        }
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Wait for RabbitMQ to be ready with retry logic
+        await WaitForRabbitMQConnectionAsync(stoppingToken);
+        
         var consumer = new EventingBasicConsumer(_channel);
         
         consumer.Received += async (model, ea) =>

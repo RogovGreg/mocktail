@@ -1,0 +1,69 @@
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS base
+WORKDIR /app
+
+# Install EF Core tools globally
+RUN dotnet tool install --global dotnet-ef --version 9.0.0
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+# Install PostgreSQL client and protoc for gRPC
+RUN apt-get update && apt-get install -y postgresql-client protobuf-compiler && rm -rf /var/lib/apt/lists/*
+
+# Copy all service projects
+COPY services/Auth/Auth.csproj ./services/Auth/
+COPY services/Backend/Backend.csproj ./services/Backend/
+COPY services/Content/Content.csproj ./services/Content/
+COPY services/Generator/Generator.csproj ./services/Generator/
+
+# Copy Shared folder (proto files)
+COPY services/Shared/ ./services/Shared/
+
+# Restore each project individually
+WORKDIR /app/services/Auth
+RUN dotnet restore
+
+WORKDIR /app/services/Backend
+RUN dotnet restore
+
+WORKDIR /app/services/Content
+RUN dotnet restore
+
+WORKDIR /app/services/Generator
+RUN dotnet restore
+
+# Copy all source code
+WORKDIR /app
+COPY services/ ./services/
+
+# Build all projects
+WORKDIR /app/services/Auth
+RUN dotnet build --no-restore
+
+WORKDIR /app/services/Backend
+RUN dotnet build --no-restore
+
+WORKDIR /app/services/Content
+RUN dotnet build --no-restore
+
+WORKDIR /app/services/Generator
+RUN dotnet build --no-restore
+
+# Create migration script using printf (more compatible)
+WORKDIR /app
+RUN printf '#!/bin/bash\n' > migrate.sh
+RUN printf 'set -e\n' >> migrate.sh
+RUN printf 'echo "Starting database migrations..."\n' >> migrate.sh
+RUN printf 'echo "Waiting for PostgreSQL..."\n' >> migrate.sh
+RUN printf 'until pg_isready -h postgres -p 5432 -U postgres; do sleep 2; done\n' >> migrate.sh
+RUN printf 'echo "PostgreSQL is ready!"\n' >> migrate.sh
+RUN printf 'echo "Running Auth migrations..."\n' >> migrate.sh
+RUN printf 'cd /app/services/Auth && export ConnectionStrings__AuthDb="Host=postgres;Database=mocktail_auth;Username=postgres;Password=Admin@123" && dotnet ef database update --no-build\n' >> migrate.sh
+RUN printf 'echo "Running Backend migrations..."\n' >> migrate.sh
+RUN printf 'cd /app/services/Backend && export ConnectionStrings__BackendDb="Host=postgres;Database=mocktail_backend;Username=postgres;Password=Admin@123" && dotnet ef database update --no-build\n' >> migrate.sh
+RUN printf 'echo "Running Content migrations..."\n' >> migrate.sh
+RUN printf 'cd /app/services/Content && export ConnectionStrings__ContentDb="Host=postgres;Database=mocktail_content;Username=postgres;Password=Admin@123" && dotnet ef database update --no-build\n' >> migrate.sh
+RUN printf 'echo "Running Generator migrations..."\n' >> migrate.sh
+RUN printf 'cd /app/services/Generator && export ConnectionStrings__GeneratorDb="Host=postgres;Database=mocktail_generator;Username=postgres;Password=Admin@123" && dotnet ef database update --no-build\n' >> migrate.sh
+RUN printf 'echo "All migrations completed!"\n' >> migrate.sh
+RUN chmod +x migrate.sh
+
+CMD ["/bin/bash", "migrate.sh"]

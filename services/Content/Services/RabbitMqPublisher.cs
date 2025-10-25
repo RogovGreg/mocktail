@@ -5,10 +5,12 @@ namespace Content.Services;
 
 public class RabbitMqPublisher : IRabbitMqPublisher, IDisposable
 {
-    private readonly IConnection _connection;
-    private readonly IModel _channel;
+    private IConnection _connection;
+    private IModel _channel;
     private readonly ILogger<RabbitMqPublisher> _logger;
     private readonly string _queueName = "content-generation-queue";
+    private readonly string _connectionString;
+    private bool _isInitialized = false;
 
     public RabbitMqPublisher(IConfiguration configuration, ILogger<RabbitMqPublisher> logger)
     {
@@ -20,9 +22,17 @@ public class RabbitMqPublisher : IRabbitMqPublisher, IDisposable
             throw new InvalidOperationException("Connection string 'RabbitMQ' not found. Make sure the environment variable 'ConnectionStrings__RabbitMQ' is set.");
         }
 
+        _connectionString = connectionString;
+        _logger.LogInformation("RabbitMQ publisher initialized. Connection will be established on first use.");
+    }
+
+    private void EnsureConnection()
+    {
+        if (_isInitialized) return;
+
         var factory = new ConnectionFactory
         {
-            Uri = new Uri(connectionString),
+            Uri = new Uri(_connectionString),
             AutomaticRecoveryEnabled = true,
             NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
         };
@@ -38,13 +48,16 @@ public class RabbitMqPublisher : IRabbitMqPublisher, IDisposable
             autoDelete: false,
             arguments: null);
 
-        _logger.LogInformation("RabbitMQ publisher initialized with queue '{QueueName}'", _queueName);
+        _isInitialized = true;
+        _logger.LogInformation("RabbitMQ publisher connected and queue '{QueueName}' declared", _queueName);
     }
 
     public Task PublishContentGenerationAsync(ContentGenerationMessage message)
     {
         try
         {
+            EnsureConnection();
+            
             var messageJson = message.ToJson();
             var body = System.Text.Encoding.UTF8.GetBytes(messageJson);
 

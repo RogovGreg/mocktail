@@ -61,6 +61,8 @@ services:
         condition: service_healthy
     env_file:
       - .env
+    expose:
+      - "80"
 
   content:
     build:
@@ -76,6 +78,9 @@ services:
         condition: service_healthy
     env_file:
       - .env
+    expose:
+      - "80"
+      - "8080"
 
   generator:
     build:
@@ -87,6 +92,9 @@ services:
         condition: service_healthy
     env_file:
       - .env
+    expose:
+      - "80"
+      - "8080"
 
   auth:
     build:
@@ -98,6 +106,8 @@ services:
         condition: service_healthy
     env_file:
       - .env
+    expose:
+      - "80"
 
   gateway:
     build:
@@ -111,6 +121,8 @@ services:
       - content
       - generator
       - auth
+    ports:
+      - "8080:8080"
 
   frontend:
     build:
@@ -119,6 +131,19 @@ services:
     container_name: frontend
     depends_on:
       - gateway
+    ports:
+      - "80:80"
+
+  # migrations:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.migrations
+  #   container_name: migrations
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   env_file:
+  #     - .env
 
 volumes:
   mocktail_data:

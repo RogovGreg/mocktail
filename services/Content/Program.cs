@@ -69,24 +69,7 @@ builder.Services.AddGrpcClient<Generator.Protos.GeneratorService.GeneratorServic
 // Register services
 builder.Services.AddScoped<IGeneratorService, GeneratorService>();
 
-// Register RabbitMQ services
-var rabbitMqConnectionString = builder.Configuration.GetConnectionString("RabbitMQ");
-if (string.IsNullOrWhiteSpace(rabbitMqConnectionString))
-{
-    throw new InvalidOperationException("Connection string 'RabbitMQ' not found. Make sure the environment variable 'ConnectionStrings__RabbitMQ' is set.");
-}
-
-builder.Services.AddSingleton<IConnection>(provider =>
-{
-    var factory = new ConnectionFactory
-    {
-        Uri = new Uri(rabbitMqConnectionString),
-        AutomaticRecoveryEnabled = true,
-        NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
-    };
-    return factory.CreateConnection();
-});
-
+// Register RabbitMQ services - defer connection creation
 builder.Services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
 
 // Register background worker

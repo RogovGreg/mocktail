@@ -5,16 +5,16 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
+RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
+
 COPY Backend.csproj ./
 RUN dotnet restore "Backend.csproj"
 
 COPY . ./
 RUN dotnet publish "Backend.csproj" -c Release -o /app/publish
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS runtime
+FROM base AS runtime
 WORKDIR /app
 COPY --from=build /app/publish ./
-
-ENV ConnectionStrings__DefaultConnection="Host=postgres;Database=mocktail_backend;Username=postgres;Password=Admin@123"
 
 ENTRYPOINT ["dotnet", "Backend.dll"]
