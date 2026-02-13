@@ -56,13 +56,13 @@ RUN printf 'echo "Waiting for PostgreSQL..."\n' >> migrate.sh
 RUN printf 'until pg_isready -h postgres -p 5432 -U postgres; do sleep 2; done\n' >> migrate.sh
 RUN printf 'echo "PostgreSQL is ready!"\n' >> migrate.sh
 RUN printf 'echo "Running Auth migrations..."\n' >> migrate.sh
-RUN printf 'cd /app/services/Auth && export ConnectionStrings__AuthDb="Host=postgres;Database=mocktail_auth;Username=postgres;Password=Admin@123" && dotnet ef database update --no-build\n' >> migrate.sh
+RUN printf 'cd /app/services/Auth && dotnet ef database update --no-build\n' >> migrate.sh
 RUN printf 'echo "Running Backend migrations..."\n' >> migrate.sh
-RUN printf 'cd /app/services/Backend && export ConnectionStrings__BackendDb="Host=postgres;Database=mocktail_backend;Username=postgres;Password=Admin@123" && dotnet ef database update --no-build\n' >> migrate.sh
+RUN printf 'cd /app/services/Backend && dotnet ef database update --no-build\n' >> migrate.sh
 RUN printf 'echo "Running Content migrations..."\n' >> migrate.sh
-RUN printf 'cd /app/services/Content && export ConnectionStrings__ContentDb="Host=postgres;Database=mocktail_content;Username=postgres;Password=Admin@123" && dotnet ef database update --no-build\n' >> migrate.sh
+RUN printf 'cd /app/services/Content && dotnet ef database update --no-build\n' >> migrate.sh
 RUN printf 'echo "Running Generator migrations..."\n' >> migrate.sh
-RUN printf 'cd /app/services/Generator && export ConnectionStrings__GeneratorDb="Host=postgres;Database=mocktail_generator;Username=postgres;Password=Admin@123" && dotnet ef database update --no-build\n' >> migrate.sh
+RUN printf 'cd /app/services/Generator && dotnet ef database update --no-build\n' >> migrate.sh
 RUN printf 'echo "All migrations completed!"\n' >> migrate.sh
 RUN chmod +x migrate.sh
 

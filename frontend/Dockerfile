@@ -1,9 +1,10 @@
-FROM nginx:stable-alpine AS base
+ARG DOCKER_REGISTRY=docker.io
+FROM ${DOCKER_REGISTRY}/library/nginx:stable-alpine AS base
 WORKDIR /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 
-FROM node:20.19.4 AS build
+FROM ${DOCKER_REGISTRY}/library/node:20.19.4 AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./

@@ -147,6 +147,7 @@ This copies to:
 - If migrations fail, verify you installed the EF CLI and that Postgres is healthy.
 - If the frontend can’t reach the API in dev, confirm containers are up and Vite is proxying to port 80 (`frontend/nginx.conf` forwards `/api/` to the Gateway).
 - If ports are taken, stop conflicting services or adjust mappings in `docker-compose.dev.yml`.
+- If Docker Hub pulls time out (e.g., `auth.docker.io`), set `DOCKER_REGISTRY=mirror.gcr.io` in `.env` and rerun `./run.py`.
 
 ## Performance tips
 

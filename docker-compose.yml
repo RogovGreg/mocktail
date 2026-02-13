@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: ${DOCKER_REGISTRY:-docker.io}/library/postgres:16-alpine
     hostname: postgres
     container_name: postgres
     ports:
@@ -19,7 +19,7 @@ services:
       retries: 12
 
   redis:
-    image: redis:7-alpine
+    image: ${DOCKER_REGISTRY:-docker.io}/library/redis:7-alpine
     hostname: redis
     container_name: redis
     ports:
@@ -34,7 +34,7 @@ services:
       retries: 12
 
   rabbitmq:
-    image: rabbitmq:3-management-alpine
+    image: ${DOCKER_REGISTRY:-docker.io}/library/rabbitmq:3-management-alpine
     hostname: rabbitmq
     container_name: rabbitmq
     ports:
@@ -128,6 +128,8 @@ services:
     build:
       context: frontend
       dockerfile: Dockerfile
+      args:
+        DOCKER_REGISTRY: ${DOCKER_REGISTRY:-docker.io}
     container_name: frontend
     depends_on:
       - gateway
